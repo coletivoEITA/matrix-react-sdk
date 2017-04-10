@@ -94,7 +94,12 @@ const THEMES = [
         id: 'theme',
         label: 'Dark theme',
         value: 'dark',
-    }
+    },
+    {
+        id: 'theme',
+        label: 'Tema do Caderno de Campo',
+        value: 'cadcampo',
+    },
 ];
 
 
