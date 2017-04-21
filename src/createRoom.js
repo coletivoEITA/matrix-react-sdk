@@ -86,7 +86,7 @@ function createRoom(opts) {
         if (modal) modal.close();
     }).then(function(res) {
         roomId = res.room_id;
-        if (opts.dmUserId) {
+        if (opts.dmUserId && 0) {
             return Rooms.setDMRoom(roomId, opts.dmUserId);
         } else {
             return q();

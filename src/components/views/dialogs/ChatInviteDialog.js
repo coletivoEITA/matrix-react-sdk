@@ -314,7 +314,7 @@ module.exports = React.createClass({
                 return null;
             })
             .done();
-        } else if (this._isDmChat(addrTexts)) {
+        } else if (this._isDmChat(addrTexts) && 0) { // alantygel sabotage: avoid creating direct chat
             // Start the DM chat
             createRoom({dmUserId: addrTexts[0]})
             .catch(function(err) {
