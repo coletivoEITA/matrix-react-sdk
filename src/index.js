@@ -15,6 +15,28 @@ limitations under the License.
 */
 
 var Skinner = require('./Skinner');
+var counterpart = require('counterpart');
+
+counterpart.registerTranslations('en', require('./i18n/strings/en_EN'));
+counterpart.registerTranslations('en', require('./i18n/global/en_EN'));
+counterpart.registerTranslations('de', require('./i18n/strings/de_DE'));
+counterpart.registerTranslations('de', require('./i18n/global/de_DE'));
+var pt1 = require('./i18n/strings/pt_BR');
+counterpart.registerTranslations('pt', pt1);
+counterpart.registerTranslations('pt-BR', pt1);
+var pt2 = require('./i18n/global/pt_BR');
+counterpart.registerTranslations('pt', pt2);
+counterpart.registerTranslations('pt-BR', pt2);
+
+if ( navigator.languages ) {
+    counterpart.setFallbackLocale( navigator.languages );
+    counterpart.setLocale(window.navigator.languages[0]);
+} else {
+    counterpart.setFallbackLocale( 'en' );
+    if ( navigator.userLanguage ) { //IE
+        counterpart.setLocale( navigator.userLanguage );
+    }
+}
 
 module.exports.loadSkin = function(skinObject) {
     Skinner.load(skinObject);
@@ -27,3 +49,7 @@ module.exports.resetSkin = function() {
 module.exports.getComponent = function(componentName) {
     return Skinner.getComponent(componentName);
 };
+
+
+
+

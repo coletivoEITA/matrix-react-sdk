@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 var React = require('react');
+var counterpart = require('counterpart');
 var classNames = require('classnames');
 var Matrix = require("matrix-js-sdk");
 var q = require('q');
@@ -363,8 +364,8 @@ module.exports = React.createClass({
         var inputBox = (
             <form autoComplete="off">
                 <input className="mx_MemberList_query" id="mx_MemberList_query" type="text"
-                    onChange={this.onSearchQueryChanged} value={this.state.searchQuery}
-                    placeholder="Filter room members" />
+                        onChange={this.onSearchQueryChanged} value={this.state.searchQuery}
+                        placeholder={ counterpart.translate('Filter room members') } />
             </form>
         );
 

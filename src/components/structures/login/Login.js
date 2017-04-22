@@ -17,13 +17,13 @@ limitations under the License.
 
 'use strict';
 
-var React = require('react');
-var ReactDOM = require('react-dom');
-var sdk = require('../../../index');
-var Login = require("../../../Login");
-var PasswordLogin = require("../../views/login/PasswordLogin");
-var CasLogin = require("../../views/login/CasLogin");
-var ServerConfig = require("../../views/login/ServerConfig");
+import React from 'react';
+import ReactDOM from 'react-dom';
+import url from 'url';
+import sdk from '../../../index';
+import Login from '../../../Login';
+
+var counterpart = require('counterpart');
 
 /**
  * A wire component which glues together login UI components and Login logic
@@ -67,6 +67,7 @@ module.exports = React.createClass({
             username: "",
             phoneCountry: null,
             phoneNumber: "",
+            currentFlow: "m.login.password",
         };
     },
 
@@ -129,23 +130,19 @@ module.exports = React.createClass({
         this.setState({ phoneNumber: phoneNumber });
     },
 
-    onHsUrlChanged: function(newHsUrl) {
+    onServerConfigChange: function(config) {
         var self = this;
-        this.setState({
-            enteredHomeserverUrl: newHsUrl,
+        let newState = {
             errorText: null, // reset err messages
-        }, function() {
-            self._initLoginLogic(newHsUrl);
-        });
-    },
-
-    onIsUrlChanged: function(newIsUrl) {
-        var self = this;
-        this.setState({
-            enteredIdentityServerUrl: newIsUrl,
-            errorText: null, // reset err messages
-        }, function() {
-            self._initLoginLogic(null, newIsUrl);
+        };
+        if (config.hsUrl !== undefined) {
+            newState.enteredHomeserverUrl = config.hsUrl;
+        }
+        if (config.isUrl !== undefined) {
+            newState.enteredIdentityServerUrl = config.isUrl;
+        }
+        this.setState(newState, function() {
+            self._initLoginLogic(config.hsUrl || null, config.isUrl);
         });
     },
 
@@ -161,24 +158,27 @@ module.exports = React.createClass({
         });
         this._loginLogic = loginLogic;
 
-        loginLogic.getFlows().then(function(flows) {
-            // old behaviour was to always use the first flow without presenting
-            // options. This works in most cases (we don't have a UI for multiple
-            // logins so let's skip that for now).
-            loginLogic.chooseFlow(0);
-        }, function(err) {
-            self._setStateFromError(err, false);
-        }).finally(function() {
-            self.setState({
-                busy: false
-            });
-        });
-
         this.setState({
             enteredHomeserverUrl: hsUrl,
             enteredIdentityServerUrl: isUrl,
             busy: true,
             loginIncorrect: false,
+        });
+
+        loginLogic.getFlows().then(function(flows) {
+            // old behaviour was to always use the first flow without presenting
+            // options. This works in most cases (we don't have a UI for multiple
+            // logins so let's skip that for now).
+            loginLogic.chooseFlow(0);
+            self.setState({
+                currentFlow: self._getCurrentFlowStep(),
+            });
+        }, function(err) {
+            self._setStateFromError(err, false);
+        }).finally(function() {
+            self.setState({
+                busy: false,
+            });
         });
     },
 
@@ -213,14 +213,14 @@ module.exports = React.createClass({
                  !this.state.enteredHomeserverUrl.startsWith("http")))
             {
                 errorText = <span>
-                    Can't connect to homeserver via HTTP when an HTTPS URL is in your browser bar.
-                    Either use HTTPS or <a href='https://www.google.com/search?&q=enable%20unsafe%20scripts'>enable unsafe scripts</a>
+                    { counterpart.translate('Can\'t connect to homeserver via HTTP when an HTTPS URL is in your browser bar.')}
+                    { counterpart.translate('Either use HTTPS or ')}<a href='https://www.google.com/search?&q=enable%20unsafe%20scripts'>{ counterpart.translate('enable unsafe scripts')}</a>
                 </span>;
             }
             else {
                 errorText = <span>
-                    Can't connect to homeserver - please check your connectivity and ensure
-                    your <a href={ this.state.enteredHomeserverUrl }>homeserver's SSL certificate</a> is trusted.
+                    { counterpart.translate('Can\'t connect to homeserver - please check your connectivity and ensure your ')}
+                    <a href={ this.state.enteredHomeserverUrl }>{ counterpart.translate('homeserver\'s SSL certificate')}</a>{ counterpart.translate(' is trusted.')}
                 </span>;
             }
         }
@@ -231,6 +231,13 @@ module.exports = React.createClass({
     componentForStep: function(step) {
         switch (step) {
             case 'm.login.password':
+                const PasswordLogin = sdk.getComponent('login.PasswordLogin');
+                // HSs that are not matrix.org may not be configured to have their
+                // domain name === domain part.
+                let hsDomain = url.parse(this.state.enteredHomeserverUrl).hostname;
+                if (hsDomain !== 'matrix.org') {
+                    hsDomain = null;
+                }
                 return (
                     <PasswordLogin
                         onSubmit={this.onPasswordLogin}
@@ -242,9 +249,11 @@ module.exports = React.createClass({
                         onPhoneNumberChanged={this.onPhoneNumberChanged}
                         onForgotPasswordClick={this.props.onForgotPasswordClick}
                         loginIncorrect={this.state.loginIncorrect}
+                        hsDomain={hsDomain}
                     />
                 );
             case 'm.login.cas':
+                const CasLogin = sdk.getComponent('login.CasLogin');
                 return (
                     <CasLogin onSubmit={this.onCasLogin} />
                 );
@@ -254,24 +263,24 @@ module.exports = React.createClass({
                 }
                 return (
                     <div>
-                    Sorry, this homeserver is using a login which is not
-                    recognised ({step})
+                    { counterpart.translate('Sorry, this homeserver is using a login which is not recognised ')}({step})
                     </div>
                 );
         }
     },
 
     render: function() {
-        var Loader = sdk.getComponent("elements.Spinner");
-        var LoginHeader = sdk.getComponent("login.LoginHeader");
-        var LoginFooter = sdk.getComponent("login.LoginFooter");
-        var loader = this.state.busy ? <div className="mx_Login_loader"><Loader /></div> : null;
+        const Loader = sdk.getComponent("elements.Spinner");
+        const LoginHeader = sdk.getComponent("login.LoginHeader");
+        const LoginFooter = sdk.getComponent("login.LoginFooter");
+        const ServerConfig = sdk.getComponent("login.ServerConfig");
+        const loader = this.state.busy ? <div className="mx_Login_loader"><Loader /></div> : null;
 
         var loginAsGuestJsx;
         if (this.props.enableGuest) {
             loginAsGuestJsx =
                 <a className="mx_Login_create" onClick={this._onLoginAsGuestClick} href="#">
-                    Login as guest
+                    { counterpart.translate('Login as guest')}
                 </a>;
         }
 
@@ -279,7 +288,7 @@ module.exports = React.createClass({
         if (this.props.onCancelClick) {
             returnToAppJsx =
                 <a className="mx_Login_create" onClick={this.props.onCancelClick} href="#">
-                    Return to app
+                    { counterpart.translate('Return to app')}
                 </a>;
         }
 
@@ -288,24 +297,23 @@ module.exports = React.createClass({
                 <div className="mx_Login_box">
                     <LoginHeader />
                     <div>
-                        <h2>Sign in
+                        <h2>{ counterpart.translate('Sign in')}
                             { loader }
                         </h2>
-                        { this.componentForStep(this._getCurrentFlowStep()) }
+                        { this.componentForStep(this.state.currentFlow) }
                         <ServerConfig ref="serverConfig"
                             withToggleButton={true}
                             customHsUrl={this.props.customHsUrl}
                             customIsUrl={this.props.customIsUrl}
                             defaultHsUrl={this.props.defaultHsUrl}
                             defaultIsUrl={this.props.defaultIsUrl}
-                            onHsUrlChanged={this.onHsUrlChanged}
-                            onIsUrlChanged={this.onIsUrlChanged}
+                            onServerConfigChange={this.onServerConfigChange}
                             delayTimeMs={1000}/>
                         <div className="mx_Login_error">
                                 { this.state.errorText }
                         </div>
                         <a className="mx_Login_create" onClick={this.props.onRegisterClick} href="#">
-                            Create a new account
+                            { counterpart.translate('Create a new account')}
                         </a>
                         { loginAsGuestJsx }
                         { returnToAppJsx }

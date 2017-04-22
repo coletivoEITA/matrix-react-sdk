@@ -448,6 +448,7 @@ module.exports = React.createClass({
     _onClearCacheClicked: function() {
         if (!PlatformPeg.get()) return;
 
+        MatrixClientPeg.get().stopClient();
         MatrixClientPeg.get().store.deleteAllData().done(() => {
             PlatformPeg.get().reload();
         });
