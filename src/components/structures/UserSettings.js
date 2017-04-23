@@ -936,7 +936,7 @@ module.exports = React.createClass({
 
                 <h3>Account</h3>
 
-                <div className="mx_UserSettings_section">
+                <div className="mx_UserSettings_section cadcampoHide">
 
                     <AccessibleButton className="mx_UserSettings_logout mx_UserSettings_button" onClick={this.onLogoutClicked}>
                         Sign out
