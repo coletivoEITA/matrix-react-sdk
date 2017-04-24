@@ -1204,7 +1204,7 @@ module.exports = React.createClass({
             return (
                 <div className="mx_MatrixChat_splash">
                     <Spinner />
-                    <a href="#" className="mx_MatrixChat_splashButtons" onClick={ this.onLogoutClick }>
+                    <a href="#" className="mx_MatrixChat_splashButtons cadcampoHide" onClick={ this.onLogoutClick }>
                     Logout
                     </a>
                 </div>
