@@ -28,6 +28,8 @@ import ScalarMessaging from '../../../ScalarMessaging';
 import UserSettingsStore from '../../../UserSettingsStore';
 import AccessibleButton from '../elements/AccessibleButton';
 
+var counterpart = require('counterpart');
+
 
 // parse a string as an integer; if the input is undefined, or cannot be parsed
 // as an integer, return a default.
@@ -70,7 +72,7 @@ const BannedUser = React.createClass({
                 <AccessibleButton className="mx_RoomSettings_unbanButton"
                     onClick={this._onUnbanClick}
                 >
-                    Unban
+                    { counterpart.translate("Unban") }
                 </AccessibleButton>
                 {this.props.member.userId}
             </li>
@@ -400,13 +402,13 @@ module.exports = React.createClass({
         var value = ev.target.value;
 
         Modal.createDialog(QuestionDialog, {
-            title: "Privacy warning",
+            title: counterpart.translate("Privacy warning"),
             description:
                 <div>
-                    Changes to who can read history will only apply to future messages in this room.<br/>
-                    The visibility of existing history will be unchanged.
+                    { counterpart.translate("Changes to who can read history will only apply to future messages in this room") }.<br/>
+                    { counterpart.translate("The visibility of existing history will be unchanged") }.
                 </div>,
-            button: "Continue",
+            button: counterpart.translate("Continue"),
             onFinished: function(confirmed) {
                 if (confirmed) {
                     self.setState({
@@ -537,14 +539,14 @@ module.exports = React.createClass({
 
         var QuestionDialog = sdk.getComponent("dialogs.QuestionDialog");
         Modal.createDialog(QuestionDialog, {
-            title: "Warning!",
+            title: counterpart.translate("Warning!"),
             description: (
                 <div>
-                    <p>End-to-end encryption is in beta and may not be reliable.</p>
-                    <p>You should <b>not</b> yet trust it to secure data.</p>
-                    <p>Devices will <b>not</b> yet be able to decrypt history from before they joined the room.</p>
-                    <p>Once encryption is enabled for a room it <b>cannot</b> be turned off again (for now).</p>
-                    <p>Encrypted messages will not be visible on clients that do not yet implement encryption.</p>
+                    <p>{ counterpart.translate("End-to-end encryption is in beta and may not be reliable") }.</p>
+                    <p>{ counterpart.translate("You should <b>not</b> yet trust it to secure data") }.</p>
+                    <p>{ counterpart.translate("Devices will <b>not</b> yet be able to decrypt history from before they joined the room") }.</p>
+                    <p>{ counterpart.translate("Once encryption is enabled for a room it <b>cannot</b> be turned off again (for now)") }.</p>
+                    <p>{ counterpart.translate("Encrypted messages will not be visible on clients that do not yet implement encryption") }.</p>
                 </div>
             ),
             onFinished: confirm=>{
@@ -694,14 +696,14 @@ module.exports = React.createClass({
             if (myMember.membership === "join") {
                 leaveButton = (
                     <AccessibleButton className="mx_RoomSettings_leaveButton" onClick={ this.onLeaveClick }>
-                        Leave room
+                        { counterpart.translate("Leave room") }
                     </AccessibleButton>
                 );
             }
             else if (myMember.membership === "leave") {
                 leaveButton = (
                     <AccessibleButton className="mx_RoomSettings_leaveButton" onClick={ this.onForgetClick }>
-                        Forget room
+                        { counterpart.translate("Forget room") }
                     </AccessibleButton>
                 );
             }
@@ -711,8 +713,8 @@ module.exports = React.createClass({
         // TODO: support editing custom user_levels
 
         var tags = [
-            { name: "m.favourite", label: "Favourite", ref: "tag_favourite" },
-            { name: "m.lowpriority", label: "Low priority", ref: "tag_lowpriority" },
+            { name: "m.favourite", label: counterpart.translate("Favourite"), ref: "tag_favourite" },
+            { name: "m.lowpriority", label: counterpart.translate("Low priority"), ref: "tag_lowpriority" },
         ];
 
         Object.keys(this.state.tags).sort().forEach(function(tagName) {
@@ -753,7 +755,7 @@ module.exports = React.createClass({
         if (this.state.join_rule === "public" && aliasCount == 0) {
             addressWarning =
                 <div className="mx_RoomSettings_warning">
-                    To link to a room it must have <a href="#addresses">an address</a>.
+                		{ counterpart.translate("To link to a room it must have") } <a href="#addresses">counterpart.translate("an address") }</a>.
                 </div>;
         }
 
