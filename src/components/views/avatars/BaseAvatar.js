@@ -143,12 +143,14 @@ module.exports = React.createClass({
             ...otherProps
         } = this.props;
 
+        console.log ( width + "<<<<<>>>>>>>");
+
         if (imageUrl === this.state.defaultImageUrl) {
             const initialLetter = this._getInitialLetter(name);
             const textNode = (
                 <EmojiText className="mx_BaseAvatar_initial" aria-hidden="true"
                     style={{ fontSize: (width * 0.65) + "px",
-                    width: width + "px",
+                    width: width + 1 + "px", /* correct avatar distortion - by alan */
                     lineHeight: height + "px" }}
                 >
                     {initialLetter}
