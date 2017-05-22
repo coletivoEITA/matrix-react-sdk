@@ -143,8 +143,6 @@ module.exports = React.createClass({
             ...otherProps
         } = this.props;
 
-        console.log ( width + "<<<<<>>>>>>>");
-
         if (imageUrl === this.state.defaultImageUrl) {
             const initialLetter = this._getInitialLetter(name);
             const textNode = (
