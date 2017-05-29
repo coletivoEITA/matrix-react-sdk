@@ -70,6 +70,9 @@ module.exports = React.createClass({
 
         // A function that makes a registration URL
         makeRegistrationUrl: React.PropTypes.func.isRequired,
+        
+        // Theme style elements in document
+        themeStyleElements: React.PropTypes.object,
     },
 
     childContextTypes: {
@@ -731,31 +734,27 @@ module.exports = React.createClass({
      * @param {string} theme new theme
      */
     _onSetTheme: function(theme) {
-        if (!theme) {
-            theme = 'cadcampo';
+        var isValidTheme = false;
+        if (theme) {
+            SdkConfig.get().themes.every(function(configTheme, i) {
+                if (theme == configTheme.value) {
+                    isValidTheme = true;
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+        }
+        if (!isValidTheme) {
+            console.log( ( theme ?  "Unknown theme '" + theme + "'." : "No theme set." ) + " Falling back to default theme '" + SdkConfig.get().themes[0].value + "'");
+            theme = SdkConfig.get().themes[0].value;
         }
 
-        // look for the stylesheet elements.
-        // styleElements is a map from style name to HTMLLinkElement.
-        const styleElements = Object.create(null);
-        let a;
-        for (let i = 0; (a = document.getElementsByTagName("link")[i]); i++) {
-            const href = a.getAttribute("href");
-            // shouldn't we be using the 'title' tag rather than the href?
-            const match = href.match(/^bundles\/.*\/theme-(.*)\.css$/);
-            if (match) {
-                styleElements[match[1]] = a;
-            }
-        }
-
-        if (!(theme in styleElements)) {
-            throw new Error("Unknown theme " + theme);
-        }
-
-        // disable all of them first, then enable the one we want. Chrome only
+        var styleElements = this.props.themeStyleElements;
+        
+        // disable all style elements first, then enable the one we want. Chrome only
         // bothers to do an update on a true->false transition, so this ensures
         // that we get exactly one update, at the right time.
-
         Object.values(styleElements).forEach((a) => {
             a.disabled = true;
         });
@@ -1151,6 +1150,22 @@ module.exports = React.createClass({
             params.referrer = this.props.startingFragmentQueryParams.referrer;
         }
         return this.props.makeRegistrationUrl(params);
+    },
+    
+    getThemeStyleElements() {
+        // look for the stylesheet elements.
+        // styleElements is a map from style name to HTMLLinkElement.
+        var styleElements = Object.create(null);
+        var i, a;
+        for (i = 0; (a = document.getElementsByTagName("link")[i]); i++) {
+            var href = a.getAttribute("href");
+            // shouldn't we be using the 'title' tag rather than the href?
+            var match = href.match(/^bundles\/.*\/theme-(.*)\.css$/);
+            if (match) {
+                styleElements[match[1]] = a;
+            }
+        }
+        return styleElements;
     },
 
     render: function() {
