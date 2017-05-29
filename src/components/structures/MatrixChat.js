@@ -252,6 +252,9 @@ module.exports = React.createClass({
 
         this.focusComposer = false;
 
+        // Listen to login credentials sent through postMessage from another site
+        window.addEventListener('message', this.onMessage);
+
         // this can technically be done anywhere but doing this here keeps all
         // the routing url path logic together.
         if (this.onAliasClick) {
@@ -296,6 +299,7 @@ module.exports = React.createClass({
         UDEHandler.stopListening();
         window.removeEventListener("focus", this.onFocus);
         window.removeEventListener('resize', this.handleResize);
+        window.removeEventListener('message', this.onMessage);
     },
 
     componentDidUpdate: function() {
@@ -325,7 +329,36 @@ module.exports = React.createClass({
 
         switch (payload.action) {
             case 'logout':
-                Lifecycle.logout();
+                if (payload.forceLogout) {
+                    Lifecycle.logout();
+                } else {
+                    const QuestionDialog = sdk.getComponent("dialogs.QuestionDialog");
+                    Modal.createDialog(QuestionDialog, {
+                        title: "Sign out?",
+                        description:
+                            <div>
+                                For security, logging out will delete any end-to-end encryption 
+                                keys from this browser. If you want to be able to decrypt your 
+                                conversation history from future Riot sessions, please export 
+                                your room keys for safe-keeping.
+                            </div>,
+                        button: "Sign out",
+                        extraButtons: [
+                            <button key="export" className="mx_Dialog_primary"
+                                    onClick={this._exportE2eKeysDialog}>
+                                Export E2E room keys
+                            </button>,
+                        ],
+                        onFinished: (confirmed) => {
+                            if (confirmed) {
+                                Lifecycle.logout();
+                                if (this.props.onFinished) {
+                                    this.props.onFinished();
+                                }
+                            }
+                        },
+                    });
+                }
                 break;
             case 'start_registration':
                 this._startRegistration(payload.params || {});
@@ -436,6 +469,12 @@ module.exports = React.createClass({
             case 'view_user_settings':
                 this._setPage(PageTypes.UserSettings);
                 this.notifyNewScreen('settings');
+                break;
+            case 'export_e2e_keys_dialog':
+                this._exportE2eKeysDialog();
+                break;
+            case 'import_e2e_keys_dialog':
+                this._importE2eKeysDialog();
                 break;
             case 'view_create_room':
                 //this._setPage(PageTypes.CreateRoom);
@@ -897,6 +936,7 @@ module.exports = React.createClass({
             });
             dis.dispatch({
                 action: 'logout',
+                forceLogout: true
             });
         });
         cli.on("accountData", function(ev) {
@@ -911,6 +951,65 @@ module.exports = React.createClass({
         });
     },
 
+    onMessage: function(ev) {
+        if (
+            window.location.origin != ev.origin &&
+            (!SdkConfig.get().allowedPostMessageOrigins || SdkConfig.get().allowedPostMessageOrigins.indexOf(ev.origin) == -1)
+        ) {
+            return;
+        }
+        var credentials = {};
+        try {
+            credentials = JSON.parse(ev.data);
+        } catch(e) {
+            return;
+        };
+            
+        if (
+            credentials &&
+            credentials.action &&
+            credentials.accessToken &&
+            credentials.homeserverUrl &&
+            credentials.identityServerUrl &&
+            credentials.userId
+        ) {
+            var currentCredentials = (MatrixClientPeg.get())
+                ? MatrixClientPeg.getCredentials()
+                : null;
+            var sameUser = (
+                currentCredentials &&
+                credentials.accessToken == currentCredentials.accessToken &&
+                credentials.homeserverUrl == currentCredentials.homeserverUrl &&
+                credentials.identityServerUrl == currentCredentials.identityServerUrl &&
+                credentials.userId == currentCredentials.userId &&
+                (!credentials.deviceId || credentials.deviceId == currentCredentials.deviceId)
+            );
+            switch (credentials.action) {
+                case 'im.vector.login':
+                    console.log('postMessage: logging in from credentials sent by origin requestor');
+                    credentials.guest = false;
+                    if (sameUser) {
+                        console.log('postMessage: user is already logged in');
+                        return;
+                    }
+                    delete credentials.action;
+                    Lifecycle.setLoggedIn(credentials);
+                    break;
+                case 'im.vector.logout':
+                    console.log('postMessage: logging out');
+                    if (sameUser) {
+                        dis.dispatch({
+                            action: 'logout',
+                            forceLogout: credentials.forceLogout
+                        });
+                    } else {
+                        console.log('postMessage logout: user is not logged in or credentials are invalid');
+                    }
+                    break;
+            }
+        }
+    },
+    
     showScreen: function(screen, params) {
         if (screen == 'register') {
             dis.dispatch({
@@ -1136,6 +1235,30 @@ module.exports = React.createClass({
                 action: 'view_room_directory',
             });
         }
+    },
+    
+    _exportE2eKeysDialog: function() {
+        Modal.createDialogAsync(
+            (cb) => {
+                require.ensure(['../../async-components/views/dialogs/ExportE2eKeysDialog'], () => {
+                    cb(require('../../async-components/views/dialogs/ExportE2eKeysDialog'));
+                }, "e2e-export");
+            }, {
+                matrixClient: MatrixClientPeg.get(),
+            },
+        );
+    },
+    
+    _importE2eKeysDialog: function() {
+        Modal.createDialogAsync(
+            (cb) => {
+                require.ensure(['../../async-components/views/dialogs/ImportE2eKeysDialog'], () => {
+                    cb(require('../../async-components/views/dialogs/ImportE2eKeysDialog'));
+                }, "e2e-export");
+            }, {
+                matrixClient: MatrixClientPeg.get(),
+            },
+        );
     },
 
     onRoomIdResolved: function(roomId) {
