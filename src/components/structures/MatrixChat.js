@@ -298,7 +298,7 @@ module.exports = React.createClass({
     },
 
     componentWillUnmount: function() {
-        Lifecycle.stopMatrixClient();
+        Lifecycle.stopMatrixClient(false);
         dis.unregister(this.dispatcherRef);
         UDEHandler.stopListening();
         window.removeEventListener("focus", this.onFocus);
@@ -400,7 +400,7 @@ module.exports = React.createClass({
                 // is completed in another browser, we'll be 401ed for using
                 // a guest access token for a non-guest account.
                 // It will be restarted in onReturnToGuestClick
-                Lifecycle.stopMatrixClient();
+                Lifecycle.stopMatrixClient(false);
 
                 this.notifyNewScreen('register');
                 break;
