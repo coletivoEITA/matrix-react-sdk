@@ -84,6 +84,10 @@ const SETTINGS_LABELS = [
         id: 'useCompactLayout',
         label: 'Use compact timeline layout',
     },
+    {
+        id: 'hideRedactions',
+        label: 'Hide removed messages',
+    },
 /*
     {
         id: 'useFixedWidthFont',
@@ -671,8 +675,8 @@ module.exports = React.createClass({
                 <h3>{ _t("Cryptography") }</h3>
                 <div className="mx_UserSettings_section mx_UserSettings_cryptoSection">
                     <ul>
-                        <li><label>Device ID:</label>             <span><code>{deviceId}</code></span></li>
-                        <li><label>Device key:</label>            <span><code><b>{identityKey}</b></code></span></li>
+                        <li><label>{_t("Device ID:")}</label>             <span><code>{deviceId}</code></span></li>
+                        <li><label>{_t("Device key:")}</label>            <span><code><b>{identityKey}</b></code></span></li>
                     </ul>
                     { importExportButtons }
                 </div>
