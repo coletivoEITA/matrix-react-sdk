@@ -715,7 +715,7 @@ module.exports = React.createClass({
                 // XXX: There's not a whole lot we can really do if this fails: at best
                 // perhaps we could try a couple more times, but since it's a temporary
                 // compatability workaround, let's not bother.
-                // Rooms.setDMRoom(this.state.room.roomId, me.events.member.getSender()).done();
+                Rooms.setDMRoom(this.state.room.roomId, me.events.member.getSender()).done();
             }
         }
     }, 500),
@@ -851,7 +851,10 @@ module.exports = React.createClass({
             if (this.state.room) {
                 const me = this.state.room.getMember(MatrixClientPeg.get().credentials.userId);
                 if (me && me.membership == 'invite') {
-                    if (me.events.member.getContent().is_direct && 0) { // eliminate direct chat sabotage
+                    if (me.events.member.getContent().is_direct && 0) { 
+                        // EITA TODO: instead of using this "&& 0", create a way to only display
+                        // recent rooms, regardless if they are direct or not.
+                        
                         // The 'direct' hint is there, so declare that this is a DM room for
                         // whoever invited us.
                         return Rooms.setDMRoom(this.state.room.roomId, me.events.member.getSender());
