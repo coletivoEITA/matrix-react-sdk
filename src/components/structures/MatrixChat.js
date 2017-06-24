@@ -41,6 +41,7 @@ import PageTypes from '../../PageTypes';
 
 import createRoom from "../../createRoom";
 import * as UDEHandler from '../../UnknownDeviceErrorHandler';
+import KeyRequestHandler from '../../KeyRequestHandler';
 import { _t, getCurrentLanguage } from '../../languageHandler';
 
 /** constants for MatrixChat.state.view */
@@ -159,6 +160,7 @@ module.exports = React.createClass({
             newVersion: null,
             hasNewVersion: false,
             newVersionReleaseNotes: null,
+            checkingForUpdate: null,
 
             // Parameters used in the registration dance with the IS
             register_client_secret: null,
@@ -335,7 +337,7 @@ module.exports = React.createClass({
                     defaultDeviceDisplayName: this.props.defaultDeviceDisplayName,
                 });
             }).catch((e) => {
-                console.error("Unable to load session", e);
+                console.error(`Error attempting to load session: ${e}`);
                 return false;
             }).then((loadedSession) => {
                 if (!loadedSession) {
@@ -575,12 +577,10 @@ module.exports = React.createClass({
                 break;
             case 'on_logging_in':
                 // We are now logging in, so set the state to reflect that
-                // and also that we're not ready (we'll be marked as logged
-                // in once the login completes, then ready once the sync
-                // completes).
+                // NB. This does not touch 'ready' since if our dispatches
+                // are delayed, the sync could already have completed
                 this.setStateForNewView({
                     view: VIEWS.LOGGING_IN,
-                    ready: false,
                 });
                 break;
             case 'on_logged_in':
@@ -590,13 +590,21 @@ module.exports = React.createClass({
                 this._onLoggedOut();
                 break;
             case 'will_start_client':
-                this._onWillStartClient();
+                this.setState({ready: false}, () => {
+                    // if the client is about to start, we are, by definition, not ready.
+                    // Set ready to false now, then it'll be set to true when the sync
+                    // listener we set below fires.
+                    this._onWillStartClient();
+                });
                 break;
             case 'new_version':
                 this.onVersion(
                     payload.currentVersion, payload.newVersion,
                     payload.releaseNotes,
                 );
+                break;
+            case 'check_updates':
+                this.setState({ checkingForUpdate: payload.value });
                 break;
             case 'send_event':
                 this.onSendEvent(payload.room_id, payload.event);
@@ -981,10 +989,6 @@ module.exports = React.createClass({
             dis.dispatch({action: 'view_home_page'});
         } else if (this._is_registered) {
             this._is_registered = false;
-            // reset the 'have completed first sync' flag,
-            // since we've just logged in and will be about to sync
-            this.firstSyncComplete = false;
-            this.firstSyncPromise = q.defer();
 
             // Set the display name = user ID localpart
             MatrixClientPeg.get().setDisplayName(
@@ -1042,6 +1046,7 @@ module.exports = React.createClass({
             page_type: PageTypes.RoomDirectory,
         });
         this._teamToken = null;
+        this._setPageSubtitle();
     },
 
     /**
@@ -1050,6 +1055,12 @@ module.exports = React.createClass({
      */
     _onWillStartClient() {
         const self = this;
+
+        // reset the 'have completed first sync' flag,
+        // since we're about to start the client and therefore about
+        // to do the first sync
+        this.firstSyncComplete = false;
+        this.firstSyncPromise = q.defer();
         const cli = MatrixClientPeg.get();
 
         // Allow the JS SDK to reap timeline events. This reduces the amount of
@@ -1120,6 +1131,14 @@ module.exports = React.createClass({
                     });
                 }
             }
+        });
+
+        const krh = new KeyRequestHandler(cli);
+        cli.on("crypto.roomKeyRequest", (req) => {
+            krh.handleKeyRequest(req);
+        });
+        cli.on("crypto.roomKeyRequestCancellation", (req) => {
+            krh.handleKeyRequestCancellation(req);
         });
     },
 
@@ -1384,6 +1403,7 @@ module.exports = React.createClass({
             newVersion: latest,
             hasNewVersion: current !== latest,
             newVersionReleaseNotes: releaseNotes,
+            checkingForUpdate: null,
         });
     },
 
@@ -1408,6 +1428,10 @@ module.exports = React.createClass({
         });
     },
 
+    _setPageSubtitle: function(subtitle='') {
+        document.title = `Riot ${subtitle}`;
+    },
+
     updateStatusIndicator: function(state, prevState) {
         let notifCount = 0;
 
@@ -1428,15 +1452,15 @@ module.exports = React.createClass({
             PlatformPeg.get().setNotificationCount(notifCount);
         }
 
-        let title = "Riot ";
+        let subtitle = '';
         if (state === "ERROR") {
-            title += `[${_t("Offline")}] `;
+            subtitle += `[${_t("Offline")}] `;
         }
         if (notifCount > 0) {
-            title += `[${notifCount}]`;
+            subtitle += `[${notifCount}]`;
         }
 
-        document.title = title;
+        this._setPageSubtitle(subtitle);
     },
 
     onUserSettingsClose: function() {
