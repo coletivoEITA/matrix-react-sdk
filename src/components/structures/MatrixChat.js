@@ -1148,6 +1148,7 @@ module.exports = React.createClass({
             (!SdkConfig.get().allowedPostMessageOrigins || SdkConfig.get().allowedPostMessageOrigins.indexOf(ev.origin) == -1)
         ) {
             console.log('postMessage: unallowed postMessageOrigin. Ignoring request...');
+            ev.source.postMessage('{"postMessage":"invalid origin"}',ev.origin);
             return;
         }
         var credentials = {};
@@ -1179,6 +1180,7 @@ module.exports = React.createClass({
             switch (credentials.action) {
                 case 'im.vector.login':
                     console.log('postMessage: logging in from credentials sent by origin requestor');
+                    ev.source.postMessage('{"postMessage":"im.vector.login"}',ev.origin);
                     credentials.guest = false;
                     if (sameUser) {
                         console.log('postMessage: user is already logged in');
@@ -1189,6 +1191,7 @@ module.exports = React.createClass({
                     break;
                 case 'im.vector.logout':
                     console.log('postMessage: logging out');
+                    ev.source.postMessage('{"postMessage":"im.vector.logout"}',ev.origin);
                     if (sameUser) {
                         dis.dispatch({
                             action: 'logout',
