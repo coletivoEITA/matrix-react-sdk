@@ -1,7 +1,24 @@
+/*
+Copyright 2016 Aviral Dasgupta
+Copyright 2017 Vector Creations Ltd
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import React from 'react';
 import { _t } from '../languageHandler';
 import AutocompleteProvider from './AutocompleteProvider';
-import Fuse from 'fuse.js';
+import FuzzyMatcher from './FuzzyMatcher';
 import {TextualCompletion} from './Components';
 
 // Warning: Since the description string will be translated in _t(result.description), all these strings below must be in i18n/strings/en_EN.json file
@@ -12,9 +29,19 @@ const COMMANDS = [
         description: 'Displays action',
     },
     {
+        command: '/part',
+        args: '[#alias:domain]',
+        description: 'Leave room',
+    },
+    {
         command: '/ban',
         args: '<user-id> [reason]',
         description: 'Bans user with given id',
+    },
+    {
+        command: '/unban',
+        args: '<user-id>',
+        description: 'Unbans user with given id',
     },
     {
         command: '/deop',
@@ -45,32 +72,37 @@ const COMMANDS = [
         command: '/ddg',
         args: '<query>',
         description: 'Searches DuckDuckGo for results',
-    }
+    },
+    {
+        command: '/op',
+        args: '<userId> [<power level>]',
+        description: 'Define the power level of a user',
+    },
 ];
 
-let COMMAND_RE = /(^\/\w*)/g;
+const COMMAND_RE = /(^\/\w*)/g;
 
 let instance = null;
 
 export default class CommandProvider extends AutocompleteProvider {
     constructor() {
         super(COMMAND_RE);
-        this.fuse = new Fuse(COMMANDS, {
+        this.matcher = new FuzzyMatcher(COMMANDS, {
            keys: ['command', 'args', 'description'],
         });
     }
 
     async getCompletions(query: string, selection: {start: number, end: number}) {
         let completions = [];
-        let {command, range} = this.getCurrentCommand(query, selection);
+        const {command, range} = this.getCurrentCommand(query, selection);
         if (command) {
-            completions = this.fuse.search(command[0]).map(result => {
+            completions = this.matcher.match(command[0]).map((result) => {
                 return {
                     completion: result.command + ' ',
                     component: (<TextualCompletion
                         title={result.command}
                         subtitle={result.args}
-                        description={ t_(result.description) }
+                        description={ _t(result.description) }
                         />),
                     range,
                 };
@@ -84,8 +116,7 @@ export default class CommandProvider extends AutocompleteProvider {
     }
 
     static getInstance(): CommandProvider {
-        if (instance == null)
-            {instance = new CommandProvider();}
+        if (instance === null) instance = new CommandProvider();
 
         return instance;
     }
