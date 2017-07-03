@@ -1243,7 +1243,7 @@ module.exports = React.createClass({
                                 <ChangeDisplayName />
                             </div>
                         </div>
-                        {threepidsSection}
+                        {/*threepidsSection  // TODO: integrate threepid with LDAP and NC */}
                     </div>
 
                     <div className="mx_UserSettings_avatarPicker">
