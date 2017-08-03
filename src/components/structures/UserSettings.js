@@ -365,7 +365,7 @@ module.exports = React.createClass({
 
     onLogoutClicked: function(ev) {
         dis.dispatch({
-            action: 'logout'
+            action: 'logout',
         });
     },
 
@@ -555,13 +555,13 @@ module.exports = React.createClass({
 
     _onExportE2eKeysClicked: function() {
         dis.dispatch({
-            action: 'export_e2e_keys_dialog'
+            action: 'export_e2e_keys_dialog',
         });
     },
 
     _onImportE2eKeysClicked: function() {
         dis.dispatch({
-            action: 'import_e2e_keys_dialog'
+            action: 'import_e2e_keys_dialog',
         });
     },
 
