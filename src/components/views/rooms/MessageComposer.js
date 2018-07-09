@@ -24,7 +24,7 @@ import sdk from '../../../index';
 import dis from '../../../dispatcher';
 import RoomViewStore from '../../../stores/RoomViewStore';
 import SettingsStore, {SettingLevel} from "../../../settings/SettingsStore";
-
+import Stickerpicker from './Stickerpicker';
 
 export default class MessageComposer extends React.Component {
     constructor(props, context) {
@@ -32,8 +32,6 @@ export default class MessageComposer extends React.Component {
         this.onCallClick = this.onCallClick.bind(this);
         this.onHangupClick = this.onHangupClick.bind(this);
         this.onUploadClick = this.onUploadClick.bind(this);
-        this.onShowAppsClick = this.onShowAppsClick.bind(this);
-        this.onHideAppsClick = this.onHideAppsClick.bind(this);
         this.onUploadFileSelected = this.onUploadFileSelected.bind(this);
         this.uploadFiles = this.uploadFiles.bind(this);
         this.onVoiceCallClick = this.onVoiceCallClick.bind(this);
@@ -113,6 +111,14 @@ export default class MessageComposer extends React.Component {
             </li>);
         }
 
+        const isQuoting = Boolean(RoomViewStore.getQuotingEvent());
+        let replyToWarning = null;
+        if (isQuoting) {
+            replyToWarning = <p>{
+                _t('At this time it is not possible to reply with a file so this will be sent without being a reply.')
+            }</p>;
+        }
+
         Modal.createTrackedDialog('Upload Files confirmation', '', QuestionDialog, {
             title: _t('Upload Files'),
             description: (
@@ -121,6 +127,7 @@ export default class MessageComposer extends React.Component {
                     <ul style={{listStyle: 'none', textAlign: 'left'}}>
                         { fileList }
                     </ul>
+                    { replyToWarning }
                 </div>
             ),
             onFinished: (shouldUpload) => {
@@ -152,67 +159,19 @@ export default class MessageComposer extends React.Component {
         });
     }
 
-    // _startCallApp(isAudioConf) {
-        // dis.dispatch({
-        //     action: 'appsDrawer',
-        //     show: true,
-        // });
-
-        // const appsStateEvents = this.props.room.currentState.getStateEvents('im.vector.modular.widgets', '');
-        // let appsStateEvent = {};
-        // if (appsStateEvents) {
-        //     appsStateEvent = appsStateEvents.getContent();
-        // }
-        // if (!appsStateEvent.videoConf) {
-        //     appsStateEvent.videoConf = {
-        //         type: 'jitsi',
-        //         // FIXME -- This should not be localhost
-        //         url: 'http://localhost:8000/jitsi.html',
-        //         data: {
-        //             confId: this.props.room.roomId.replace(/[^A-Za-z0-9]/g, '_') + Date.now(),
-        //             isAudioConf: isAudioConf,
-        //         },
-        //     };
-        //     MatrixClientPeg.get().sendStateEvent(
-        //         this.props.room.roomId,
-        //         'im.vector.modular.widgets',
-        //         appsStateEvent,
-        //         '',
-        //     ).then(() => console.log('Sent state'), (e) => console.error(e));
-        // }
-    // }
-
     onCallClick(ev) {
-        // NOTE -- Will be replaced by Jitsi code (currently commented)
         dis.dispatch({
             action: 'place_call',
             type: ev.shiftKey ? "screensharing" : "video",
             room_id: this.props.room.roomId,
         });
-        // this._startCallApp(false);
     }
 
     onVoiceCallClick(ev) {
-        // NOTE -- Will be replaced by Jitsi code (currently commented)
         dis.dispatch({
             action: 'place_call',
             type: "voice",
             room_id: this.props.room.roomId,
-        });
-        // this._startCallApp(true);
-    }
-
-    onShowAppsClick(ev) {
-        dis.dispatch({
-            action: 'appsDrawer',
-            show: true,
-        });
-    }
-
-    onHideAppsClick(ev) {
-        dis.dispatch({
-            action: 'appsDrawer',
-            show: false,
         });
     }
 
@@ -251,7 +210,7 @@ export default class MessageComposer extends React.Component {
     render() {
         const me = this.props.room.getMember(MatrixClientPeg.get().credentials.userId);
         const uploadInputStyle = {display: 'none'};
-        const MemberPresenceAvatar = sdk.getComponent('avatars.MemberPresenceAvatar');
+        const MemberAvatar = sdk.getComponent('avatars.MemberAvatar');
         const TintableSvg = sdk.getComponent("elements.TintableSvg");
         const MessageComposerInput = sdk.getComponent("rooms.MessageComposerInput");
 
@@ -259,7 +218,7 @@ export default class MessageComposer extends React.Component {
 
         controls.push(
             <div key="controls_avatar" className="mx_MessageComposer_avatar">
-                <MemberPresenceAvatar member={me} width={24} height={24} />
+                <MemberAvatar member={me} width={24} height={24} />
             </div>,
         );
 
@@ -281,7 +240,12 @@ export default class MessageComposer extends React.Component {
                 alt={e2eTitle} title={e2eTitle}
             />,
         );
-        let callButton, videoCallButton, hangupButton, showAppsButton, hideAppsButton;
+
+        let callButton;
+        let videoCallButton;
+        let hangupButton;
+
+        // Call buttons
         if (this.props.callState && this.props.callState !== 'ended') {
             hangupButton =
                 <div key="controls_hangup" className="mx_MessageComposer_hangup" onClick={this.onHangupClick}>
@@ -295,19 +259,6 @@ export default class MessageComposer extends React.Component {
             videoCallButton =
                 <div key="controls_videocall" className="mx_MessageComposer_videocall" onClick={this.onCallClick} title={_t('Video call')}>
                     <TintableSvg src="img/icons-video.svg" width="35" height="35" />
-                </div>;
-        }
-
-        // Apps
-        if (this.props.showApps) {
-            hideAppsButton =
-                <div key="controls_hide_apps" className="mx_MessageComposer_apps" onClick={this.onHideAppsClick} title={_t("Hide Apps")}>
-                    <TintableSvg src="img/icons-hide-apps.svg" width="35" height="35" />
-                </div>;
-        } else {
-            showAppsButton =
-                <div key="show_apps" className="mx_MessageComposer_apps" onClick={this.onShowAppsClick} title={_t("Show Apps")}>
-                    <TintableSvg src="img/icons-show-apps.svg" width="35" height="35" />
                 </div>;
         }
 
@@ -353,6 +304,8 @@ export default class MessageComposer extends React.Component {
                 }
             }
 
+            const stickerpickerButton = <Stickerpicker key='stickerpicker_controls_button' room={this.props.room} />;
+
             controls.push(
                 <MessageComposerInput
                     ref={(c) => this.messageComposerInput = c}
@@ -364,12 +317,11 @@ export default class MessageComposer extends React.Component {
                     onContentChanged={this.onInputContentChanged}
                     onInputStateChanged={this.onInputStateChanged} />,
                 formattingButton,
+                stickerpickerButton,
                 uploadButton,
                 hangupButton,
                 callButton,
                 videoCallButton,
-                showAppsButton,
-                hideAppsButton,
             );
         } else {
             controls.push(

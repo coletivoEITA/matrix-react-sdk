@@ -243,6 +243,7 @@ function uploadFile(matrixClient, roomId, file, progressHandler) {
             const blob = new Blob([encryptResult.data]);
             return matrixClient.uploadContent(blob, {
                 progressHandler: progressHandler,
+                includeFilename: false,
             }).then(function(url) {
                 // If the attachment is encrypted then bundle the URL along
                 // with the information needed to decrypt the attachment and
@@ -273,6 +274,13 @@ class ContentMessages {
     constructor() {
         this.inprogress = [];
         this.nextId = 0;
+    }
+
+    sendStickerContentToRoom(url, roomId, info, text, matrixClient) {
+        return MatrixClientPeg.get().sendStickerMessage(roomId, url, info, text).catch((e) => {
+            console.warn(`Failed to send content with URL ${url} to room ${roomId}`, e);
+            throw e;
+        });
     }
 
     sendContentToRoom(file, roomId, matrixClient) {

@@ -16,7 +16,6 @@ limitations under the License.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import GeminiScrollbar from 'react-gemini-scrollbar';
 import sdk from '../../index';
 import { _t } from '../../languageHandler';
 import dis from '../../dispatcher';
@@ -63,21 +62,38 @@ export default withMatrixClient(React.createClass({
         const SimpleRoomHeader = sdk.getComponent('rooms.SimpleRoomHeader');
         const TintableSvg = sdk.getComponent("elements.TintableSvg");
         const GroupTile = sdk.getComponent("groups.GroupTile");
+        const GeminiScrollbarWrapper = sdk.getComponent("elements.GeminiScrollbarWrapper");
+
 
         let content;
         let contentHeader;
         if (this.state.groups) {
             const groupNodes = [];
             this.state.groups.forEach((g) => {
-                groupNodes.push(<GroupTile groupId={g} />);
+                groupNodes.push(<GroupTile key={g} groupId={g} />);
             });
             contentHeader = groupNodes.length > 0 ? <h3>{ _t('Your Communities') }</h3> : <div />;
             content = groupNodes.length > 0 ?
-                <GeminiScrollbar>
+                <GeminiScrollbarWrapper>
+                    <div className="mx_MyGroups_microcopy">
+                        <p>
+                            { _t(
+                                "Did you know: you can use communities to filter your Riot.im experience!",
+                            ) }
+                        </p>
+                        <p>
+                            { _t(
+                                "To set up a filter, drag a community avatar over to the filter panel on " +
+                                "the far left hand side of the screen. You can click on an avatar in the " +
+                                "filter panel at any time to see only the rooms and people associated " +
+                                "with that community.",
+                            ) }
+                        </p>
+                    </div>
                     <div className="mx_MyGroups_joinedGroups">
                         { groupNodes }
                     </div>
-                </GeminiScrollbar> :
+                </GeminiScrollbarWrapper> :
                 <div className="mx_MyGroups_placeholder">
                     { _t(
                         "You're not currently a member of any communities.",
@@ -108,7 +124,7 @@ export default withMatrixClient(React.createClass({
                         ) }
                     </div>
                 </div>
-                <div className="mx_MyGroups_joinBox mx_MyGroups_headerCard">
+                {/*<div className="mx_MyGroups_joinBox mx_MyGroups_headerCard">
                     <AccessibleButton className='mx_MyGroups_headerCard_button' onClick={this._onJoinGroupClick}>
                         <TintableSvg src="img/icons-create-room.svg" width="50" height="50" />
                     </AccessibleButton>
@@ -124,7 +140,7 @@ export default withMatrixClient(React.createClass({
                             { 'i': (sub) => <i>{ sub }</i> })
                         }
                     </div>
-                </div>
+                </div>*/}
             </div>
             <div className="mx_MyGroups_content">
                 { contentHeader }

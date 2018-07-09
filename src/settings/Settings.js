@@ -1,5 +1,6 @@
 /*
 Copyright 2017 Travis Ralston
+Copyright 2018 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -76,27 +77,15 @@ export const SETTINGS = {
     //     // level is always appended to the end.
     //     supportedLevelsAreOrdered: false,
     // },
-    "feature_rich_quoting": {
-        isFeature: true,
-        displayName: _td("Message Replies"),
-        supportedLevels: LEVELS_FEATURE,
-        default: false,
-    },
     "feature_pinning": {
         isFeature: true,
         displayName: _td("Message Pinning"),
         supportedLevels: LEVELS_FEATURE,
         default: false,
     },
-    "feature_presence_management": {
+    "feature_jitsi": {
         isFeature: true,
-        displayName: _td("Presence Management"),
-        supportedLevels: LEVELS_FEATURE,
-        default: false,
-    },
-    "feature_tag_panel": {
-        isFeature: true,
-        displayName: _td("Tag Panel"),
+        displayName: _td("Jitsi Conference Calling"),
         supportedLevels: LEVELS_FEATURE,
         default: false,
     },
@@ -150,6 +139,11 @@ export const SETTINGS = {
         displayName: _td('Autoplay GIFs and videos'),
         default: false,
     },
+    "alwaysShowEncryptionIcons": {
+        supportedLevels: LEVELS_ACCOUNT_SETTINGS,
+        displayName: _td('Always show encryption icons'),
+        default: true,
+    },
     "enableSyntaxHighlightLanguageDetection": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
         displayName: _td('Enable automatic language detection for syntax highlighting'),
@@ -188,6 +182,11 @@ export const SETTINGS = {
         displayName: _td('Mirror local video feed'),
         default: false,
     },
+    "TagPanel.disableTagPanel": {
+        supportedLevels: LEVELS_ACCOUNT_SETTINGS,
+        displayName: _td('Disable Community Filter Panel'),
+        default: false,
+    },
     "theme": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
         default: "light",
@@ -196,6 +195,10 @@ export const SETTINGS = {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS_WITH_CONFIG,
         displayName: _td('Disable Peer-to-Peer for 1:1 calls'),
         default: false,
+    },
+    "webrtc_audiooutput": {
+        supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS,
+        default: null,
     },
     "webrtc_audioinput": {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS,
@@ -209,10 +212,14 @@ export const SETTINGS = {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS_WITH_CONFIG,
         default: "en",
     },
-    "analyticsOptOut": {
+    "analyticsOptIn": {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS_WITH_CONFIG,
-        displayName: _td('Opt out of analytics'),
+        displayName: _td('Send analytics data'),
         default: false,
+    },
+    "showCookieBar": {
+        supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS_WITH_CONFIG,
+        default: true,
     },
     "autocompleteDelay": {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS_WITH_CONFIG,
@@ -238,6 +245,13 @@ export const SETTINGS = {
         },
         default: true,
     },
+    "urlPreviewsEnabled_e2ee": {
+        supportedLevels: ['room-device', 'room-account'],
+        displayName: {
+            "room-account": _td("Enable URL previews for this room (only affects you)"),
+        },
+        default: false,
+    },
     "roomColor": {
         supportedLevels: LEVELS_ROOM_SETTINGS_WITH_ROOM,
         displayName: _td("Room Colour"),
@@ -260,5 +274,19 @@ export const SETTINGS = {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS,
         default: true,
         controller: new AudioNotificationsEnabledController(),
+    },
+    "enableWidgetScreenshots": {
+        supportedLevels: LEVELS_ACCOUNT_SETTINGS,
+        displayName: _td('Enable widget screenshots on supported widgets'),
+        default: false,
+    },
+    "PinnedEvents.isOpen": {
+        supportedLevels: ['room-device'],
+        default: false,
+    },
+    "RoomSubList.showEmpty": {
+        supportedLevels: LEVELS_ACCOUNT_SETTINGS,
+        displayName: _td('Show empty room list headings'),
+        default: true,
     },
 };

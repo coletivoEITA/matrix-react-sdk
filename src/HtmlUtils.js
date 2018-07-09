@@ -17,6 +17,8 @@ limitations under the License.
 
 'use strict';
 
+import ReplyThread from "./components/views/elements/ReplyThread";
+
 const React = require('react');
 const sanitizeHtml = require('sanitize-html');
 const highlight = require('highlight.js');
@@ -214,10 +216,17 @@ const sanitizeHtmlParams = {
                     m = attribs.href.match(linkifyMatrix.MATRIXTO_URL_PATTERN);
                     if (m) {
                         const entity = m[1];
-                        if (entity[0] === '@') {
-                            attribs.href = '#/user/' + entity;
-                        } else if (entity[0] === '#' || entity[0] === '!') {
-                            attribs.href = '#/room/' + entity;
+                        switch (entity[0]) {
+                            case '@':
+                                attribs.href = '#/user/' + entity;
+                                break;
+                            case '+':
+                                attribs.href = '#/group/' + entity;
+                                break;
+                            case '#':
+                            case '!':
+                                attribs.href = '#/room/' + entity;
+                                break;
                         }
                         delete attribs.target;
                     }
@@ -408,14 +417,16 @@ class TextHighlighter extends BaseHighlighter {
      *
      * opts.highlightLink: optional href to add to highlighted words
      * opts.disableBigEmoji: optional argument to disable the big emoji class.
+     * opts.stripReplyFallback: optional argument specifying the event is a reply and so fallback needs removing
      */
 export function bodyToHtml(content, highlights, opts={}) {
-    const isHtml = (content.format === "org.matrix.custom.html");
-    const body = isHtml ? content.formatted_body : escape(content.body);
+    const isHtmlMessage = content.format === "org.matrix.custom.html" && content.formatted_body;
 
     let bodyHasEmoji = false;
 
+    let strippedBody;
     let safeBody;
+    let isDisplayedWithHtml;
     // XXX: We sanitize the HTML whilst also highlighting its text nodes, to avoid accidentally trying
     // to highlight HTML tags themselves.  However, this does mean that we don't highlight textnodes which
     // are interrupted by HTML tags (not that we did before) - e.g. foo<span/>bar won't get highlighted
@@ -431,9 +442,33 @@ export function bodyToHtml(content, highlights, opts={}) {
                 return highlighter.applyHighlights(safeText, safeHighlights).join('');
             };
         }
-        safeBody = sanitizeHtml(body, sanitizeHtmlParams);
-        bodyHasEmoji = containsEmoji(body);
-        if (bodyHasEmoji) safeBody = unicodeToImage(safeBody);
+
+        let formattedBody = content.formatted_body;
+        if (opts.stripReplyFallback && formattedBody) formattedBody = ReplyThread.stripHTMLReply(formattedBody);
+        strippedBody = opts.stripReplyFallback ? ReplyThread.stripPlainReply(content.body) : content.body;
+
+        bodyHasEmoji = containsEmoji(isHtmlMessage ? formattedBody : content.body);
+
+
+        // Only generate safeBody if the message was sent as org.matrix.custom.html
+        if (isHtmlMessage) {
+            isDisplayedWithHtml = true;
+            safeBody = sanitizeHtml(formattedBody, sanitizeHtmlParams);
+        } else {
+            // ... or if there are emoji, which we insert as HTML alongside the
+            // escaped plaintext body.
+            if (bodyHasEmoji) {
+                isDisplayedWithHtml = true;
+                safeBody = sanitizeHtml(escape(strippedBody), sanitizeHtmlParams);
+            }
+        }
+
+        // An HTML message with emoji
+        //  or a plaintext message with emoji that was escaped and sanitized into
+        //  HTML.
+        if (bodyHasEmoji) {
+            safeBody = unicodeToImage(safeBody);
+        }
     } finally {
         delete sanitizeHtmlParams.textFilter;
     }
@@ -441,7 +476,7 @@ export function bodyToHtml(content, highlights, opts={}) {
     let emojiBody = false;
     if (!opts.disableBigEmoji && bodyHasEmoji) {
         EMOJI_REGEX.lastIndex = 0;
-        const contentBodyTrimmed = content.body !== undefined ? content.body.trim() : '';
+        const contentBodyTrimmed = strippedBody !== undefined ? strippedBody.trim() : '';
         const match = EMOJI_REGEX.exec(contentBodyTrimmed);
         emojiBody = match && match[0] && match[0].length === contentBodyTrimmed.length;
     }
@@ -449,9 +484,12 @@ export function bodyToHtml(content, highlights, opts={}) {
     const className = classNames({
         'mx_EventTile_body': true,
         'mx_EventTile_bigEmoji': emojiBody,
-        'markdown-body': isHtml,
+        'markdown-body': isHtmlMessage,
     });
-    return <span className={className} dangerouslySetInnerHTML={{ __html: safeBody }} dir="auto" />;
+
+    return isDisplayedWithHtml ?
+        <span className={className} dangerouslySetInnerHTML={{ __html: safeBody }} dir="auto" /> :
+        <span className={className} dir="auto">{ strippedBody }</span>;
 }
 
 export function emojifyText(text) {

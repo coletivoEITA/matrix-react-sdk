@@ -2,7 +2,8 @@
 /*
 Copyright 2016 Aviral Dasgupta
 Copyright 2017 Vector Creations Ltd
-Copyright 2017 New Vector Ltd
+Copyright 2017, 2018 New Vector Ltd
+Copyright 2018 Michael Telatynski <7t3chguy@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,20 +24,20 @@ import AutocompleteProvider from './AutocompleteProvider';
 import {PillCompletion} from './Components';
 import sdk from '../index';
 import FuzzyMatcher from './FuzzyMatcher';
-import _pull from 'lodash/pull';
 import _sortBy from 'lodash/sortBy';
 import MatrixClientPeg from '../MatrixClientPeg';
 
-import type {Room, RoomMember} from 'matrix-js-sdk';
+import type {MatrixEvent, Room, RoomMember, RoomState} from 'matrix-js-sdk';
 import {makeUserPermalink} from "../matrix-to";
+import type {Completion, SelectionRange} from "./Autocompleter";
 
-const USER_REGEX = /@\S*/g;
+const USER_REGEX = /\B@\S*/g;
 
 export default class UserProvider extends AutocompleteProvider {
     users: Array<RoomMember> = null;
     room: Room = null;
 
-    constructor(room) {
+    constructor(room: Room) {
         super(USER_REGEX, {
             keys: ['name'],
         });
@@ -44,6 +45,7 @@ export default class UserProvider extends AutocompleteProvider {
         this.matcher = new FuzzyMatcher([], {
             keys: ['name', 'userId'],
             shouldMatchPrefix: true,
+            shouldMatchWordsOnly: false,
         });
 
         this._onRoomTimelineBound = this._onRoomTimeline.bind(this);
@@ -60,7 +62,7 @@ export default class UserProvider extends AutocompleteProvider {
         }
     }
 
-    _onRoomTimeline(ev, room, toStartOfTimeline, removed, data) {
+    _onRoomTimeline(ev: MatrixEvent, room: Room, toStartOfTimeline: boolean, removed: boolean, data: Object) {
         if (!room) return;
         if (removed) return;
         if (room.roomId !== this.room.roomId) return;
@@ -72,10 +74,11 @@ export default class UserProvider extends AutocompleteProvider {
         // updates from pagination will happen when the paginate completes.
         if (toStartOfTimeline || !data || !data.liveEvent) return;
 
+        // TODO: lazyload if we have no ev.sender room member?
         this.onUserSpoke(ev.sender);
     }
 
-    _onRoomStateMember(ev, state, member) {
+    _onRoomStateMember(ev: MatrixEvent, state: RoomState, member: RoomMember) {
         // ignore members in other rooms
         if (member.roomId !== this.room.roomId) {
             return;
@@ -85,7 +88,7 @@ export default class UserProvider extends AutocompleteProvider {
         this.users = null;
     }
 
-    async getCompletions(query: string, selection: {start: number, end: number}, force = false) {
+    async getCompletions(query: string, selection: SelectionRange, force?: boolean = false): Array<Completion> {
         const MemberAvatar = sdk.getComponent('views.avatars.MemberAvatar');
 
         // Disable autocompletions when composing commands because of various issues
@@ -99,8 +102,13 @@ export default class UserProvider extends AutocompleteProvider {
 
         let completions = [];
         const {command, range} = this.getCurrentCommand(query, selection, force);
-        if (command) {
-            completions = this.matcher.match(command[0]).map((user) => {
+
+        if (!command) return completions;
+
+        const fullMatch = command[0];
+        // Don't search if the query is a single "@"
+        if (fullMatch && fullMatch !== '@') {
+            completions = this.matcher.match(fullMatch).map((user) => {
                 const displayName = (user.name || user.userId || '').replace(' (IRC)', ''); // FIXME when groups are done
                 return {
                     // Length of completion should equal length of text in decorator. draft-js
@@ -121,7 +129,7 @@ export default class UserProvider extends AutocompleteProvider {
         return completions;
     }
 
-    getName() {
+    getName(): string {
         return '👥 ' + _t('Users');
     }
 
@@ -134,19 +142,16 @@ export default class UserProvider extends AutocompleteProvider {
         }
 
         const currentUserId = MatrixClientPeg.get().credentials.userId;
-        this.users = this.room.getJoinedMembers().filter((member) => {
-            if (member.userId !== currentUserId) return true;
-        });
+        this.users = this.room.getJoinedMembers().filter(({userId}) => userId !== currentUserId);
 
-        this.users = _sortBy(this.users, (member) =>
-            1E20 - lastSpoken[member.userId] || 1E20,
-        );
+        this.users = _sortBy(this.users, (member) => 1E20 - lastSpoken[member.userId] || 1E20);
 
         this.matcher.setObjects(this.users);
     }
 
     onUserSpoke(user: RoomMember) {
         if (this.users === null) return;
+        if (!user) return;
         if (user.userId === MatrixClientPeg.get().credentials.userId) return;
 
         // Move the user that spoke to the front of the array

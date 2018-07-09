@@ -1,5 +1,5 @@
 /*
-Copyright 2017 New Vector Ltd.
+Copyright 2017, 2018 New Vector Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ limitations under the License.
 import React from 'react';
 import PropTypes from 'prop-types';
 import { MatrixClient } from 'matrix-js-sdk';
-import GeminiScrollbar from 'react-gemini-scrollbar';
 import TagOrderStore from '../../stores/TagOrderStore';
 
 import GroupActions from '../../actions/GroupActions';
@@ -27,6 +26,7 @@ import dis from '../../dispatcher';
 import { _t } from '../../languageHandler';
 
 import { Droppable } from 'react-beautiful-dnd';
+import classNames from 'classnames';
 
 const TagPanel = React.createClass({
     displayName: 'TagPanel',
@@ -45,7 +45,7 @@ const TagPanel = React.createClass({
     componentWillMount: function() {
         this.unmounted = false;
         this.context.matrixClient.on("Group.myMembership", this._onGroupMyMembership);
-        this.context.matrixClient.on("sync", this.onClientSync);
+        this.context.matrixClient.on("sync", this._onClientSync);
 
         this._tagOrderStoreToken = TagOrderStore.addListener(() => {
             if (this.unmounted) {
@@ -63,7 +63,7 @@ const TagPanel = React.createClass({
     componentWillUnmount() {
         this.unmounted = true;
         this.context.matrixClient.removeListener("Group.myMembership", this._onGroupMyMembership);
-        this.context.matrixClient.removeListener("sync", this.onClientSync);
+        this.context.matrixClient.removeListener("sync", this._onClientSync);
         if (this._filterStoreToken) {
             this._filterStoreToken.remove();
         }
@@ -74,7 +74,7 @@ const TagPanel = React.createClass({
         dis.dispatch(GroupActions.fetchJoinedGroups(this.context.matrixClient));
     },
 
-    onClientSync(syncState, prevState) {
+    _onClientSync(syncState, prevState) {
         // Consider the client reconnected if there is no error with syncing.
         // This means the state could be RECONNECTING, SYNCING or PREPARED.
         const reconnected = syncState !== "ERROR" && prevState !== syncState;
@@ -84,8 +84,11 @@ const TagPanel = React.createClass({
         }
     },
 
-    onClick(e) {
-        dis.dispatch({action: 'deselect_tags'});
+    onMouseDown(e) {
+        // only dispatch if its not a no-op
+        if (this.state.selectedTags.length > 0) {
+            dis.dispatch({action: 'deselect_tags'});
+        }
     },
 
     onCreateGroupClick(ev) {
@@ -101,6 +104,9 @@ const TagPanel = React.createClass({
         const GroupsButton = sdk.getComponent('elements.GroupsButton');
         const DNDTagTile = sdk.getComponent('elements.DNDTagTile');
         const AccessibleButton = sdk.getComponent('elements.AccessibleButton');
+        const TintableSvg = sdk.getComponent('elements.TintableSvg');
+        const GeminiScrollbarWrapper = sdk.getComponent("elements.GeminiScrollbarWrapper");
+
 
         const tags = this.state.orderedTags.map((tag, index) => {
             return <DNDTagTile
@@ -111,24 +117,33 @@ const TagPanel = React.createClass({
             />;
         });
 
-        const clearButton = this.state.selectedTags.length > 0 ?
-            <img
-                src="img/icons-close.svg"
-                alt={_t("Clear filter")}
-                title={_t("Clear filter")}
-                width="24"
-                height="24" /> :
-            <div />;
+        const itemsSelected = this.state.selectedTags.length > 0;
 
-        return <div className="mx_TagPanel">
-            <AccessibleButton className="mx_TagPanel_clearButton" onClick={this.onClearFilterClick}>
+        let clearButton;
+        if (itemsSelected) {
+            clearButton = <AccessibleButton className="mx_TagPanel_clearButton" onClick={this.onClearFilterClick}>
+                <TintableSvg src="img/icons-close.svg" width="24" height="24"
+                             alt={_t("Clear filter")}
+                             title={_t("Clear filter")}
+                />
+            </AccessibleButton>;
+        }
+
+        const classes = classNames('mx_TagPanel', {
+            mx_TagPanel_items_selected: itemsSelected,
+        });
+
+        return <div className={classes}>
+            <div className="mx_TagPanel_clearButton_container">
                 { clearButton }
-            </AccessibleButton>
+            </div>
             <div className="mx_TagPanel_divider" />
-            <GeminiScrollbar
+            <GeminiScrollbarWrapper
                 className="mx_TagPanel_scroller"
                 autoshow={true}
-                onClick={this.onClick}
+                // XXX: Use onMouseDown as a workaround for https://github.com/atlassian/react-beautiful-dnd/issues/273
+                // instead of onClick. Otherwise we experience https://github.com/vector-im/riot-web/issues/6253
+                onMouseDown={this.onMouseDown}
             >
                 <Droppable
                     droppableId="tag-panel-droppable"
@@ -144,9 +159,9 @@ const TagPanel = React.createClass({
                             </div>
                     ) }
                 </Droppable>
-            </GeminiScrollbar>
+            </GeminiScrollbarWrapper>
             <div className="mx_TagPanel_divider" />
-            <div className="mx_TagPanel_createGroupButton">
+            <div className="mx_TagPanel_groupsButton">
                 <GroupsButton tooltip={true} />
             </div>
         </div>;

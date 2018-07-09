@@ -170,15 +170,15 @@ const Notifier = {
                     value: true,
                 });
             });
-            // clear the notifications_hidden flag, so that if notifications are
-            // disabled again in the future, we will show the banner again.
-            this.setToolbarHidden(true);
         } else {
             dis.dispatch({
                 action: "notifier_enabled",
                 value: false,
             });
         }
+        // set the notifications_hidden flag, as the user has knowingly interacted
+        // with the setting we shouldn't nag them any further
+        this.setToolbarHidden(true);
     },
 
     isEnabled: function() {
@@ -256,6 +256,10 @@ const Notifier = {
     },
 
     onEventDecrypted: function(ev) {
+        // 'decrypted' means the decryption process has finished: it may have failed,
+        // in which case it might decrypt soon if the keys arrive
+        if (ev.isDecryptionFailure()) return;
+
         const idx = this.pendingEncryptedEventIds.indexOf(ev.getId());
         if (idx === -1) return;
 

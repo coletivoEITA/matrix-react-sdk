@@ -22,6 +22,7 @@ import sdk from '../../../index';
 import dis from '../../../dispatcher';
 import FlairStore from '../../../stores/FlairStore';
 
+function nop() {}
 
 const GroupTile = React.createClass({
     displayName: 'GroupTile',
@@ -59,7 +60,7 @@ const GroupTile = React.createClass({
         });
     },
 
-    onClick: function(e) {
+    onMouseDown: function(e) {
         e.preventDefault();
         dis.dispatch({
             action: 'view_group',
@@ -79,7 +80,9 @@ const GroupTile = React.createClass({
         const httpUrl = profile.avatarUrl ? this.context.matrixClient.mxcUrlToHttp(
             profile.avatarUrl, avatarHeight, avatarHeight, "crop",
         ) : null;
-        return <AccessibleButton className="mx_GroupTile" onClick={this.onClick}>
+        // XXX: Use onMouseDown as a workaround for https://github.com/atlassian/react-beautiful-dnd/issues/273
+        // instead of onClick. Otherwise we experience https://github.com/vector-im/riot-web/issues/6156
+        return <AccessibleButton className="mx_GroupTile" onMouseDown={this.onMouseDown} onClick={nop}>
             <Droppable droppableId="my-groups-droppable" type="draggable-TagTile">
                 { (droppableProvided, droppableSnapshot) => (
                     <div ref={droppableProvided.innerRef}>
@@ -97,13 +100,23 @@ const GroupTile = React.createClass({
                                         {...provided.dragHandleProps}
                                     >
                                         <div className="mx_GroupTile_avatar">
-                                            <BaseAvatar name={name} url={httpUrl} width={avatarHeight} height={avatarHeight} />
+                                            <BaseAvatar
+                                                name={name}
+                                                idName={this.props.groupId}
+                                                url={httpUrl}
+                                                width={avatarHeight}
+                                                height={avatarHeight} />
                                         </div>
                                     </div>
                                     { /* Instead of a blank placeholder, use a copy of the avatar itself. */ }
                                     { provided.placeholder ?
                                         <div className="mx_GroupTile_avatar">
-                                            <BaseAvatar name={name} url={httpUrl} width={avatarHeight} height={avatarHeight} />
+                                            <BaseAvatar
+                                                name={name}
+                                                idName={this.props.groupId}
+                                                url={httpUrl}
+                                                width={avatarHeight}
+                                                height={avatarHeight} />
                                         </div> :
                                         <div />
                                     }

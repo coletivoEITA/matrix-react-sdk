@@ -68,6 +68,9 @@ const FilePanel = React.createClass({
                     "room": {
                         "timeline": {
                             "contains_url": true,
+                            "types": [
+                                "m.room.message",
+                            ],
                         },
                     },
                 },
