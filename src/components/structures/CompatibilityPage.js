@@ -16,18 +16,18 @@ limitations under the License.
 
 'use strict';
 
-var React = require('react');
+const React = require('react');
 import { _t } from '../../languageHandler';
 
 module.exports = React.createClass({
     displayName: 'CompatibilityPage',
     propTypes: {
-        onAccept: React.PropTypes.func
+        onAccept: React.PropTypes.func,
     },
 
     getDefaultProps: function() {
         return {
-            onAccept: function() {} // NOP
+            onAccept: function() {}, // NOP
         };
     },
 
@@ -36,16 +36,20 @@ module.exports = React.createClass({
     },
 
     render: function() {
-
         return (
         <div className="mx_CompatibilityPage">
             <div className="mx_CompatibilityPage_box">
                 <p>{ _t("Sorry, your browser is <b>not</b> able to run Riot.", {}, { 'b': (sub) => <b>{sub}</b> }) } </p>
                 <p>
-                { _t("Riot uses many advanced browser features, some of which are not available or experimental in your current browser.") }
+                { _t(
+                    "Riot uses many advanced browser features, some of which are not available " +
+                    "or experimental in your current browser.",
+                ) }
                 </p>
                 <p>
-                { _t('Please install <chromeLink>Chrome</chromeLink> or <firefoxLink>Firefox</firefoxLink> for the best experience.',
+                { _t(
+                    'Please install <chromeLink>Chrome</chromeLink> or <firefoxLink>Firefox</firefoxLink> ' +
+                    'for the best experience.',
                     {},
                     {
                         'chromeLink': (sub) => <a href="https://www.google.com/chrome">{sub}</a>,
@@ -61,7 +65,12 @@ module.exports = React.createClass({
                 )}
                 </p>
                 <p>
-                { _t("With your current browser, the look and feel of the application may be completely incorrect, and some or all features may not function. If you want to try it anyway you can continue, but you are on your own in terms of any issues you may encounter!") }
+                { _t(
+                    "With your current browser, the look and feel of the application may be " +
+                    "completely incorrect, and some or all features may not function. " +
+                    "If you want to try it anyway you can continue, but you are on your own in terms " +
+                    "of any issues you may encounter!",
+                ) }
                 </p>
                 <button onClick={this.onAccept}>
                     { _t("I understand the risks and wish to continue") }
@@ -69,5 +78,5 @@ module.exports = React.createClass({
             </div>
         </div>
         );
-    }
+    },
 });

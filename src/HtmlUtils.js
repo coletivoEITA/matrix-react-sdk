@@ -19,15 +19,20 @@ limitations under the License.
 
 import ReplyThread from "./components/views/elements/ReplyThread";
 
-const React = require('react');
-const sanitizeHtml = require('sanitize-html');
-const highlight = require('highlight.js');
-const linkifyMatrix = require('./linkify-matrix');
+import React from 'react';
+import sanitizeHtml from 'sanitize-html';
+import highlight from 'highlight.js';
+import * as linkify from 'linkifyjs';
+import linkifyMatrix from './linkify-matrix';
+import _linkifyElement from 'linkifyjs/element';
+import _linkifyString from 'linkifyjs/string';
 import escape from 'lodash/escape';
 import emojione from 'emojione';
 import classNames from 'classnames';
 import MatrixClientPeg from './MatrixClientPeg';
 import url from 'url';
+
+linkifyMatrix(linkify);
 
 emojione.imagePathSVG = 'emojione/svg/';
 // Store PNG path for displaying many flags at once (for increased performance over SVG)
@@ -42,6 +47,12 @@ const SURROGATE_PAIR_PATTERN = /([\ud800-\udbff])([\udc00-\udfff])/;
 // 'miscellaneous symbols and arrows' which should catch all of them
 // (with plenty of false positives, but that's OK)
 const SYMBOL_PATTERN = /([\u2100-\u2bff])/;
+
+// Regex pattern for Zero-Width joiner unicode characters
+const ZWJ_REGEX = new RegExp("\u200D|\u2003", "g");
+
+// Regex pattern for whitespace characters
+const WHITESPACE_REGEX = new RegExp("\\s", "g");
 
 // And this is emojione's complete regex
 const EMOJI_REGEX = new RegExp(emojione.unicodeRegexp+"+", "gi");
@@ -63,8 +74,10 @@ export function containsEmoji(str) {
 /* modified from https://github.com/Ranks/emojione/blob/master/lib/js/emojione.js
  * because we want to include emoji shortnames in title text
  */
-function unicodeToImage(str) {
-    let replaceWith, unicode, alt, short, fname;
+function unicodeToImage(str, addAlt) {
+    if (addAlt === undefined) addAlt = true;
+
+    let replaceWith; let unicode; let short; let fname;
     const mappedUnicode = emojione.mapUnicodeToShort();
 
     str = str.replace(emojione.regUnicode, function(unicodeChar) {
@@ -79,10 +92,14 @@ function unicodeToImage(str) {
             fname = emojione.emojioneList[short].fname;
 
             // depending on the settings, we'll either add the native unicode as the alt tag, otherwise the shortname
-            alt = (emojione.unicodeAlt) ? emojione.convert(unicode.toUpperCase()) : mappedUnicode[unicode];
             const title = mappedUnicode[unicode];
 
-            replaceWith = `<img class="mx_emojione" title="${title}" alt="${alt}" src="${emojione.imagePathSVG}${fname}.svg${emojione.cacheBustParam}"/>`;
+            if (addAlt) {
+                const alt = (emojione.unicodeAlt) ? emojione.convert(unicode.toUpperCase()) : mappedUnicode[unicode];
+                replaceWith = `<img class="mx_emojione" title="${title}" alt="${alt}" src="${emojione.imagePathSVG}${fname}.svg${emojione.cacheBustParam}"/>`;
+            } else {
+                replaceWith = `<img class="mx_emojione" src="${emojione.imagePathSVG}${fname}.svg${emojione.cacheBustParam}"/>`;
+            }
             return replaceWith;
         }
     });
@@ -112,7 +129,6 @@ export function charactersToImageNode(alt, useSvg, ...unicode) {
     />;
 }
 
-
 export function processHtmlForSending(html: string): string {
     const contentDiv = document.createElement('div');
     contentDiv.innerHTML = html;
@@ -130,13 +146,6 @@ export function processHtmlForSending(html: string): string {
             if (i !== contentDiv.children.length - 1) {
                 contentHTML += '<br />';
             }
-        } else if (element.tagName.toLowerCase() === 'pre') {
-            // Replace "<br>\n" with "\n" within `<pre>` tags because the <br> is
-            // redundant. This is a workaround for a bug in draft-js-export-html:
-            //   https://github.com/sstur/draft-js-export-html/issues/62
-            contentHTML += '<pre>' +
-                element.innerHTML.replace(/<br>\n/g, '\n').trim() +
-                '</pre>';
         } else {
             const temp = document.createElement('div');
             temp.appendChild(element.cloneNode(true));
@@ -176,6 +185,99 @@ export function isUrlPermitted(inputUrl) {
     }
 }
 
+const transformTags = { // custom to matrix
+    // add blank targets to all hyperlinks except vector URLs
+    'a': function(tagName, attribs) {
+        if (attribs.href) {
+            attribs.target = '_blank'; // by default
+
+            let m;
+            // FIXME: horrible duplication with linkify-matrix
+            m = attribs.href.match(linkifyMatrix.VECTOR_URL_PATTERN);
+            if (m) {
+                attribs.href = m[1];
+                delete attribs.target;
+            } else {
+                m = attribs.href.match(linkifyMatrix.MATRIXTO_URL_PATTERN);
+                if (m) {
+                    const entity = m[1];
+                    switch (entity[0]) {
+                        case '@':
+                            attribs.href = '#/user/' + entity;
+                            break;
+                        case '+':
+                            attribs.href = '#/group/' + entity;
+                            break;
+                        case '#':
+                        case '!':
+                            attribs.href = '#/room/' + entity;
+                            break;
+                    }
+                    delete attribs.target;
+                }
+            }
+        }
+        attribs.rel = 'noopener'; // https://mathiasbynens.github.io/rel-noopener/
+        return { tagName, attribs };
+    },
+    'img': function(tagName, attribs) {
+        // Strip out imgs that aren't `mxc` here instead of using allowedSchemesByTag
+        // because transformTags is used _before_ we filter by allowedSchemesByTag and
+        // we don't want to allow images with `https?` `src`s.
+        if (!attribs.src || !attribs.src.startsWith('mxc://')) {
+            return { tagName, attribs: {}};
+        }
+        attribs.src = MatrixClientPeg.get().mxcUrlToHttp(
+            attribs.src,
+            attribs.width || 800,
+            attribs.height || 600,
+        );
+        return { tagName, attribs };
+    },
+    'code': function(tagName, attribs) {
+        if (typeof attribs.class !== 'undefined') {
+            // Filter out all classes other than ones starting with language- for syntax highlighting.
+            const classes = attribs.class.split(/\s/).filter(function(cl) {
+                return cl.startsWith('language-');
+            });
+            attribs.class = classes.join(' ');
+        }
+        return { tagName, attribs };
+    },
+    '*': function(tagName, attribs) {
+        // Delete any style previously assigned, style is an allowedTag for font and span
+        // because attributes are stripped after transforming
+        delete attribs.style;
+
+        // Sanitise and transform data-mx-color and data-mx-bg-color to their CSS
+        // equivalents
+        const customCSSMapper = {
+            'data-mx-color': 'color',
+            'data-mx-bg-color': 'background-color',
+            // $customAttributeKey: $cssAttributeKey
+        };
+
+        let style = "";
+        Object.keys(customCSSMapper).forEach((customAttributeKey) => {
+            const cssAttributeKey = customCSSMapper[customAttributeKey];
+            const customAttributeValue = attribs[customAttributeKey];
+            if (customAttributeValue &&
+                typeof customAttributeValue === 'string' &&
+                COLOR_REGEX.test(customAttributeValue)
+            ) {
+                style += cssAttributeKey + ":" + customAttributeValue + ";";
+                delete attribs[customAttributeKey];
+            }
+        });
+
+        if (style) {
+            attribs.style = style;
+        }
+
+        return { tagName, attribs };
+    },
+};
+
 const sanitizeHtmlParams = {
     allowedTags: [
         'font', // custom to matrix for IRC-style font coloring
@@ -199,102 +301,14 @@ const sanitizeHtmlParams = {
     allowedSchemes: PERMITTED_URL_SCHEMES,
 
     allowProtocolRelative: false,
+    transformTags,
+};
 
-    transformTags: { // custom to matrix
-        // add blank targets to all hyperlinks except vector URLs
-        'a': function(tagName, attribs) {
-            if (attribs.href) {
-                attribs.target = '_blank'; // by default
-
-                let m;
-                // FIXME: horrible duplication with linkify-matrix
-                m = attribs.href.match(linkifyMatrix.VECTOR_URL_PATTERN);
-                if (m) {
-                    attribs.href = m[1];
-                    delete attribs.target;
-                } else {
-                    m = attribs.href.match(linkifyMatrix.MATRIXTO_URL_PATTERN);
-                    if (m) {
-                        const entity = m[1];
-                        switch (entity[0]) {
-                            case '@':
-                                attribs.href = '#/user/' + entity;
-                                break;
-                            case '+':
-                                attribs.href = '#/group/' + entity;
-                                break;
-                            case '#':
-                            case '!':
-                                attribs.href = '#/room/' + entity;
-                                break;
-                        }
-                        delete attribs.target;
-                    }
-                }
-            }
-            attribs.rel = 'noopener'; // https://mathiasbynens.github.io/rel-noopener/
-            return { tagName: tagName, attribs: attribs };
-        },
-        'img': function(tagName, attribs) {
-            // Strip out imgs that aren't `mxc` here instead of using allowedSchemesByTag
-            // because transformTags is used _before_ we filter by allowedSchemesByTag and
-            // we don't want to allow images with `https?` `src`s.
-            if (!attribs.src || !attribs.src.startsWith('mxc://')) {
-                return { tagName, attribs: {}};
-            }
-            attribs.src = MatrixClientPeg.get().mxcUrlToHttp(
-                attribs.src,
-                attribs.width || 800,
-                attribs.height || 600,
-            );
-            return { tagName: tagName, attribs: attribs };
-        },
-        'code': function(tagName, attribs) {
-            if (typeof attribs.class !== 'undefined') {
-                // Filter out all classes other than ones starting with language- for syntax highlighting.
-                const classes = attribs.class.split(/\s+/).filter(function(cl) {
-                    return cl.startsWith('language-');
-                });
-                attribs.class = classes.join(' ');
-            }
-            return {
-                tagName: tagName,
-                attribs: attribs,
-            };
-        },
-        '*': function(tagName, attribs) {
-            // Delete any style previously assigned, style is an allowedTag for font and span
-            // because attributes are stripped after transforming
-            delete attribs.style;
-
-            // Sanitise and transform data-mx-color and data-mx-bg-color to their CSS
-            // equivalents
-            const customCSSMapper = {
-                'data-mx-color': 'color',
-                'data-mx-bg-color': 'background-color',
-                // $customAttributeKey: $cssAttributeKey
-            };
-
-            let style = "";
-            Object.keys(customCSSMapper).forEach((customAttributeKey) => {
-                const cssAttributeKey = customCSSMapper[customAttributeKey];
-                const customAttributeValue = attribs[customAttributeKey];
-                if (customAttributeValue &&
-                    typeof customAttributeValue === 'string' &&
-                    COLOR_REGEX.test(customAttributeValue)
-                ) {
-                    style += cssAttributeKey + ":" + customAttributeValue + ";";
-                    delete attribs[customAttributeKey];
-                }
-            });
-
-            if (style) {
-                attribs.style = style;
-            }
-
-            return { tagName: tagName, attribs: attribs };
-        },
-    },
+// this is the same as the above except with less rewriting
+const composerSanitizeHtmlParams = Object.assign({}, sanitizeHtmlParams);
+composerSanitizeHtmlParams.transformTags = {
+    'code': transformTags['code'],
+    '*': transformTags['*'],
 };
 
 class BaseHighlighter {
@@ -409,20 +423,29 @@ class TextHighlighter extends BaseHighlighter {
 }
 
 
-    /* turn a matrix event body into html
-     *
-     * content: 'content' of the MatrixEvent
-     *
-     * highlights: optional list of words to highlight, ordered by longest word first
-     *
-     * opts.highlightLink: optional href to add to highlighted words
-     * opts.disableBigEmoji: optional argument to disable the big emoji class.
-     * opts.stripReplyFallback: optional argument specifying the event is a reply and so fallback needs removing
-     */
+/* turn a matrix event body into html
+ *
+ * content: 'content' of the MatrixEvent
+ *
+ * highlights: optional list of words to highlight, ordered by longest word first
+ *
+ * opts.highlightLink: optional href to add to highlighted words
+ * opts.disableBigEmoji: optional argument to disable the big emoji class.
+ * opts.stripReplyFallback: optional argument specifying the event is a reply and so fallback needs removing
+ * opts.returnString: return an HTML string rather than JSX elements
+ * opts.emojiOne: optional param to do emojiOne (default true)
+ * opts.forComposerQuote: optional param to lessen the url rewriting done by sanitization, for quoting into composer
+ */
 export function bodyToHtml(content, highlights, opts={}) {
     const isHtmlMessage = content.format === "org.matrix.custom.html" && content.formatted_body;
 
+    const doEmojiOne = opts.emojiOne === undefined ? true : opts.emojiOne;
     let bodyHasEmoji = false;
+
+    let sanitizeParams = sanitizeHtmlParams;
+    if (opts.forComposerQuote) {
+        sanitizeParams = composerSanitizeHtmlParams;
+    }
 
     let strippedBody;
     let safeBody;
@@ -435,10 +458,10 @@ export function bodyToHtml(content, highlights, opts={}) {
         if (highlights && highlights.length > 0) {
             const highlighter = new HtmlHighlighter("mx_EventTile_searchHighlight", opts.highlightLink);
             const safeHighlights = highlights.map(function(highlight) {
-                return sanitizeHtml(highlight, sanitizeHtmlParams);
+                return sanitizeHtml(highlight, sanitizeParams);
             });
-            // XXX: hacky bodge to temporarily apply a textFilter to the sanitizeHtmlParams structure.
-            sanitizeHtmlParams.textFilter = function(safeText) {
+            // XXX: hacky bodge to temporarily apply a textFilter to the sanitizeParams structure.
+            sanitizeParams.textFilter = function(safeText) {
                 return highlighter.applyHighlights(safeText, safeHighlights).join('');
             };
         }
@@ -447,19 +470,20 @@ export function bodyToHtml(content, highlights, opts={}) {
         if (opts.stripReplyFallback && formattedBody) formattedBody = ReplyThread.stripHTMLReply(formattedBody);
         strippedBody = opts.stripReplyFallback ? ReplyThread.stripPlainReply(content.body) : content.body;
 
-        bodyHasEmoji = containsEmoji(isHtmlMessage ? formattedBody : content.body);
-
+        if (doEmojiOne) {
+            bodyHasEmoji = containsEmoji(isHtmlMessage ? formattedBody : content.body);
+        }
 
         // Only generate safeBody if the message was sent as org.matrix.custom.html
         if (isHtmlMessage) {
             isDisplayedWithHtml = true;
-            safeBody = sanitizeHtml(formattedBody, sanitizeHtmlParams);
+            safeBody = sanitizeHtml(formattedBody, sanitizeParams);
         } else {
             // ... or if there are emoji, which we insert as HTML alongside the
             // escaped plaintext body.
             if (bodyHasEmoji) {
                 isDisplayedWithHtml = true;
-                safeBody = sanitizeHtml(escape(strippedBody), sanitizeHtmlParams);
+                safeBody = sanitizeHtml(escape(strippedBody), sanitizeParams);
             }
         }
 
@@ -470,13 +494,27 @@ export function bodyToHtml(content, highlights, opts={}) {
             safeBody = unicodeToImage(safeBody);
         }
     } finally {
-        delete sanitizeHtmlParams.textFilter;
+        delete sanitizeParams.textFilter;
+    }
+
+    if (opts.returnString) {
+        return isDisplayedWithHtml ? safeBody : strippedBody;
     }
 
     let emojiBody = false;
     if (!opts.disableBigEmoji && bodyHasEmoji) {
         EMOJI_REGEX.lastIndex = 0;
-        const contentBodyTrimmed = strippedBody !== undefined ? strippedBody.trim() : '';
+        let contentBodyTrimmed = strippedBody !== undefined ? strippedBody.trim() : '';
+
+        // Ignore spaces in body text. Emojis with spaces in between should
+        // still be counted as purely emoji messages.
+        contentBodyTrimmed = contentBodyTrimmed.replace(WHITESPACE_REGEX, '');
+
+        // Remove zero width joiner characters from emoji messages. This ensures
+        // that emojis that are made up of multiple unicode characters are still
+        // presented as large.
+        contentBodyTrimmed = contentBodyTrimmed.replace(ZWJ_REGEX, '');
+
         const match = EMOJI_REGEX.exec(contentBodyTrimmed);
         emojiBody = match && match[0] && match[0].length === contentBodyTrimmed.length;
     }
@@ -492,8 +530,39 @@ export function bodyToHtml(content, highlights, opts={}) {
         <span className={className} dir="auto">{ strippedBody }</span>;
 }
 
-export function emojifyText(text) {
+export function emojifyText(text, addAlt) {
     return {
-        __html: unicodeToImage(escape(text)),
+        __html: unicodeToImage(escape(text), addAlt),
     };
+}
+
+/**
+ * Linkifies the given string. This is a wrapper around 'linkifyjs/string'.
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+export function linkifyString(str) {
+    return _linkifyString(str);
+}
+
+/**
+ * Linkifies the given DOM element. This is a wrapper around 'linkifyjs/element'.
+ *
+ * @param {object} element DOM element to linkify
+ * @param {object} [options] Options for linkifyElement. Default: linkifyMatrix.options
+ * @returns {object}
+ */
+export function linkifyElement(element, options = linkifyMatrix.options) {
+    return _linkifyElement(element, options);
+}
+
+/**
+ * Linkify the given string and sanitize the HTML afterwards.
+ *
+ * @param {string} dirtyHtml The HTML string to sanitize and linkify
+ * @returns {string}
+ */
+export function linkifyAndSanitizeHtml(dirtyHtml) {
+    return sanitizeHtml(linkifyString(dirtyHtml), sanitizeHtmlParams);
 }

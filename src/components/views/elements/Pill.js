@@ -29,7 +29,7 @@ const REGEX_MATRIXTO = new RegExp(MATRIXTO_URL_PATTERN);
 
 // For URLs of matrix.to links in the timeline which have been reformatted by
 // HttpUtils transformTags to relative links. This excludes event URLs (with `[^\/]*`)
-const REGEX_LOCAL_MATRIXTO = /^#\/(?:user|room|group)\/(([#!@+])[^\/]*)$/;
+const REGEX_LOCAL_MATRIXTO = /^#\/(?:user|room|group)\/(([#!@+])[^/]*)$/;
 
 const Pill = React.createClass({
     statics: {
@@ -62,6 +62,8 @@ const Pill = React.createClass({
         room: PropTypes.instanceOf(Room),
         // Whether to include an avatar in the pill
         shouldShowPillAvatar: PropTypes.bool,
+        // Whether to render this pill as if it were highlit by a selection
+        isSelected: PropTypes.bool,
     },
 
 
@@ -185,6 +187,9 @@ const Pill = React.createClass({
                 getContent: () => {
                     return {avatar_url: resp.avatar_url};
                 },
+                getDirectionalContent: function() {
+                    return this.getContent();
+                },
             };
             this.setState({member});
         }).catch((err) => {
@@ -229,7 +234,7 @@ const Pill = React.createClass({
                     if (member) {
                         userId = member.userId;
                         member.rawDisplayName = member.rawDisplayName || '';
-                        linkText = member.rawDisplayName.replace(' (IRC)', ''); // FIXME when groups are done
+                        linkText = member.rawDisplayName;
                         if (this.props.shouldShowPillAvatar) {
                             avatar = <MemberAvatar member={member} width={16} height={16} />;
                         }
@@ -266,8 +271,9 @@ const Pill = React.createClass({
                 break;
         }
 
-        const classes = classNames(pillClass, {
+        const classes = classNames("mx_Pill", pillClass, {
             "mx_UserPill_me": userId === MatrixClientPeg.get().credentials.userId,
+            "mx_UserPill_selected": this.props.isSelected,
         });
 
         if (this.state.pillType) {

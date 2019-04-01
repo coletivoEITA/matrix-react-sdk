@@ -24,11 +24,12 @@ import { KeyCode } from '../../Keyboard';
 import sdk from '../../index';
 import dis from '../../dispatcher';
 import VectorConferenceHandler from '../../VectorConferenceHandler';
-
+import TagPanelButtons from './TagPanelButtons';
 import SettingsStore from '../../settings/SettingsStore';
+import {_t} from "../../languageHandler";
 
 
-var LeftPanel = React.createClass({
+const LeftPanel = React.createClass({
     displayName: 'LeftPanel',
 
     // NB. If you add props, don't forget to update
@@ -151,8 +152,7 @@ var LeftPanel = React.createClass({
             }
         } while (element && !(
             classes.contains("mx_RoomTile") ||
-            classes.contains("mx_SearchBox_search") ||
-            classes.contains("mx_RoomSubList_ellipsis")));
+            classes.contains("mx_textinput_search")));
 
         if (element) {
             element.focus();
@@ -171,60 +171,78 @@ var LeftPanel = React.createClass({
         this.setState({ searchFilter: term });
     },
 
+    onSearchCleared: function(source) {
+        if (source === "keyboard") {
+            dis.dispatch({action: 'focus_composer'});
+        }
+    },
+
     collectRoomList: function(ref) {
         this._roomList = ref;
     },
 
     render: function() {
         const RoomList = sdk.getComponent('rooms.RoomList');
+        const RoomBreadcrumbs = sdk.getComponent('rooms.RoomBreadcrumbs');
         const TagPanel = sdk.getComponent('structures.TagPanel');
-        const BottomLeftMenu = sdk.getComponent('structures.BottomLeftMenu');
+        const CustomRoomTagPanel = sdk.getComponent('structures.CustomRoomTagPanel');
+        const TopLeftMenuButton = sdk.getComponent('structures.TopLeftMenuButton');
+        const SearchBox = sdk.getComponent('structures.SearchBox');
         const CallPreview = sdk.getComponent('voip.CallPreview');
 
-        let topBox;
-        if (this.context.matrixClient.isGuest()) {
-            const LoginBox = sdk.getComponent('structures.LoginBox');
-            topBox = <LoginBox collapsed={ this.props.collapsed }/>;
-        } else {
-            const SearchBox = sdk.getComponent('structures.SearchBox');
-            topBox = <SearchBox collapsed={ this.props.collapsed } onSearch={ this.onSearch } />;
+        const tagPanelEnabled = SettingsStore.getValue("TagPanel.enableTagPanel");
+        let tagPanelContainer;
+
+        const isCustomTagsEnabled = SettingsStore.isFeatureEnabled("feature_custom_tags");
+
+        if (tagPanelEnabled) {
+            tagPanelContainer = (<div className="mx_LeftPanel_tagPanelContainer">
+                <TagPanel />
+                { isCustomTagsEnabled ? <CustomRoomTagPanel /> : undefined }
+                <TagPanelButtons />
+            </div>);
         }
-
-        const classes = classNames(
-            "mx_LeftPanel",
-            {
-                "collapsed": this.props.collapsed,
-            },
-        );
-
-        const tagPanelEnabled = !SettingsStore.getValue("TagPanel.disableTagPanel");
-        const tagPanel = tagPanelEnabled ? <TagPanel /> : <div />;
 
         const containerClasses = classNames(
             "mx_LeftPanel_container", "mx_fadable",
             {
-                "mx_LeftPanel_container_collapsed": this.props.collapsed,
+                "collapsed": this.props.collapsed,
                 "mx_LeftPanel_container_hasTagPanel": tagPanelEnabled,
                 "mx_fadable_faded": this.props.disabled,
             },
         );
 
+        const searchBox = (<SearchBox
+            enableRoomSearchFocus={true}
+            placeholder={ _t('Filter room names') }
+            onSearch={ this.onSearch }
+            onCleared={ this.onSearchCleared }
+            collapsed={this.props.collapsed} />);
+
+        let breadcrumbs;
+        if (SettingsStore.isFeatureEnabled("feature_room_breadcrumbs")) {
+            breadcrumbs = (<RoomBreadcrumbs collapsed={this.props.collapsed} />);
+        }
+
         return (
             <div className={containerClasses}>
-                { tagPanel }
-                <aside className={classes} onKeyDown={ this._onKeyDown } onFocus={ this._onFocus } onBlur={ this._onBlur }>
-                    { topBox }
+                { tagPanelContainer }
+                <aside className={"mx_LeftPanel dark-panel"} onKeyDown={ this._onKeyDown } onFocus={ this._onFocus } onBlur={ this._onBlur }>
+                    <TopLeftMenuButton collapsed={ this.props.collapsed } />
+                    { breadcrumbs }
+                    { searchBox }
                     <CallPreview ConferenceHandler={VectorConferenceHandler} />
                     <RoomList
                         ref={this.collectRoomList}
+                        toolbarShown={this.props.toolbarShown}
                         collapsed={this.props.collapsed}
                         searchFilter={this.state.searchFilter}
                         ConferenceHandler={VectorConferenceHandler} />
-                    <BottomLeftMenu collapsed={this.props.collapsed}/>
                 </aside>
             </div>
         );
-    }
+        // <BottomLeftMenu collapsed={this.props.collapsed}/>
+    },
 });
 
 module.exports = LeftPanel;

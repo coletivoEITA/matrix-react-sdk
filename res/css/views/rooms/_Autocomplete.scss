@@ -69,8 +69,9 @@
     flex-flow: wrap;
 }
 
-.mx_Autocomplete_Completion.selected {
-    background: $menu-bg-color;
+.mx_Autocomplete_Completion.selected,
+.mx_Autocomplete_Completion:hover {
+    background: $selected-color;
     outline: none;
 }
 

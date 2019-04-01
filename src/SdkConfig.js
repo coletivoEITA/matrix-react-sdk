@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const DEFAULTS = {
+export const DEFAULTS = {
     // URL to a page we show in an iframe to configure integrations
     integrations_ui_url: "https://scalar.vector.im/",
     // Base URL to the REST interface of the integrations server
@@ -24,7 +24,6 @@ const DEFAULTS = {
 };
 
 class SdkConfig {
-
     static get() {
         return global.mxReactSdkConfig || {};
     }

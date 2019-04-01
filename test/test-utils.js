@@ -74,6 +74,7 @@ export function createTestClient() {
         getPushActionsForEvent: sinon.stub(),
         getRoom: sinon.stub().returns(mkStubRoom()),
         getRooms: sinon.stub().returns([]),
+        getVisibleRooms: sinon.stub().returns([]),
         getGroups: sinon.stub().returns([]),
         loginFlows: sinon.stub(),
         on: sinon.stub(),
@@ -100,20 +101,6 @@ export function createTestClient() {
         getSyncState: () => "SYNCING",
         generateClientSecret: () => "t35tcl1Ent5ECr3T",
         isGuest: () => false,
-    };
-}
-
-export function createTestRtsClient(teamMap, sidMap) {
-    return {
-        getTeamsConfig() {
-            return Promise.resolve(Object.keys(teamMap).map((token) => teamMap[token]));
-        },
-        trackReferral(referrer, emailSid, clientSecret) {
-            return Promise.resolve({team_token: sidMap[emailSid]});
-        },
-        getTeam(teamToken) {
-            return Promise.resolve(teamMap[teamToken]);
-        },
     };
 }
 
@@ -255,6 +242,9 @@ export function mkStubRoom(roomId = null) {
         getUnfilteredTimelineSet: () => null,
         getAccountData: () => null,
         hasMembershipState: () => null,
+        getVersion: () => '1',
+        shouldUpgradeToVersion: () => null,
+        getMyMembership: () => "join",
         currentState: {
             getStateEvents: sinon.stub(),
             mayClientSendStateEvent: sinon.stub().returns(true),
@@ -306,19 +296,26 @@ export function wrapInMatrixClientContext(WrappedComponent) {
 /**
  * Call fn before calling componentDidUpdate on a react component instance, inst.
  * @param {React.Component} inst an instance of a React component.
+ * @param {integer} updates Number of updates to wait for. (Defaults to 1.)
  * @returns {Promise} promise that resolves when componentDidUpdate is called on
  *                    given component instance.
  */
-export function waitForUpdate(inst) {
+export function waitForUpdate(inst, updates = 1) {
     return new Promise((resolve, reject) => {
         const cdu = inst.componentDidUpdate;
 
+        console.log(`Waiting for ${updates} update(s)`);
+
         inst.componentDidUpdate = (prevProps, prevState, snapshot) => {
-            resolve();
+            updates--;
+            console.log(`Got update, ${updates} remaining`);
+
+            if (updates == 0) {
+                inst.componentDidUpdate = cdu;
+                resolve();
+            }
 
             if (cdu) cdu(prevProps, prevState, snapshot);
-
-            inst.componentDidUpdate = cdu;
         };
     });
 }

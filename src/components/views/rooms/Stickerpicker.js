@@ -24,6 +24,7 @@ import ScalarAuthClient from '../../../ScalarAuthClient';
 import dis from '../../../dispatcher';
 import AccessibleButton from '../elements/AccessibleButton';
 import WidgetUtils from '../../../utils/WidgetUtils';
+import ActiveWidgetStore from '../../../stores/ActiveWidgetStore';
 
 const widgetType = 'm.stickerpicker';
 
@@ -42,8 +43,6 @@ export default class Stickerpicker extends React.Component {
         this._onWidgetAction = this._onWidgetAction.bind(this);
         this._onResize = this._onResize.bind(this);
         this._onFinished = this._onFinished.bind(this);
-
-        this._collectWidgetMessaging = this._collectWidgetMessaging.bind(this);
 
         this.popoverWidth = 300;
         this.popoverHeight = 300;
@@ -104,6 +103,9 @@ export default class Stickerpicker extends React.Component {
     }
 
     componentWillUnmount() {
+        const client = MatrixClientPeg.get();
+        if (client) client.removeListener('accountData', this._updateWidget);
+
         window.removeEventListener('resize', this._onResize);
         if (this.dispatcherRef) {
             dis.unregister(this.dispatcherRef);
@@ -152,8 +154,8 @@ export default class Stickerpicker extends React.Component {
             <AccessibleButton onClick={this._launchManageIntegrations}
                 className='mx_Stickers_contentPlaceholder'>
                 <p>{ _t("You don't currently have any stickerpacks enabled") }</p>
-                <p className='mx_Stickers_addLink'>Add some now</p>
-                <img src='img/stickerpack-placeholder.png' alt={_t('Add a stickerpack')} />
+                <p className='mx_Stickers_addLink'>{ _t("Add some now") }</p>
+                <img src={require("../../../../res/img/stickerpack-placeholder.png")} alt="" />
             </AccessibleButton>
         );
     }
@@ -166,17 +168,11 @@ export default class Stickerpicker extends React.Component {
         );
     }
 
-    _collectWidgetMessaging(widgetMessaging) {
-        this._appWidgetMessaging = widgetMessaging;
-
-        // Do this now instead of in componentDidMount because we might not have had the
-        // reference to widgetMessaging when mounting
-        this._sendVisibilityToWidget(true);
-    }
-
     _sendVisibilityToWidget(visible) {
-        if (this._appWidgetMessaging && visible !== this._prevSentVisibility) {
-            this._appWidgetMessaging.sendVisibility(visible);
+        if (!this.state.stickerpickerWidget) return;
+        const widgetMessaging = ActiveWidgetStore.getWidgetMessaging(this.state.stickerpickerWidget.id);
+        if (widgetMessaging && visible !== this._prevSentVisibility) {
+            widgetMessaging.sendVisibility(visible);
             this._prevSentVisibility = visible;
         }
     }
@@ -215,9 +211,8 @@ export default class Stickerpicker extends React.Component {
                             width: this.popoverWidth,
                         }}
                     >
-                    <PersistedElement containerId="mx_persisted_stickerPicker" style={{zIndex: STICKERPICKER_Z_INDEX}}>
+                    <PersistedElement persistKey="stickerPicker" style={{zIndex: STICKERPICKER_Z_INDEX}}>
                         <AppTile
-                            collectWidgetMessaging={this._collectWidgetMessaging}
                             id={stickerpickerWidget.id}
                             url={stickerpickerWidget.content.url}
                             name={stickerpickerWidget.content.name}
@@ -234,6 +229,7 @@ export default class Stickerpicker extends React.Component {
                             showTitle={false}
                             showMinimise={true}
                             showDelete={false}
+                            showCancel={false}
                             showPopout={false}
                             onMinimiseClick={this._onHideStickersClick}
                             handleMinimisePointerEvents={true}
@@ -314,22 +310,25 @@ export default class Stickerpicker extends React.Component {
      */
     _launchManageIntegrations() {
         const IntegrationsManager = sdk.getComponent("views.settings.IntegrationsManager");
-        const src = (this.scalarClient !== null && this.scalarClient.hasCredentials()) ?
+        this.scalarClient.connect().done(() => {
+            const src = (this.scalarClient !== null && this.scalarClient.hasCredentials()) ?
                 this.scalarClient.getScalarInterfaceUrlForRoom(
                     this.props.room,
                     'type_' + widgetType,
                     this.state.widgetId,
                 ) :
                 null;
-        Modal.createTrackedDialog('Integrations Manager', '', IntegrationsManager, {
-            src: src,
-        }, "mx_IntegrationsManager");
-
-        this.setState({showStickers: false});
+            Modal.createTrackedDialog('Integrations Manager', '', IntegrationsManager, {
+                src: src,
+            }, "mx_IntegrationsManager");
+            this.setState({showStickers: false});
+        }, (err) => {
+            this.setState({imError: err});
+            console.error('Error ensuring a valid scalar_token exists', err);
+        });
     }
 
     render() {
-        const TintableSvg = sdk.getComponent("elements.TintableSvg");
         const ContextualMenu = sdk.getComponent('structures.ContextualMenu');
         const GenericElementContextMenu = sdk.getComponent('context_menus.GenericElementContextMenu');
         let stickersButton;
@@ -352,26 +351,25 @@ export default class Stickerpicker extends React.Component {
         if (this.state.showStickers) {
             // Show hide-stickers button
             stickersButton =
-                <div
+                <AccessibleButton
                     id='stickersButton'
                     key="controls_hide_stickers"
-                    className="mx_MessageComposer_stickers mx_Stickers_hideStickers"
+                    className="mx_MessageComposer_button mx_MessageComposer_stickers mx_Stickers_hideStickers"
                     onClick={this._onHideStickersClick}
-                    ref='target'
-                    title={_t("Hide Stickers")}>
-                    <TintableSvg src="img/icons-hide-stickers.svg" width="35" height="35" />
-                </div>;
+                    title={_t("Hide Stickers")}
+                >
+                </AccessibleButton>;
         } else {
             // Show show-stickers button
             stickersButton =
-                <div
+                <AccessibleButton
                     id='stickersButton'
-                    key="constrols_show_stickers"
-                    className="mx_MessageComposer_stickers"
+                    key="controls_show_stickers"
+                    className="mx_MessageComposer_button mx_MessageComposer_stickers"
                     onClick={this._onShowStickersClick}
-                    title={_t("Show Stickers")}>
-                    <TintableSvg src="img/icons-show-stickers.svg" width="35" height="35" />
-                </div>;
+                    title={_t("Show Stickers")}
+                >
+                </AccessibleButton>;
         }
         return <div>
             {stickersButton}

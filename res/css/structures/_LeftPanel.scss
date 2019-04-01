@@ -1,5 +1,6 @@
 /*
 Copyright 2015, 2016 OpenMarket Ltd
+Copyright 2018 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,32 +15,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-.mx_LeftPanel {
-    position: relative;
-
-    display: flex;
-    flex-direction: column;
-}
-
 .mx_LeftPanel_container {
     display: flex;
-    /* LeftPanel 235px */
-    flex: 0 0 235px;
+    /* LeftPanel 260px */
+    min-width: 260px;
+    flex: 0 0 auto;
 }
 
-.mx_LeftPanel_container.mx_LeftPanel_container_hasTagPanel {
-    /* TagPanel 60px + LeftPanel 235px */
-    flex: 0 0 295px;
+.mx_LeftPanel_container.collapsed {
+    min-width: unset;
+    /* Collapsed LeftPanel 70px */
+    flex: 0 0 70px;
 }
 
-.mx_LeftPanel_container_collapsed {
-    /* Collapsed LeftPanel 60px */
-    flex: 0 0 60px;
+.mx_LeftPanel_container.collapsed.mx_LeftPanel_container_hasTagPanel {
+    /* TagPanel 70px + Collapsed LeftPanel 70px */
+    flex: 0 0 140px;
 }
 
-.mx_LeftPanel_container_collapsed.mx_LeftPanel_container_hasTagPanel {
-    /* TagPanel 60px + Collapsed LeftPanel 60px */
-    flex: 0 0 120px;
+.mx_LeftPanel_tagPanelContainer {
+    flex: 0 0 70px;
+    height: 100%;
 }
 
 .mx_LeftPanel_hideButton {
@@ -50,8 +46,16 @@ limitations under the License.
     cursor: pointer;
 }
 
-.mx_LeftPanel_callView {
+.mx_LeftPanel {
+    flex: 1;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
 
+.mx_LeftPanel .mx_AppTile_mini {
+    height: 132px;
 }
 
 .mx_LeftPanel .mx_RoomList_scrollbar {
@@ -63,7 +67,7 @@ limitations under the License.
     z-index: 6;
 }
 
-.mx_LeftPanel.collapsed .mx_BottomLeftMenu {
+.mx_LeftPanel_container.collapsed .mx_BottomLeftMenu {
    flex: 0 0 160px;
    margin-bottom: 9px;
 }
@@ -86,12 +90,6 @@ limitations under the License.
     pointer-events: none;
 }
 
-.collapsed .mx_RoleButton {
-    margin-right: 0px ! important;
-    padding-top: 3px ! important;
-    padding-bottom: 3px ! important;
-}
-
 .mx_BottomLeftMenu_options > div {
     display: inline-block;
 }
@@ -110,7 +108,7 @@ limitations under the License.
     margin-right: 0px;
 }
 
-.mx_LeftPanel.collapsed .mx_BottomLeftMenu_settings {
+.mx_LeftPanel_container.collapsed .mx_BottomLeftMenu_settings {
     float: none;
 }
 
@@ -119,7 +117,7 @@ limitations under the License.
         flex: 0 0 50px;
     }
 
-    .mx_LeftPanel.collapsed .mx_BottomLeftMenu {
+    .mx_LeftPanel_container.collapsed .mx_BottomLeftMenu {
         flex: 0 0 160px;
     }
 

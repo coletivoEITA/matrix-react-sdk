@@ -27,9 +27,11 @@ import UserActivity from './UserActivity';
 import Presence from './Presence';
 import dis from './dispatcher';
 import DMRoomMap from './utils/DMRoomMap';
-import RtsClient from './RtsClient';
 import Modal from './Modal';
 import sdk from './index';
+import ActiveWidgetStore from './stores/ActiveWidgetStore';
+import PlatformPeg from "./PlatformPeg";
+import {sendLoginRequest} from "./Login";
 
 /**
  * Called at startup, to attempt to build a logged-in Matrix session. It tries
@@ -108,6 +110,17 @@ export async function loadSession(opts) {
 }
 
 /**
+ * Gets the user ID of the persisted session, if one exists. This does not validate
+ * that the user's credentials still work, just that they exist and that a user ID
+ * is associated with them. The session is not loaded.
+ * @returns {String} The persisted session's owner, if an owner exists. Null otherwise.
+ */
+export function getStoredSessionOwner() {
+    const {hsUrl, userId, accessToken} = _getLocalStorageSessionVars();
+    return hsUrl && userId && accessToken ? userId : null;
+}
+
+/**
  * @param {Object} queryParams    string->string map of the
  *     query-parameters extracted from the real query-string of the starting
  *     URI.
@@ -127,27 +140,17 @@ export function attemptTokenLogin(queryParams, defaultDeviceDisplayName) {
         return Promise.resolve(false);
     }
 
-    // create a temporary MatrixClient to do the login
-    const client = Matrix.createClient({
-        baseUrl: queryParams.homeserver,
-    });
-
-    return client.login(
+    return sendLoginRequest(
+        queryParams.homeserver,
+        queryParams.identityServer,
         "m.login.token", {
             token: queryParams.loginToken,
             initial_device_display_name: defaultDeviceDisplayName,
         },
-    ).then(function(data) {
+    ).then(function(creds) {
         console.log("Logged in with token");
         return _clearStorage().then(() => {
-            _persistCredentialsToLocalStorage({
-                userId: data.user_id,
-                deviceId: data.device_id,
-                accessToken: data.access_token,
-                homeserverUrl: queryParams.homeserver,
-                identityServerUrl: queryParams.identityServer,
-                guest: false,
-            });
+            _persistCredentialsToLocalStorage(creds);
             return true;
         });
     }).catch((err) => {
@@ -155,6 +158,40 @@ export function attemptTokenLogin(queryParams, defaultDeviceDisplayName) {
                       err.data);
         return false;
     });
+}
+
+export function handleInvalidStoreError(e) {
+    if (e.reason === Matrix.InvalidStoreError.TOGGLED_LAZY_LOADING) {
+        return Promise.resolve().then(() => {
+            const lazyLoadEnabled = e.value;
+            if (lazyLoadEnabled) {
+                const LazyLoadingResyncDialog =
+                    sdk.getComponent("views.dialogs.LazyLoadingResyncDialog");
+                return new Promise((resolve) => {
+                    Modal.createDialog(LazyLoadingResyncDialog, {
+                        onFinished: resolve,
+                    });
+                });
+            } else {
+                // show warning about simultaneous use
+                // between LL/non-LL version on same host.
+                // as disabling LL when previously enabled
+                // is a strong indicator of this (/develop & /app)
+                const LazyLoadingDisabledDialog =
+                    sdk.getComponent("views.dialogs.LazyLoadingDisabledDialog");
+                return new Promise((resolve) => {
+                    Modal.createDialog(LazyLoadingDisabledDialog, {
+                        onFinished: resolve,
+                        host: window.location.host,
+                    });
+                });
+            }
+        }).then(() => {
+            return MatrixClientPeg.get().store.deleteAllData();
+        }).then(() => {
+            PlatformPeg.get().reload();
+        });
+    }
 }
 
 function _registerAsGuest(hsUrl, isUrl, defaultDeviceDisplayName) {
@@ -188,6 +225,16 @@ function _registerAsGuest(hsUrl, isUrl, defaultDeviceDisplayName) {
     });
 }
 
+function _getLocalStorageSessionVars() {
+    const hsUrl = localStorage.getItem("mx_hs_url");
+    const isUrl = localStorage.getItem("mx_is_url") || 'https://matrix.org';
+    const accessToken = localStorage.getItem("mx_access_token");
+    const userId = localStorage.getItem("mx_user_id");
+    const deviceId = localStorage.getItem("mx_device_id");
+
+    return {hsUrl, isUrl, accessToken, userId, deviceId};
+}
+
 // returns a promise which resolves to true if a session is found in
 // localstorage
 //
@@ -197,16 +244,13 @@ function _registerAsGuest(hsUrl, isUrl, defaultDeviceDisplayName) {
 //
 //      The plan is to gradually move the localStorage access done here into
 //      SessionStore to avoid bugs where the view becomes out-of-sync with
-//      localStorage (e.g. teamToken, isGuest etc.)
+//      localStorage (e.g. isGuest etc.)
 async function _restoreFromLocalStorage() {
     if (!localStorage) {
         return false;
     }
-    const hsUrl = localStorage.getItem("mx_hs_url");
-    const isUrl = localStorage.getItem("mx_is_url") || 'https://matrix.org';
-    const accessToken = localStorage.getItem("mx_access_token");
-    const userId = localStorage.getItem("mx_user_id");
-    const deviceId = localStorage.getItem("mx_device_id");
+
+    const {hsUrl, isUrl, accessToken, userId, deviceId} = _getLocalStorageSessionVars();
 
     let isGuest;
     if (localStorage.getItem("mx_is_guest") !== null) {
@@ -259,15 +303,6 @@ function _handleLoadSessionFailure(e) {
     });
 }
 
-let rtsClient = null;
-export function initRtsClient(url) {
-    if (url) {
-        rtsClient = new RtsClient(url);
-    } else {
-        rtsClient = null;
-    }
-}
-
 /**
  * Transitions to a logged-in state using the given credentials.
  *
@@ -306,7 +341,7 @@ async function _doSetLoggedIn(credentials, clearStorage) {
     );
 
     // This is dispatched to indicate that the user is still in the process of logging in
-    // because `teamPromise` may take some time to resolve, breaking the assumption that
+    // because async code may take some time to resolve, breaking the assumption that
     // `setLoggedIn` takes an "instant" to complete, and dispatch `on_logged_in` a few ms
     // later than MatrixChat might assume.
     //
@@ -319,10 +354,6 @@ async function _doSetLoggedIn(credentials, clearStorage) {
     }
 
     Analytics.setLoggedIn(credentials.guest, credentials.homeserverUrl, credentials.identityServerUrl);
-
-    // Resolves by default
-    let teamPromise = Promise.resolve(null);
-
 
     if (localStorage) {
         try {
@@ -340,27 +371,13 @@ async function _doSetLoggedIn(credentials, clearStorage) {
         } catch (e) {
             console.warn("Error using local storage: can't persist session!", e);
         }
-
-        if (rtsClient && !credentials.guest) {
-            teamPromise = rtsClient.login(credentials.userId).then((body) => {
-                if (body.team_token) {
-                    localStorage.setItem("mx_team_token", body.team_token);
-                }
-                return body.team_token;
-            }, (err) => {
-                console.warn(`Failed to get team token on login: ${err}` );
-                return null;
-            });
-        }
     } else {
         console.warn("No local storage available: can't persist session!");
     }
 
     MatrixClientPeg.replaceUsingCreds(credentials);
 
-    teamPromise.then((teamToken) => {
-        dis.dispatch({action: 'on_logged_in', teamToken: teamToken});
-    });
+    dis.dispatch({ action: 'on_logged_in' });
 
     await startMatrixClient();
     return MatrixClientPeg.get();
@@ -385,6 +402,8 @@ function _persistCredentialsToLocalStorage(credentials) {
     console.log(`Session persisted for ${credentials.userId}`);
 }
 
+let _isLoggingOut = false;
+
 /**
  * Logs the current session out and transitions to the logged-out state
  */
@@ -404,6 +423,7 @@ export function logout() {
         return;
     }
 
+    _isLoggingOut = true;
     MatrixClientPeg.get().logout().then(onLoggedOut,
         (err) => {
             // Just throwing an error here is going to be very unhelpful
@@ -417,6 +437,10 @@ export function logout() {
             onLoggedOut();
         },
     ).done();
+}
+
+export function isLoggingOut() {
+    return _isLoggingOut;
 }
 
 /**
@@ -433,9 +457,10 @@ async function startMatrixClient() {
     dis.dispatch({action: 'will_start_client'}, true);
 
     Notifier.start();
-    UserActivity.start();
+    UserActivity.sharedInstance().start();
     Presence.start();
     DMRoomMap.makeShared().start();
+    ActiveWidgetStore.start();
 
     await MatrixClientPeg.start();
 
@@ -449,6 +474,7 @@ async function startMatrixClient() {
  * storage. Used after a session has been logged out.
  */
 export function onLoggedOut() {
+    _isLoggingOut = false;
     stopMatrixClient();
     _clearStorage().done();
     dis.dispatch({action: 'on_logged_out'});
@@ -461,16 +487,7 @@ function _clearStorage() {
     Analytics.logout();
 
     if (window.localStorage) {
-        const hsUrl = window.localStorage.getItem("mx_hs_url");
-        const isUrl = window.localStorage.getItem("mx_is_url");
         window.localStorage.clear();
-
-        // preserve our HS & IS URLs for convenience
-        // N.B. we cache them in hsUrl/isUrl and can't really inline them
-        // as getCurrentHsUrl() may call through to localStorage.
-        // NB. We do clear the device ID (as well as all the settings)
-        if (hsUrl) window.localStorage.setItem("mx_hs_url", hsUrl);
-        if (isUrl) window.localStorage.setItem("mx_is_url", isUrl);
     }
 
     // create a temporary client to clear out the persistent stores.
@@ -486,8 +503,9 @@ function _clearStorage() {
  */
 export function stopMatrixClient() {
     Notifier.stop();
-    UserActivity.stop();
+    UserActivity.sharedInstance().stop();
     Presence.stop();
+    ActiveWidgetStore.stop();
     if (DMRoomMap.shared()) DMRoomMap.shared().stop();
     const cli = MatrixClientPeg.get();
     if (cli) {

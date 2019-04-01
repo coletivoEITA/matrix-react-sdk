@@ -26,7 +26,6 @@ import Unread from '../../../Unread';
 import classNames from 'classnames';
 
 export default class ChatCreateOrReuseDialog extends React.Component {
-
     constructor(props) {
         super(props);
         this.onFinished = this.onFinished.bind(this);
@@ -54,8 +53,8 @@ export default class ChatCreateOrReuseDialog extends React.Component {
         for (const roomId of dmRooms) {
             const room = client.getRoom(roomId);
             if (room) {
-                const me = room.getMember(client.credentials.userId);
-                const highlight = room.getUnreadNotificationCount('highlight') > 0 || me.membership === "invite";
+                const isInvite = room.getMyMembership() === "invite";
+                const highlight = room.getUnreadNotificationCount('highlight') > 0 || isInvite;
                 tiles.push(
                     <RoomTile key={room.roomId} room={room}
                         transparent={true}
@@ -63,7 +62,7 @@ export default class ChatCreateOrReuseDialog extends React.Component {
                         selected={false}
                         unread={Unread.doesRoomHaveUnreadMessages(room)}
                         highlight={highlight}
-                        isInvite={me.membership === "invite"}
+                        isInvite={isInvite}
                         onClick={this.onRoomTileClick}
                     />,
                 );
@@ -128,7 +127,7 @@ export default class ChatCreateOrReuseDialog extends React.Component {
                 onClick={this.props.onNewDMClick}
             >
                 <div className="mx_RoomTile_avatar">
-                    <img src="img/create-big.svg" width="26" height="26" />
+                    <img src={require("../../../../res/img/create-big.svg")} width="26" height="26" />
                 </div>
                 <div className={labelClasses}><i>{ _t("Start new chat") }</i></div>
             </AccessibleButton>;

@@ -21,7 +21,7 @@ import React from 'react';
 import { _t } from '../languageHandler';
 import AutocompleteProvider from './AutocompleteProvider';
 import MatrixClientPeg from '../MatrixClientPeg';
-import FuzzyMatcher from './FuzzyMatcher';
+import QueryMatcher from './QueryMatcher';
 import {PillCompletion} from './Components';
 import {getDisplayAliasForRoom} from '../Rooms';
 import sdk from '../index';
@@ -43,19 +43,13 @@ function score(query, space) {
 export default class RoomProvider extends AutocompleteProvider {
     constructor() {
         super(ROOM_REGEX);
-        this.matcher = new FuzzyMatcher([], {
+        this.matcher = new QueryMatcher([], {
             keys: ['displayedAlias', 'name'],
         });
     }
 
     async getCompletions(query: string, selection: SelectionRange, force?: boolean = false): Array<Completion> {
         const RoomAvatar = sdk.getComponent('views.avatars.RoomAvatar');
-
-        // Disable autocompletions when composing commands because of various issues
-        // (see https://github.com/vector-im/riot-web/issues/4762)
-        if (/^(\/join|\/leave)/.test(query)) {
-            return [];
-        }
 
         const client = MatrixClientPeg.get();
         let completions = [];
@@ -80,6 +74,7 @@ export default class RoomProvider extends AutocompleteProvider {
                 const displayAlias = getDisplayAliasForRoom(room.room) || room.roomId;
                 return {
                     completion: displayAlias,
+                    completionId: displayAlias,
                     suffix: ' ',
                     href: makeRoomPermalink(displayAlias),
                     component: (

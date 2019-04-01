@@ -33,12 +33,12 @@ module.exports = React.createClass({
     },
 
     getInitialState: function() {
-        return({
-            directoryHover : false,
-            roomsHover : false,
+        return ({
+            directoryHover: false,
+            roomsHover: false,
             homeHover: false,
-            peopleHover : false,
-            settingsHover : false,
+            peopleHover: false,
+            settingsHover: false,
         });
     },
 
@@ -145,7 +145,7 @@ module.exports = React.createClass({
     // Get the label/tooltip to show
     getLabel: function(label, show) {
         if (show) {
-            var RoomTooltip = sdk.getComponent("rooms.RoomTooltip");
+            const RoomTooltip = sdk.getComponent("rooms.RoomTooltip");
             return <RoomTooltip className="mx_BottomLeftMenu_tooltip" label={label} />;
         }
     },
@@ -170,7 +170,7 @@ module.exports = React.createClass({
         const SettingsButton = sdk.getComponent('elements.SettingsButton');
         const GroupsButton = sdk.getComponent('elements.GroupsButton');
 
-        const groupsButton = SettingsStore.getValue("TagPanel.disableTagPanel") ?
+        const groupsButton = !SettingsStore.getValue("TagPanel.enableTagPanel") ?
             <GroupsButton tooltip={true} /> : null;
 
         return (

@@ -20,6 +20,7 @@ import sdk from '../../../index';
 import SyntaxHighlight from '../elements/SyntaxHighlight';
 import { _t } from '../../../languageHandler';
 import MatrixClientPeg from '../../../MatrixClientPeg';
+import Field from "../elements/Field";
 
 class DevtoolsComponent extends React.Component {
     static contextTypes = {
@@ -56,14 +57,8 @@ class GenericEditor extends DevtoolsComponent {
     }
 
     textInput(id, label) {
-        return <div className="mx_DevTools_inputRow">
-            <div className="mx_DevTools_inputLabelCell">
-                <label htmlFor={id}>{ label }</label>
-            </div>
-            <div className="mx_DevTools_inputCell">
-                <input id={id} className="mx_TextInputDialog_input" onChange={this._onChange} value={this.state[id]} size="32" />
-            </div>
-        </div>;
+        return <Field id={id} label={label} size="42" autoFocus={true} type="text" autoComplete="on"
+                      value={this.state[id]} onChange={this._onChange} />;
     }
 }
 
@@ -138,12 +133,8 @@ class SendCustomEvent extends GenericEditor {
 
                 <br />
 
-                <div className="mx_DevTools_inputLabelCell">
-                    <label htmlFor="evContent"> { _t('Event Content') } </label>
-                </div>
-                <div>
-                    <textarea id="evContent" onChange={this._onChange} value={this.state.evContent} className="mx_DevTools_textarea" />
-                </div>
+                <Field id="evContent" label={_t("Event Content")} type="text" className="mx_DevTools_textarea"
+                       autoComplete="off" value={this.state.evContent} onChange={this._onChange} element="textarea" />
             </div>
             <div className="mx_Dialog_buttons">
                 <button onClick={this.onBack}>{ _t('Back') }</button>
@@ -223,12 +214,8 @@ class SendAccountData extends GenericEditor {
                 { this.textInput('eventType', _t('Event Type')) }
                 <br />
 
-                <div className="mx_DevTools_inputLabelCell">
-                    <label htmlFor="evContent"> { _t('Event Content') } </label>
-                </div>
-                <div>
-                    <textarea id="evContent" onChange={this._onChange} value={this.state.evContent} className="mx_DevTools_textarea" />
-                </div>
+                <Field id="evContent" label={_t("Event Content")} type="text" className="mx_DevTools_textarea"
+                       autoComplete="off" value={this.state.evContent} onChange={this._onChange} element="textarea" />
             </div>
             <div className="mx_Dialog_buttons">
                 <button onClick={this.onBack}>{ _t('Back') }</button>
@@ -302,11 +289,12 @@ class FilteredList extends React.Component {
     render() {
         const TruncatedList = sdk.getComponent("elements.TruncatedList");
         return <div>
-            <input size="64"
-                   onChange={this.onQuery}
-                   value={this.props.query}
-                   placeholder={_t('Filter results')}
-                   className="mx_TextInputDialog_input mx_DevTools_RoomStateExplorer_query" />
+            <Field id="DevtoolsDialog_FilteredList_filter" label={_t('Filter results')} autoFocus={true} size={64}
+                   type="text" autoComplete="off" value={this.props.query} onChange={this.onQuery}
+                   className="mx_TextInputDialog_input mx_DevTools_RoomStateExplorer_query"
+                   // force re-render so that autoFocus is applied when this component is re-used
+                   key={this.props.children[0] ? this.props.children[0].key : ''} />
+
             <TruncatedList getChildren={this.getChildren}
                            getChildCount={this.getChildCount}
                            truncateAt={this.state.truncateAt}
@@ -414,10 +402,10 @@ class RoomStateExplorer extends DevtoolsComponent {
                         const stateKeys = Object.keys(stateGroup);
 
                         let onClickFn;
-                        if (stateKeys.length > 1) {
-                            onClickFn = this.browseEventType(evType);
-                        } else if (stateKeys.length === 1) {
+                        if (stateKeys.length === 1 && stateKeys[0] === '') {
                             onClickFn = this.onViewSourceClick(stateGroup[stateKeys[0]]);
+                        } else {
+                            onClickFn = this.browseEventType(evType);
                         }
 
                         return <button className={classes} key={evType} onClick={onClickFn}>

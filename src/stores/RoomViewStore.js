@@ -1,6 +1,6 @@
 /*
 Copyright 2017 Vector Creations Ltd
-Copyright 2017 New Vector Ltd
+Copyright 2017, 2018 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,8 +44,6 @@ const INITIAL_STATE = {
     forwardingEvent: null,
 
     quotingEvent: null,
-
-    isEditingSettings: false,
 };
 
 /**
@@ -118,16 +116,13 @@ class RoomViewStore extends Store {
                     replyingToEvent: payload.event,
                 });
                 break;
-            case 'open_room_settings':
-                this._setState({
-                    isEditingSettings: true,
-                });
+            case 'open_room_settings': {
+                const RoomSettingsDialog = sdk.getComponent("dialogs.RoomSettingsDialog");
+                Modal.createTrackedDialog('Room settings', '', RoomSettingsDialog, {
+                    roomId: payload.room_id || this._state.roomId,
+                }, 'mx_SettingsDialog', /*isPriority=*/false, /*isStatic=*/true);
                 break;
-            case 'close_settings':
-                this._setState({
-                    isEditingSettings: false,
-                });
-                break;
+            }
         }
     }
 
@@ -223,7 +218,18 @@ class RoomViewStore extends Store {
                 action: 'join_room_error',
                 err: err,
             });
-            const msg = err.message ? err.message : JSON.stringify(err);
+            let msg = err.message ? err.message : JSON.stringify(err);
+            // XXX: We are relying on the error message returned by browsers here.
+            // This isn't great, but it does generalize the error being shown to users.
+            if (msg && msg.startsWith("CORS request rejected")) {
+                msg = _t("There was an error joining the room");
+            }
+            if (err.errcode === 'M_INCOMPATIBLE_ROOM_VERSION') {
+                msg = <div>
+                    {_t("Sorry, your homeserver is too old to participate in this room.")}<br />
+                    {_t("Please contact your homeserver administrator.")}
+                </div>;
+            }
             const ErrorDialog = sdk.getComponent("dialogs.ErrorDialog");
             Modal.createTrackedDialog('Failed to join room', '', ErrorDialog, {
                 title: _t("Failed to join room"),
@@ -313,10 +319,6 @@ class RoomViewStore extends Store {
     // The mxEvent if one is currently being replied to/quoted
     getQuotingEvent() {
         return this._state.replyingToEvent;
-    }
-
-    isEditingSettings() {
-        return this._state.isEditingSettings;
     }
 
     shouldPeek() {
