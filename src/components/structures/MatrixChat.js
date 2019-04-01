@@ -1896,7 +1896,9 @@ export default React.createClass({
 
         let sendNotifCount = this.props.config.send_unread_notifications_to_parent;
         if (sendNotifCount && sendNotifCount.parent_origin) {
-            window.parent.postMessage('{"status":"im.vector.notif_status","msg":'+notifCount+'}', sendNotifCount.parent_origin);
+            window.parent.postMessage('{"status":"im.vector.notif_count","msg":'+notifCount+'}', sendNotifCount.parent_origin);
+        } else {
+            console.log("postMessage: "+JSON.stringify(sendNotifCount));
         }
         this._setPageSubtitle(subtitle);
     },
