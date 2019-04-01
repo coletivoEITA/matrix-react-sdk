@@ -17,7 +17,7 @@ limitations under the License.
 import commonmark from 'commonmark';
 import escape from 'lodash/escape';
 
-const ALLOWED_HTML_TAGS = ['del', 'u'];
+const ALLOWED_HTML_TAGS = ['sub', 'sup', 'del', 'u'];
 
 // These types of node are definitely text
 const TEXT_NODES = ['text', 'softbreak', 'linebreak', 'paragraph', 'document'];
@@ -48,7 +48,7 @@ function html_if_tag_allowed(node) {
  * or false if it is only a single line.
  */
 function is_multi_line(node) {
-    var par = node;
+    let par = node;
     while (par.parent) {
         par = par.parent;
     }
@@ -102,6 +102,16 @@ export default class Markdown {
             // (https://github.com/vector-im/riot-web/issues/3154)
             softbreak: '<br />',
         });
+
+        // Trying to strip out the wrapping <p/> causes a lot more complication
+        // than it's worth, i think.  For instance, this code will go and strip
+        // out any <p/> tag (no matter where it is in the tree) which doesn't
+        // contain \n's.
+        // On the flip side, <p/>s are quite opionated and restricted on where
+        // you can nest them.
+        //
+        // Let's try sending with <p/>s anyway for now, though.
+
         const real_paragraph = renderer.paragraph;
 
         renderer.paragraph = function(node, entering) {
@@ -115,16 +125,21 @@ export default class Markdown {
             }
         };
 
+
         renderer.html_inline = html_if_tag_allowed;
+
         renderer.html_block = function(node) {
+/*
             // as with `paragraph`, we only insert line breaks
             // if there are multiple lines in the markdown.
             const isMultiLine = is_multi_line(node);
-
             if (isMultiLine) this.cr();
+*/
             html_if_tag_allowed.call(this, node);
+/*
             if (isMultiLine) this.cr();
-        }
+*/
+        };
 
         return renderer.render(this.parsed);
     }
@@ -133,7 +148,10 @@ export default class Markdown {
      * Render the markdown message to plain text. That is, essentially
      * just remove any backslashes escaping what would otherwise be
      * markdown syntax
-     * (to fix https://github.com/vector-im/riot-web/issues/2870)
+     * (to fix https://github.com/vector-im/riot-web/issues/2870).
+     *
+     * N.B. this does **NOT** render arbitrary MD to plain text - only MD
+     * which has no formatting.  Otherwise it emits HTML(!).
      */
     toPlaintext() {
         const renderer = new commonmark.HtmlRenderer({safe: false});
@@ -156,10 +174,11 @@ export default class Markdown {
                 }
             }
         };
+
         renderer.html_block = function(node) {
             this.lit(node.literal);
             if (is_multi_line(node) && node.next) this.lit('\n\n');
-        }
+        };
 
         return renderer.render(this.parsed);
     }

@@ -1,6 +1,7 @@
 /*
 Copyright 2015, 2016 OpenMarket Ltd
 Copyright 2017 Vector Creations Ltd
+Copyright 2017, 2018 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +18,10 @@ limitations under the License.
 
 import * as Matrix from 'matrix-js-sdk';
 import React from 'react';
+import PropTypes from 'prop-types';
+import { DragDropContext } from 'react-beautiful-dnd';
 
-import UserSettingsStore from '../../UserSettingsStore';
-import KeyCode from '../../KeyCode';
+import { KeyCode, isOnlyCtrlOrCmdKeyEvent } from '../../Keyboard';
 import Notifier from '../../Notifier';
 import PageTypes from '../../PageTypes';
 import CallMediaHandler from '../../CallMediaHandler';
@@ -27,6 +29,18 @@ import sdk from '../../index';
 import dis from '../../dispatcher';
 import sessionStore from '../../stores/SessionStore';
 import MatrixClientPeg from '../../MatrixClientPeg';
+import SettingsStore from "../../settings/SettingsStore";
+import RoomListStore from "../../stores/RoomListStore";
+import { getHomePageUrl } from '../../utils/pages';
+
+import TagOrderActions from '../../actions/TagOrderActions';
+import RoomListActions from '../../actions/RoomListActions';
+import ResizeHandle from '../views/elements/ResizeHandle';
+import {Resizer, CollapseDistributor} from '../../resizer';
+// We need to fetch each pinned message individually (if we don't already have it)
+// so each pinned message may trigger a request. Limit the number per room for sanity.
+// NB. this is just for server notices rather than pinned messages in general.
+const MAX_PINNED_NOTICES_PER_ROOM = 2;
 
 /**
  * This is what our MatrixChat shows when we are logged in. The precise view is
@@ -37,27 +51,28 @@ import MatrixClientPeg from '../../MatrixClientPeg';
  *
  * Components mounted below us can access the matrix client via the react context.
  */
-export default React.createClass({
+const LoggedInView = React.createClass({
     displayName: 'LoggedInView',
 
     propTypes: {
-        matrixClient: React.PropTypes.instanceOf(Matrix.MatrixClient).isRequired,
-        page_type: React.PropTypes.string.isRequired,
-        onRoomCreated: React.PropTypes.func,
-        onUserSettingsClose: React.PropTypes.func,
+        matrixClient: PropTypes.instanceOf(Matrix.MatrixClient).isRequired,
+        page_type: PropTypes.string.isRequired,
+        onRoomCreated: PropTypes.func,
 
         // Called with the credentials of a registered user (if they were a ROU that
         // transitioned to PWLU)
-        onRegistered: React.PropTypes.func,
+        onRegistered: PropTypes.func,
+        collapsedRhs: PropTypes.bool,
 
-        teamToken: React.PropTypes.string,
+        // Used by the RoomView to handle joining rooms
+        viaServers: PropTypes.arrayOf(PropTypes.string),
 
         // and lots and lots of other stuff.
     },
 
     childContextTypes: {
-        matrixClient: React.PropTypes.instanceOf(Matrix.MatrixClient),
-        authCache: React.PropTypes.object,
+        matrixClient: PropTypes.instanceOf(Matrix.MatrixClient),
+        authCache: PropTypes.object,
     },
 
     getChildContext: function() {
@@ -73,17 +88,21 @@ export default React.createClass({
     getInitialState: function() {
         return {
             // use compact timeline view
-            useCompactLayout: UserSettingsStore.getSyncedSetting('useCompactLayout'),
+            useCompactLayout: SettingsStore.getValue('useCompactLayout'),
+            // any currently active server notice events
+            serverNoticeEvents: [],
         };
+    },
+
+    componentDidMount: function() {
+        this.resizer = this._createResizer();
+        this.resizer.attach();
+        this._loadResizerPreferences();
     },
 
     componentWillMount: function() {
         // stash the MatrixClient in case we log out before we are unmounted
         this._matrixClient = this.props.matrixClient;
-
-        // _scrollStateMap is a map from room id to the scroll state returned by
-        // RoomView.getScrollState()
-        this._scrollStateMap = {};
 
         CallMediaHandler.loadDevices();
 
@@ -95,15 +114,22 @@ export default React.createClass({
         );
         this._setStateFromSessionStore();
 
+        this._updateServerNoticeEvents();
+
         this._matrixClient.on("accountData", this.onAccountData);
+        this._matrixClient.on("sync", this.onSync);
+        this._matrixClient.on("RoomState.events", this.onRoomStateEvents);
     },
 
     componentWillUnmount: function() {
         document.removeEventListener('keydown', this._onKeyDown);
         this._matrixClient.removeListener("accountData", this.onAccountData);
+        this._matrixClient.removeListener("sync", this.onSync);
+        this._matrixClient.removeListener("RoomState.events", this.onRoomStateEvents);
         if (this._sessionStoreToken) {
             this._sessionStoreToken.remove();
         }
+        this.resizer.detach();
     },
 
     // Child components assume that the client peg will not be null, so give them some
@@ -114,10 +140,6 @@ export default React.createClass({
     // attempt to re-render and the children will throw errors.
     shouldComponentUpdate: function() {
         return Boolean(MatrixClientPeg.get());
-    },
-
-    getScrollStateForRoom: function(roomId) {
-        return this._scrollStateMap[roomId];
     },
 
     canResetTimelineInRoom: function(roomId) {
@@ -133,13 +155,108 @@ export default React.createClass({
         });
     },
 
+    _createResizer() {
+        const classNames = {
+            handle: "mx_ResizeHandle",
+            vertical: "mx_ResizeHandle_vertical",
+            reverse: "mx_ResizeHandle_reverse",
+        };
+        const collapseConfig = {
+            toggleSize: 260 - 50,
+            onCollapsed: (collapsed) => {
+                if (collapsed) {
+                    dis.dispatch({action: "hide_left_panel"}, true);
+                    window.localStorage.setItem("mx_lhs_size", '0');
+                } else {
+                    dis.dispatch({action: "show_left_panel"}, true);
+                }
+            },
+            onResized: (size) => {
+                window.localStorage.setItem("mx_lhs_size", '' + size);
+            },
+        };
+        const resizer = new Resizer(
+            this.resizeContainer,
+            CollapseDistributor,
+            collapseConfig);
+        resizer.setClassNames(classNames);
+        return resizer;
+    },
+
+    _loadResizerPreferences() {
+        let lhsSize = window.localStorage.getItem("mx_lhs_size");
+        if (lhsSize !== null) {
+            lhsSize = parseInt(lhsSize, 10);
+        } else {
+            lhsSize = 350;
+        }
+        this.resizer.forHandleAt(0).resize(lhsSize);
+    },
+
     onAccountData: function(event) {
         if (event.getType() === "im.vector.web.settings") {
             this.setState({
                 useCompactLayout: event.getContent().useCompactLayout,
             });
         }
+        if (event.getType() === "m.ignored_user_list") {
+            dis.dispatch({action: "ignore_state_changed"});
+        }
     },
+
+    onSync: function(syncState, oldSyncState, data) {
+        const oldErrCode = (
+            this.state.syncErrorData &&
+            this.state.syncErrorData.error &&
+            this.state.syncErrorData.error.errcode
+        );
+        const newErrCode = data && data.error && data.error.errcode;
+        if (syncState === oldSyncState && oldErrCode === newErrCode) return;
+
+        if (syncState === 'ERROR') {
+            this.setState({
+                syncErrorData: data,
+            });
+        } else {
+            this.setState({
+                syncErrorData: null,
+            });
+        }
+
+        if (oldSyncState === 'PREPARED' && syncState === 'SYNCING') {
+            this._updateServerNoticeEvents();
+        }
+    },
+
+    onRoomStateEvents: function(ev, state) {
+        const roomLists = RoomListStore.getRoomLists();
+        if (roomLists['m.server_notice'] && roomLists['m.server_notice'].some(r => r.roomId === ev.getRoomId())) {
+            this._updateServerNoticeEvents();
+        }
+    },
+
+    _updateServerNoticeEvents: async function() {
+        const roomLists = RoomListStore.getRoomLists();
+        if (!roomLists['m.server_notice']) return [];
+
+        const pinnedEvents = [];
+        for (const room of roomLists['m.server_notice']) {
+            const pinStateEvent = room.currentState.getStateEvents("m.room.pinned_events", "");
+
+            if (!pinStateEvent || !pinStateEvent.getContent().pinned) continue;
+
+            const pinnedEventIds = pinStateEvent.getContent().pinned.slice(0, MAX_PINNED_NOTICES_PER_ROOM);
+            for (const eventId of pinnedEventIds) {
+                const timeline = await this._matrixClient.getEventTimeline(room.getUnfilteredTimelineSet(), eventId, 0);
+                const ev = timeline.getEvents().find(ev => ev.getId() === eventId);
+                if (ev) pinnedEvents.push(ev);
+            }
+        }
+        this.setState({
+            serverNoticeEvents: pinnedEvents,
+        });
+    },
+
 
     _onKeyDown: function(ev) {
             /*
@@ -157,19 +274,13 @@ export default React.createClass({
             */
 
         let handled = false;
-        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-        let ctrlCmdOnly;
-        if (isMac) {
-            ctrlCmdOnly = ev.metaKey && !ev.altKey && !ev.ctrlKey && !ev.shiftKey;
-        } else {
-            ctrlCmdOnly = ev.ctrlKey && !ev.altKey && !ev.metaKey && !ev.shiftKey;
-        }
+        const ctrlCmdOnly = isOnlyCtrlOrCmdKeyEvent(ev);
 
         switch (ev.keyCode) {
             case KeyCode.UP:
             case KeyCode.DOWN:
                 if (ev.altKey && !ev.shiftKey && !ev.ctrlKey && !ev.metaKey) {
-                    let action = ev.keyCode == KeyCode.UP ?
+                    const action = ev.keyCode == KeyCode.UP ?
                         'view_prev_room' : 'view_next_room';
                     dis.dispatch({action: action});
                     handled = true;
@@ -207,113 +318,194 @@ export default React.createClass({
         }
     },
 
-    /** dispatch a page-up/page-down/etc to the appropriate component */
+    /**
+     * dispatch a page-up/page-down/etc to the appropriate component
+     * @param {Object} ev The key event
+     */
     _onScrollKeyPressed: function(ev) {
         if (this.refs.roomView) {
             this.refs.roomView.handleScrollKey(ev);
         }
-        else if (this.refs.roomDirectory) {
-            this.refs.roomDirectory.handleScrollKey(ev);
+    },
+
+    _onDragEnd: function(result) {
+        // Dragged to an invalid destination, not onto a droppable
+        if (!result.destination) {
+            return;
         }
+
+        const dest = result.destination.droppableId;
+
+        if (dest === 'tag-panel-droppable') {
+            // Could be "GroupTile +groupId:domain"
+            const draggableId = result.draggableId.split(' ').pop();
+
+            // Dispatch synchronously so that the TagPanel receives an
+            // optimistic update from TagOrderStore before the previous
+            // state is shown.
+            dis.dispatch(TagOrderActions.moveTag(
+                this._matrixClient,
+                draggableId,
+                result.destination.index,
+            ), true);
+        } else if (dest.startsWith('room-sub-list-droppable_')) {
+            this._onRoomTileEndDrag(result);
+        }
+    },
+
+    _onRoomTileEndDrag: function(result) {
+        let newTag = result.destination.droppableId.split('_')[1];
+        let prevTag = result.source.droppableId.split('_')[1];
+        if (newTag === 'undefined') newTag = undefined;
+        if (prevTag === 'undefined') prevTag = undefined;
+
+        const roomId = result.draggableId.split('_')[1];
+
+        const oldIndex = result.source.index;
+        const newIndex = result.destination.index;
+
+        dis.dispatch(RoomListActions.tagRoom(
+            this._matrixClient,
+            this._matrixClient.getRoom(roomId),
+            prevTag, newTag,
+            oldIndex, newIndex,
+        ), true);
+    },
+
+    _onMouseDown: function(ev) {
+        // When the panels are disabled, clicking on them results in a mouse event
+        // which bubbles to certain elements in the tree. When this happens, close
+        // any settings page that is currently open (user/room/group).
+        if (this.props.leftDisabled && this.props.rightDisabled) {
+            const targetClasses = new Set(ev.target.className.split(' '));
+            if (
+                targetClasses.has('mx_MatrixChat') ||
+                targetClasses.has('mx_MatrixChat_middlePanel') ||
+                targetClasses.has('mx_RoomView')
+            ) {
+                this.setState({
+                    mouseDown: {
+                        x: ev.pageX,
+                        y: ev.pageY,
+                    },
+                });
+            }
+        }
+    },
+
+    _onMouseUp: function(ev) {
+        if (!this.state.mouseDown) return;
+
+        const deltaX = ev.pageX - this.state.mouseDown.x;
+        const deltaY = ev.pageY - this.state.mouseDown.y;
+        const distance = Math.sqrt((deltaX * deltaX) + (deltaY + deltaY));
+        const maxRadius = 5; // People shouldn't be straying too far, hopefully
+
+        // Note: we track how far the user moved their mouse to help
+        // combat against https://github.com/vector-im/riot-web/issues/7158
+
+        if (distance < maxRadius) {
+            // This is probably a real click, and not a drag
+            dis.dispatch({ action: 'close_settings' });
+        }
+
+        // Always clear the mouseDown state to ensure we don't accidentally
+        // use stale values due to the mouseDown checks.
+        this.setState({mouseDown: null});
+    },
+
+    _setResizeContainerRef(div) {
+        this.resizeContainer = div;
     },
 
     render: function() {
         const LeftPanel = sdk.getComponent('structures.LeftPanel');
-        const RightPanel = sdk.getComponent('structures.RightPanel');
         const RoomView = sdk.getComponent('structures.RoomView');
-        const UserSettings = sdk.getComponent('structures.UserSettings');
-        const CreateRoom = sdk.getComponent('structures.CreateRoom');
-        const RoomDirectory = sdk.getComponent('structures.RoomDirectory');
-        const HomePage = sdk.getComponent('structures.HomePage');
+        const UserView = sdk.getComponent('structures.UserView');
+        const EmbeddedPage = sdk.getComponent('structures.EmbeddedPage');
         const GroupView = sdk.getComponent('structures.GroupView');
         const MyGroups = sdk.getComponent('structures.MyGroups');
         const MatrixToolbar = sdk.getComponent('globals.MatrixToolbar');
+        const CookieBar = sdk.getComponent('globals.CookieBar');
         const NewVersionBar = sdk.getComponent('globals.NewVersionBar');
         const UpdateCheckBar = sdk.getComponent('globals.UpdateCheckBar');
         const PasswordNagBar = sdk.getComponent('globals.PasswordNagBar');
+        const ServerLimitBar = sdk.getComponent('globals.ServerLimitBar');
 
-        let page_element;
-        let right_panel = '';
+        let pageElement;
 
         switch (this.props.page_type) {
             case PageTypes.RoomView:
-                page_element = <RoomView
+                pageElement = <RoomView
                         ref='roomView'
                         autoJoin={this.props.autoJoin}
                         onRegistered={this.props.onRegistered}
                         thirdPartyInvite={this.props.thirdPartyInvite}
                         oobData={this.props.roomOobData}
+                        viaServers={this.props.viaServers}
                         eventPixelOffset={this.props.initialEventPixelOffset}
                         key={this.props.currentRoomId || 'roomview'}
-                        opacity={this.props.middleOpacity}
-                        collapsedRhs={this.props.collapse_rhs}
+                        disabled={this.props.middleDisabled}
+                        collapsedRhs={this.props.collapsedRhs}
                         ConferenceHandler={this.props.ConferenceHandler}
-                        scrollStateMap={this._scrollStateMap}
                     />;
-                if (!this.props.collapse_rhs) right_panel = <RightPanel roomId={this.props.currentRoomId} opacity={this.props.rightOpacity} />;
-                break;
-
-            case PageTypes.UserSettings:
-                page_element = <UserSettings
-                    onClose={this.props.onUserSettingsClose}
-                    brand={this.props.config.brand}
-                    enableLabs={this.props.config.enableLabs}
-                    referralBaseUrl={this.props.config.referralBaseUrl}
-                    teamToken={this.props.teamToken}
-                />;
-                if (!this.props.collapse_rhs) right_panel = <RightPanel opacity={this.props.rightOpacity}/>;
                 break;
 
             case PageTypes.MyGroups:
-                page_element = <MyGroups />;
-                break;
-
-            case PageTypes.CreateRoom:
-                page_element = <CreateRoom
-                    onRoomCreated={this.props.onRoomCreated}
-                    collapsedRhs={this.props.collapse_rhs}
-                />;
-                if (!this.props.collapse_rhs) right_panel = <RightPanel opacity={this.props.rightOpacity}/>;
+                pageElement = <MyGroups />;
                 break;
 
             case PageTypes.RoomDirectory:
-                page_element = <RoomDirectory
-                    ref="roomDirectory"
-                    config={this.props.config.roomDirectory}
-                />;
+                // handled by MatrixChat for now
                 break;
 
             case PageTypes.HomePage:
                 {
-                    // If team server config is present, pass the teamServerURL. props.teamToken
-                    // must also be set for the team page to be displayed, otherwise the
-                    // welcomePageUrl is used (which might be undefined).
-                    const teamServerUrl = this.props.config.teamServerConfig ?
-                        this.props.config.teamServerConfig.teamServerURL : null;
-
-                    page_element = <HomePage
-                        teamServerUrl={teamServerUrl}
-                        teamToken={this.props.teamToken}
-                        homePageUrl={this.props.config.welcomePageUrl}
+                    const pageUrl = getHomePageUrl(this.props.config);
+                    pageElement = <EmbeddedPage className="mx_HomePage"
+                        url={pageUrl}
+                        scrollbar={true}
                     />;
                 }
                 break;
 
             case PageTypes.UserView:
-                page_element = null; // deliberately null for now
-                right_panel = <RightPanel userId={this.props.viewUserId} opacity={this.props.rightOpacity} />;
+                pageElement = <UserView userId={this.props.currentUserId} />;
                 break;
             case PageTypes.GroupView:
-                page_element = <GroupView
+                pageElement = <GroupView
                     groupId={this.props.currentGroupId}
+                    isNew={this.props.currentGroupIsNew}
+                    collapsedRhs={this.props.collapsedRhs}
                 />;
-                //right_panel = <RightPanel userId={this.props.viewUserId} opacity={this.props.rightOpacity} />;
                 break;
         }
 
+        const usageLimitEvent = this.state.serverNoticeEvents.find((e) => {
+            return (
+                e && e.getType() === 'm.room.message' &&
+                e.getContent()['server_notice_type'] === 'm.server_notice.usage_limit_reached'
+            );
+        });
+
         let topBar;
         const isGuest = this.props.matrixClient.isGuest();
-        if (this.props.hasNewVersion) {
+        if (this.state.syncErrorData && this.state.syncErrorData.error.errcode === 'M_RESOURCE_LIMIT_EXCEEDED') {
+            topBar = <ServerLimitBar kind='hard'
+                adminContact={this.state.syncErrorData.error.data.admin_contact}
+                limitType={this.state.syncErrorData.error.data.limit_type}
+            />;
+        } else if (usageLimitEvent) {
+            topBar = <ServerLimitBar kind='soft'
+                adminContact={usageLimitEvent.getContent().admin_contact}
+                limitType={usageLimitEvent.getContent().limit_type}
+            />;
+        } else if (this.props.showCookieBar &&
+            this.props.config.piwik
+        ) {
+            const policyUrl = this.props.config.piwik.policyUrl || null;
+            topBar = <CookieBar policyUrl={policyUrl} />;
+        } else if (this.props.hasNewVersion) {
             topBar = <NewVersionBar version={this.props.version} newVersion={this.props.newVersion}
                                     releaseNotes={this.props.newVersionReleaseNotes}
             />;
@@ -321,11 +513,14 @@ export default React.createClass({
             topBar = <UpdateCheckBar {...this.props.checkingForUpdate} />;
         } else if (this.state.userHasGeneratedPassword) {
             topBar = <PasswordNagBar />;
-        } else if (!isGuest && Notifier.supportsDesktopNotifications() && !Notifier.isEnabled() && !Notifier.isToolbarHidden()) {
+        } else if (
+            !isGuest && Notifier.supportsDesktopNotifications() &&
+            !Notifier.isEnabled() && !Notifier.isToolbarHidden()
+        ) {
             topBar = <MatrixToolbar />;
         }
 
-        var bodyClasses = 'mx_MatrixChat';
+        let bodyClasses = 'mx_MatrixChat';
         if (topBar) {
             bodyClasses += ' mx_MatrixChat_toolbarShowing';
         }
@@ -334,20 +529,22 @@ export default React.createClass({
         }
 
         return (
-            <div className='mx_MatrixChat_wrapper'>
-                {topBar}
-                <div className={bodyClasses}>
-                    <LeftPanel
-                        selectedRoom={this.props.currentRoomId}
-                        collapsed={this.props.collapse_lhs || false}
-                        opacity={this.props.leftOpacity}
-                    />
-                    <main className='mx_MatrixChat_middlePanel'>
-                        {page_element}
-                    </main>
-                    {right_panel}
-                </div>
+            <div className='mx_MatrixChat_wrapper' aria-hidden={this.props.hideToSRUsers} onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp}>
+                { topBar }
+                <DragDropContext onDragEnd={this._onDragEnd}>
+                    <div ref={this._setResizeContainerRef} className={bodyClasses}>
+                        <LeftPanel
+                            toolbarShown={!!topBar}
+                            collapsed={this.props.collapseLhs || false}
+                            disabled={this.props.leftDisabled}
+                        />
+                        <ResizeHandle />
+                        { pageElement }
+                    </div>
+                </DragDropContext>
             </div>
         );
     },
 });
+
+export default LoggedInView;

@@ -23,6 +23,47 @@ export const ALL_MESSAGES = 'all_messages';
 export const MENTIONS_ONLY = 'mentions_only';
 export const MUTE = 'mute';
 
+
+function _shouldShowNotifBadge(roomNotifState) {
+    const showBadgeInStates = [ALL_MESSAGES, ALL_MESSAGES_LOUD];
+    return showBadgeInStates.indexOf(roomNotifState) > -1;
+}
+
+function _shouldShowMentionBadge(roomNotifState) {
+    return roomNotifState !== MUTE;
+}
+
+export function aggregateNotificationCount(rooms) {
+    return rooms.reduce((result, room, index) => {
+        const roomNotifState = getRoomNotifsState(room.roomId);
+        const highlight = room.getUnreadNotificationCount('highlight') > 0;
+        const notificationCount = room.getUnreadNotificationCount();
+
+        const notifBadges = notificationCount > 0 && _shouldShowNotifBadge(roomNotifState);
+        const mentionBadges = highlight && _shouldShowMentionBadge(roomNotifState);
+        const badges = notifBadges || mentionBadges;
+
+        if (badges) {
+            result.count += notificationCount;
+            if (highlight) {
+                result.highlight = true;
+            }
+        }
+        return result;
+    }, {count: 0, highlight: false});
+}
+
+export function getRoomHasBadge(room) {
+    const roomNotifState = getRoomNotifsState(room.roomId);
+    const highlight = room.getUnreadNotificationCount('highlight') > 0;
+    const notificationCount = room.getUnreadNotificationCount();
+
+    const notifBadges = notificationCount > 0 && _shouldShowNotifBadge(roomNotifState);
+    const mentionBadges = highlight && _shouldShowMentionBadge(roomNotifState);
+
+    return notifBadges || mentionBadges;
+}
+
 export function getRoomNotifsState(roomId) {
     if (MatrixClientPeg.get().isGuest()) return ALL_MESSAGES;
 
@@ -34,7 +75,14 @@ export function getRoomNotifsState(roomId) {
     }
 
     // for everything else, look at the room rule.
-    const roomRule = MatrixClientPeg.get().getRoomPushRule('global', roomId);
+    let roomRule = null;
+    try {
+        roomRule = MatrixClientPeg.get().getRoomPushRule('global', roomId);
+    } catch (err) {
+        // Possible that the client doesn't have pushRules yet. If so, it
+        // hasn't started eiher, so indicate that this room is not notifying.
+        return null;
+    }
 
     // XXX: We have to assume the default is to notify for all messages
     // (in particular this will be 'wrong' for one to one rooms because
@@ -130,6 +178,11 @@ function setRoomNotifsStateUnmuted(roomId, newState) {
 }
 
 function findOverrideMuteRule(roomId) {
+    if (!MatrixClientPeg.get().pushRules ||
+        !MatrixClientPeg.get().pushRules['global'] ||
+        !MatrixClientPeg.get().pushRules['global'].override) {
+        return null;
+    }
     for (const rule of MatrixClientPeg.get().pushRules['global'].override) {
         if (isRuleForRoom(roomId, rule)) {
             if (isMuteRule(rule) && rule.enabled) {

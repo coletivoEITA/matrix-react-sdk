@@ -1,5 +1,6 @@
 /*
 Copyright 2015, 2016 OpenMarket Ltd
+Copyright 2018 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,22 +17,26 @@ limitations under the License.
 
 'use strict';
 
-var React = require('react');
-
-var MatrixClientPeg = require('../../../MatrixClientPeg');
-var sdk = require('../../../index');
+const React = require('react');
+import PropTypes from 'prop-types';
+const sdk = require('../../../index');
 import AccessibleButton from '../elements/AccessibleButton';
 import { _t } from '../../../languageHandler';
+import classNames from "classnames";
 
 
-var PRESENCE_CLASS = {
+const PRESENCE_CLASS = {
     "offline": "mx_EntityTile_offline",
     "online": "mx_EntityTile_online",
-    "unavailable": "mx_EntityTile_unavailable"
+    "unavailable": "mx_EntityTile_unavailable",
 };
 
 
-function presenceClassForMember(presenceState, lastActiveAgo) {
+function presenceClassForMember(presenceState, lastActiveAgo, showPresence) {
+    if (showPresence === false) {
+        return 'mx_EntityTile_online_beenactive';
+    }
+
     // offline is split into two categories depending on whether we have
     // a last_active_ago for them.
     if (presenceState == 'offline') {
@@ -47,22 +52,24 @@ function presenceClassForMember(presenceState, lastActiveAgo) {
     }
 }
 
-module.exports = React.createClass({
+const EntityTile = React.createClass({
     displayName: 'EntityTile',
 
     propTypes: {
-        name: React.PropTypes.string,
-        title: React.PropTypes.string,
-        avatarJsx: React.PropTypes.any, // <BaseAvatar />
-        className: React.PropTypes.string,
-        presenceState: React.PropTypes.string,
-        presenceLastActiveAgo: React.PropTypes.number,
-        presenceLastTs: React.PropTypes.number,
-        presenceCurrentlyActive: React.PropTypes.bool,
-        showInviteButton: React.PropTypes.bool,
-        shouldComponentUpdate: React.PropTypes.func,
-        onClick: React.PropTypes.func,
-        suppressOnHover: React.PropTypes.bool
+        name: PropTypes.string,
+        title: PropTypes.string,
+        avatarJsx: PropTypes.any, // <BaseAvatar />
+        className: PropTypes.string,
+        presenceState: PropTypes.string,
+        presenceLastActiveAgo: PropTypes.number,
+        presenceLastTs: PropTypes.number,
+        presenceCurrentlyActive: PropTypes.bool,
+        showInviteButton: PropTypes.bool,
+        shouldComponentUpdate: PropTypes.func,
+        onClick: PropTypes.func,
+        suppressOnHover: PropTypes.bool,
+        showPresence: PropTypes.bool,
+        subtextLabel: PropTypes.string,
     },
 
     getDefaultProps: function() {
@@ -73,13 +80,14 @@ module.exports = React.createClass({
             presenceLastActiveAgo: 0,
             presenceLastTs: 0,
             showInviteButton: false,
-            suppressOnHover: false
+            suppressOnHover: false,
+            showPresence: true,
         };
     },
 
     getInitialState: function() {
         return {
-            hover: false
+            hover: false,
         };
     },
 
@@ -88,82 +96,105 @@ module.exports = React.createClass({
         return this.props.shouldComponentUpdate(nextProps, nextState);
     },
 
-    mouseEnter: function(e) {
-        this.setState({ 'hover': true });
-    },
-
-    mouseLeave: function(e) {
-        this.setState({ 'hover': false });
-    },
-
     render: function() {
-        const presenceClass = presenceClassForMember(
-            this.props.presenceState, this.props.presenceLastActiveAgo
-        );
+        const mainClassNames = {
+            "mx_EntityTile": true,
+            "mx_EntityTile_noHover": this.props.suppressOnHover,
+        };
+        if (this.props.className) mainClassNames[this.props.className] = true;
 
-        var mainClassName = "mx_EntityTile ";
-        mainClassName += presenceClass + (this.props.className ? (" " + this.props.className) : "");
-        var nameEl;
+        const presenceClass = presenceClassForMember(
+            this.props.presenceState, this.props.presenceLastActiveAgo, this.props.showPresence,
+        );
+        mainClassNames[presenceClass] = true;
+
+        let nameEl;
         const {name} = this.props;
 
         const EmojiText = sdk.getComponent('elements.EmojiText');
-        if (this.state.hover && !this.props.suppressOnHover) {
-            var activeAgo = this.props.presenceLastActiveAgo ?
+        if (!this.props.suppressOnHover) {
+            const activeAgo = this.props.presenceLastActiveAgo ?
                 (Date.now() - (this.props.presenceLastTs - this.props.presenceLastActiveAgo)) : -1;
 
-            mainClassName += " mx_EntityTile_hover";
-            var PresenceLabel = sdk.getComponent("rooms.PresenceLabel");
+            const PresenceLabel = sdk.getComponent("rooms.PresenceLabel");
+            let presenceLabel = null;
+            if (this.props.showPresence) {
+                presenceLabel = <PresenceLabel activeAgo={activeAgo}
+                    currentlyActive={this.props.presenceCurrentlyActive}
+                    presenceState={this.props.presenceState} />;
+            }
+            if (this.props.subtextLabel) {
+                presenceLabel = <span className="mx_EntityTile_subtext">{this.props.subtextLabel}</span>;
+            }
             nameEl = (
                 <div className="mx_EntityTile_details">
-                    <img className="mx_EntityTile_chevron" src="img/member_chevron.png" width="8" height="12"/>
-                    <EmojiText element="div" className="mx_EntityTile_name_hover" dir="auto">{name}</EmojiText>
-                    <PresenceLabel activeAgo={ activeAgo }
-                        currentlyActive={this.props.presenceCurrentlyActive}
-                        presenceState={this.props.presenceState} />
+                    <EmojiText element="div" className="mx_EntityTile_name" dir="auto">
+                        { name }
+                    </EmojiText>
+                    {presenceLabel}
                 </div>
             );
-        }
-        else {
+        } else if (this.props.subtextLabel) {
             nameEl = (
-                <EmojiText element="div" className="mx_EntityTile_name" dir="auto">{name}</EmojiText>
+                <div className="mx_EntityTile_details">
+                    <EmojiText element="div" className="mx_EntityTile_name" dir="auto">
+                        {name}
+                    </EmojiText>
+                    <span className="mx_EntityTile_subtext">{this.props.subtextLabel}</span>
+                </div>
+            );
+        } else {
+            nameEl = (
+                <EmojiText element="div" className="mx_EntityTile_name" dir="auto">{ name }</EmojiText>
             );
         }
 
-        var inviteButton;
+        let inviteButton;
         if (this.props.showInviteButton) {
             inviteButton = (
                 <div className="mx_EntityTile_invite">
-                    <img src="img/plus.svg" width="16" height="16" />
+                    <img src={require("../../../../res/img/plus.svg")} width="16" height="16" />
                 </div>
             );
         }
 
-        var power;
-        var powerLevel = this.props.powerLevel;
-        if (powerLevel >= 50 && powerLevel < 99) {
-            power = <img src="img/mod.svg" className="mx_EntityTile_power" width="16" height="17" alt={_t("Moderator")}/>;
+        let power;
+        const powerStatus = this.props.powerStatus;
+        if (powerStatus) {
+            const src = {
+                [EntityTile.POWER_STATUS_MODERATOR]: require("../../../../res/img/mod.svg"),
+                [EntityTile.POWER_STATUS_ADMIN]: require("../../../../res/img/admin.svg"),
+            }[powerStatus];
+            const alt = {
+                [EntityTile.POWER_STATUS_MODERATOR]: _t("Moderator"),
+                [EntityTile.POWER_STATUS_ADMIN]: _t("Admin"),
+            }[powerStatus];
+            power = <img src={src} className="mx_EntityTile_power" width="16" height="17" alt={alt} />;
         }
-        if (powerLevel >= 99) {
-            power = <img src="img/admin.svg" className="mx_EntityTile_power" width="16" height="17" alt={_t("Admin")}/>;
-        }
 
+        const BaseAvatar = sdk.getComponent('avatars.BaseAvatar');
 
-        var MemberAvatar = sdk.getComponent('avatars.MemberAvatar');
-        var BaseAvatar = sdk.getComponent('avatars.BaseAvatar');
+        const av = this.props.avatarJsx || <BaseAvatar name={this.props.name} width={36} height={36} />;
 
-        var av = this.props.avatarJsx || <BaseAvatar name={this.props.name} width={36} height={36} />;
-
+        // The wrapping div is required to make the magic mouse listener work, for some reason.
         return (
-            <AccessibleButton className={mainClassName} title={ this.props.title }
-                    onClick={ this.props.onClick } onMouseEnter={ this.mouseEnter }
-                    onMouseLeave={ this.mouseLeave }>
-                <div className="mx_EntityTile_avatar">
-                    { av }
-                    { power }
-                </div>
-                { nameEl }
-                { inviteButton }
-            </AccessibleButton>
+            <div ref={(c) => this.container = c} >
+                <AccessibleButton className={classNames(mainClassNames)} title={this.props.title}
+                                  onClick={this.props.onClick}>
+                    <div className="mx_EntityTile_avatar">
+                        { av }
+                        { power }
+                    </div>
+                    { nameEl }
+                    { inviteButton }
+                </AccessibleButton>
+            </div>
         );
-    }
+    },
 });
+
+EntityTile.POWER_STATUS_MODERATOR = "moderator";
+EntityTile.POWER_STATUS_ADMIN = "admin";
+
+
+export default EntityTile;

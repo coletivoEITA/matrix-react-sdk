@@ -23,7 +23,7 @@ const localStorage = window.localStorage;
 let indexedDB;
 try {
     indexedDB = window.indexedDB;
-} catch(e) {}
+} catch (e) {}
 
 /**
  * Create a new matrix client, with the persistent stores set up appropriately
@@ -32,23 +32,27 @@ try {
  * @param {Object} opts  options to pass to Matrix.createClient. This will be
  *    extended with `sessionStore` and `store` members.
  *
+ * @param {bool} useIndexedDb True to attempt to use indexeddb, or false to force
+ *     use of the memory store. Default: true.
+ *
  * @property {string} indexedDbWorkerScript  Optional URL for a web worker script
  *    for IndexedDB store operations. By default, indexeddb ops are done on
  *    the main thread.
  *
  * @returns {MatrixClient} the newly-created MatrixClient
  */
-export default function createMatrixClient(opts) {
-    const storeOpts = {};
+export default function createMatrixClient(opts, useIndexedDb) {
+    if (useIndexedDb === undefined) useIndexedDb = true;
+
+    const storeOpts = {
+        useAuthorizationHeader: true,
+    };
 
     if (localStorage) {
         storeOpts.sessionStore = new Matrix.WebStorageSessionStore(localStorage);
     }
 
-    if (indexedDB && localStorage) {
-        // FIXME: bodge to remove old database. Remove this after a few weeks.
-        indexedDB.deleteDatabase("matrix-js-sdk:default");
-
+    if (indexedDB && localStorage && useIndexedDb) {
         storeOpts.store = new Matrix.IndexedDBStore({
             indexedDB: indexedDB,
             dbName: "riot-web-sync",

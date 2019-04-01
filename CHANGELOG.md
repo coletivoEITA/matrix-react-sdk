@@ -1,3 +1,3206 @@
+Changes in [1.0.5](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.5) (2019-03-21)
+===================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.4...v1.0.5)
+
+ * Hotfix: disable typing notifs jumping prevention for now
+   [\#2811](https://github.com/matrix-org/matrix-react-sdk/pull/2811)
+
+Changes in [1.0.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.4) (2019-03-18)
+===================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.4-rc.1...v1.0.4)
+
+ * No changes since rc.1
+
+Changes in [1.0.4-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.4-rc.1) (2019-03-13)
+=============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.3...v1.0.4-rc.1)
+
+ * Update from Weblate
+   [\#2785](https://github.com/matrix-org/matrix-react-sdk/pull/2785)
+ * Remove padlock click handler to show unknown devices
+   [\#2784](https://github.com/matrix-org/matrix-react-sdk/pull/2784)
+ * Use modern Yarn version on Travis CI
+   [\#2783](https://github.com/matrix-org/matrix-react-sdk/pull/2783)
+ * Add versioning to integration manager API /register and /account calls
+   [\#2782](https://github.com/matrix-org/matrix-react-sdk/pull/2782)
+ * Ensure scalar_token is valid before opening integrations manager
+   [\#2777](https://github.com/matrix-org/matrix-react-sdk/pull/2777)
+ * Switch to `yarn` for dependency management
+   [\#2773](https://github.com/matrix-org/matrix-react-sdk/pull/2773)
+ * Use a distinct color for selected autocomplete items
+   [\#2778](https://github.com/matrix-org/matrix-react-sdk/pull/2778)
+ * Provide an escape from the registration process
+   [\#2775](https://github.com/matrix-org/matrix-react-sdk/pull/2775)
+ * Fix instantly sending RRs
+   [\#2770](https://github.com/matrix-org/matrix-react-sdk/pull/2770)
+ * Fix simple header counters to correctly handle zero, take two
+   [\#2776](https://github.com/matrix-org/matrix-react-sdk/pull/2776)
+ * Fix sticky hover state by listening for hover on the document
+   [\#2764](https://github.com/matrix-org/matrix-react-sdk/pull/2764)
+ * Fix header counters to correctly handle zero
+   [\#2772](https://github.com/matrix-org/matrix-react-sdk/pull/2772)
+ * Pass correct args when creating event permalink in context menu
+   [\#2774](https://github.com/matrix-org/matrix-react-sdk/pull/2774)
+ * Update from Weblate
+   [\#2771](https://github.com/matrix-org/matrix-react-sdk/pull/2771)
+ * Scroll investigation changes
+   [\#2766](https://github.com/matrix-org/matrix-react-sdk/pull/2766)
+ * Ability to bulk accept all invites (and fix rejecting all invites)
+   [\#2757](https://github.com/matrix-org/matrix-react-sdk/pull/2757)
+ * Don't trample over existing sessions when verifying email addresses
+   [\#2768](https://github.com/matrix-org/matrix-react-sdk/pull/2768)
+ * Misc fixes to StatusMessageContextMenu
+   [\#2767](https://github.com/matrix-org/matrix-react-sdk/pull/2767)
+ * Fix erroneously sending RRs, pt1.
+   [\#2769](https://github.com/matrix-org/matrix-react-sdk/pull/2769)
+ * Tweak country dropdown for redesign
+   [\#2765](https://github.com/matrix-org/matrix-react-sdk/pull/2765)
+ * Prevent space characters from stopping big emoji messages
+   [\#2745](https://github.com/matrix-org/matrix-react-sdk/pull/2745)
+ * Tweak auth components when dark theme is default
+   [\#2763](https://github.com/matrix-org/matrix-react-sdk/pull/2763)
+ * Move country dropdown inside field in Settings
+   [\#2756](https://github.com/matrix-org/matrix-react-sdk/pull/2756)
+ * npm audit fix --force
+   [\#2758](https://github.com/matrix-org/matrix-react-sdk/pull/2758)
+ * Use Field component in auth flows
+   [\#2749](https://github.com/matrix-org/matrix-react-sdk/pull/2749)
+ * Add /shrug command
+   [\#2660](https://github.com/matrix-org/matrix-react-sdk/pull/2660)
+ * Support linking to hosting providers
+   [\#2748](https://github.com/matrix-org/matrix-react-sdk/pull/2748)
+ * Get confirmation before enabling encryption
+   [\#2728](https://github.com/matrix-org/matrix-react-sdk/pull/2728)
+ * clear min-height for typing notifs when the timeline viewport changes size
+   [\#2747](https://github.com/matrix-org/matrix-react-sdk/pull/2747)
+ * Prevent flair pushing timeline downwards
+   [\#2746](https://github.com/matrix-org/matrix-react-sdk/pull/2746)
+ * Include tag name when warning about rooms running off lists
+   [\#2741](https://github.com/matrix-org/matrix-react-sdk/pull/2741)
+ * Reorganise props handling in Field
+   [\#2740](https://github.com/matrix-org/matrix-react-sdk/pull/2740)
+ * Limit Field label to size of input
+   [\#2742](https://github.com/matrix-org/matrix-react-sdk/pull/2742)
+ * Don't loop forever if you demote yourself via Enter on a PowerSelector
+   [\#2743](https://github.com/matrix-org/matrix-react-sdk/pull/2743)
+ * Check if users are already in the room before inviting them
+   [\#2734](https://github.com/matrix-org/matrix-react-sdk/pull/2734)
+ * Don't duplicate direct chats from other tags
+   [\#2735](https://github.com/matrix-org/matrix-react-sdk/pull/2735)
+ * Fix media device selectors not updating
+   [\#2739](https://github.com/matrix-org/matrix-react-sdk/pull/2739)
+ * Fix Room Directory custom homeserver entry not showing properly
+   [\#2708](https://github.com/matrix-org/matrix-react-sdk/pull/2708)
+ * Add missing permalinkCreator prop
+   [\#2729](https://github.com/matrix-org/matrix-react-sdk/pull/2729)
+ * Patch users not existing when opening settings
+   [\#2738](https://github.com/matrix-org/matrix-react-sdk/pull/2738)
+ * Use a mask for the continuation icon
+   [\#2737](https://github.com/matrix-org/matrix-react-sdk/pull/2737)
+ * Always insert rooms into lists when they get lost
+   [\#2736](https://github.com/matrix-org/matrix-react-sdk/pull/2736)
+ * Convert objects and such to usable strings in rageshake
+   [\#2732](https://github.com/matrix-org/matrix-react-sdk/pull/2732)
+ * Support stacking dialogs to prevent unmounting
+   [\#2724](https://github.com/matrix-org/matrix-react-sdk/pull/2724)
+ * Convert PowerSelector to use mxField instead
+   [\#2725](https://github.com/matrix-org/matrix-react-sdk/pull/2725)
+ * Don't re-enable the save button after saving profiles
+   [\#2726](https://github.com/matrix-org/matrix-react-sdk/pull/2726)
+ * Support multiple email pushers and remove the legacy UserSettingsStore
+   [\#2727](https://github.com/matrix-org/matrix-react-sdk/pull/2727)
+ * Bring back #528 fix as it still seems broken on OSX
+   [\#2731](https://github.com/matrix-org/matrix-react-sdk/pull/2731)
+ * Fix margin on e2e icon in member panel
+   [\#2721](https://github.com/matrix-org/matrix-react-sdk/pull/2721)
+ * Improved scrolling & pagination
+   [\#2676](https://github.com/matrix-org/matrix-react-sdk/pull/2676)
+ * Nudge karma to 3.1.2
+   [\#2719](https://github.com/matrix-org/matrix-react-sdk/pull/2719)
+ * Stop listening to account data when the stickerpicker is unmounted
+   [\#2723](https://github.com/matrix-org/matrix-react-sdk/pull/2723)
+
+Changes in [1.0.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.3) (2019-03-06)
+===================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.2...v1.0.3)
+
+ * Don't duplicate direct chats from other tags
+   [\#2762](https://github.com/matrix-org/matrix-react-sdk/pull/2762)
+ * Include tag name when warning about rooms running off lists
+   [\#2761](https://github.com/matrix-org/matrix-react-sdk/pull/2761)
+ * Always insert rooms into lists when they get lost
+   [\#2760](https://github.com/matrix-org/matrix-react-sdk/pull/2760)
+ * Fix the ctrl+k shortcut
+   [\#2759](https://github.com/matrix-org/matrix-react-sdk/pull/2759)
+
+Changes in [1.0.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.2) (2019-03-06)
+===================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.2-rc.4...v1.0.2)
+
+ * Only show hosting link if group admin
+   [\#2755](https://github.com/matrix-org/matrix-react-sdk/pull/2755)
+ * Only show hosting link if domain == matrix.org
+   [\#2754](https://github.com/matrix-org/matrix-react-sdk/pull/2754)
+
+Changes in [1.0.2-rc.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.2-rc.4) (2019-03-05)
+=============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.2-rc.3...v1.0.2-rc.4)
+
+ * Patch users not existing when opening settings
+   [\#2752](https://github.com/matrix-org/matrix-react-sdk/pull/2752)
+ * Fix media device selectors not updating
+   [\#2751](https://github.com/matrix-org/matrix-react-sdk/pull/2751)
+ * Support linking to hosting providers
+   [\#2750](https://github.com/matrix-org/matrix-react-sdk/pull/2750)
+
+Changes in [1.0.2-rc.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.2-rc.3) (2019-03-01)
+=============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.2-rc.2...v1.0.2-rc.3)
+
+ * Misc room list improvements & invite fix
+   [\#2722](https://github.com/matrix-org/matrix-react-sdk/pull/2722)
+ * Move complex part of room sorting to a dedicated function
+   [\#2716](https://github.com/matrix-org/matrix-react-sdk/pull/2716)
+
+Changes in [1.0.2-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.2-rc.2) (2019-03-01)
+=============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.2-rc.1...v1.0.2-rc.2)
+
+ * Use webpack alias to resolve the languages file
+   [\#2730](https://github.com/matrix-org/matrix-react-sdk/pull/2730)
+
+Changes in [1.0.2-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.2-rc.1) (2019-02-28)
+=============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.1...v1.0.2-rc.1)
+
+ * Remove unnecessary ref from Stickerpicker
+   [\#2718](https://github.com/matrix-org/matrix-react-sdk/pull/2718)
+ * Update from Weblate
+   [\#2720](https://github.com/matrix-org/matrix-react-sdk/pull/2720)
+ * Update from Weblate.
+   [\#2715](https://github.com/matrix-org/matrix-react-sdk/pull/2715)
+ * Show nearest lower badge, e.g show Mod for 51... etc
+   [\#2709](https://github.com/matrix-org/matrix-react-sdk/pull/2709)
+ * Send Field label pointer events to input
+   [\#2714](https://github.com/matrix-org/matrix-react-sdk/pull/2714)
+ * move canSendMessages into state so that it will re-render the composer
+   [\#2710](https://github.com/matrix-org/matrix-react-sdk/pull/2710)
+ * Use a global WatchManager for settings
+   [\#2705](https://github.com/matrix-org/matrix-react-sdk/pull/2705)
+ * Move non-feather icons out of feather dir
+   [\#2706](https://github.com/matrix-org/matrix-react-sdk/pull/2706)
+ * Fix backup button in logout dialog
+   [\#2713](https://github.com/matrix-org/matrix-react-sdk/pull/2713)
+ * Keep registration spinner inside the auth modal
+   [\#2712](https://github.com/matrix-org/matrix-react-sdk/pull/2712)
+ * Try to clarify that "Show read receipts" is just for visibility
+   [\#2707](https://github.com/matrix-org/matrix-react-sdk/pull/2707)
+ * Make sure direct chat invites are treated as invites
+   [\#2711](https://github.com/matrix-org/matrix-react-sdk/pull/2711)
+ * Report validity state of all registration fields on any change
+   [\#2672](https://github.com/matrix-org/matrix-react-sdk/pull/2672)
+ * Export the defaults for SdkConfig
+   [\#2687](https://github.com/matrix-org/matrix-react-sdk/pull/2687)
+ * Change the room list algo to eagerly delete and carefully insert
+   [\#2701](https://github.com/matrix-org/matrix-react-sdk/pull/2701)
+ * Improve permalink performance
+   [\#2671](https://github.com/matrix-org/matrix-react-sdk/pull/2671)
+ * Normalise room list font weight, bold unreads
+   [\#2702](https://github.com/matrix-org/matrix-react-sdk/pull/2702)
+ * Settings button in Room Context Menu
+   [\#2692](https://github.com/matrix-org/matrix-react-sdk/pull/2692)
+ * add roomnick SlashCommand
+   [\#2689](https://github.com/matrix-org/matrix-react-sdk/pull/2689)
+ * replace text Inputs in Devtools with Field bcuz prettier
+   [\#2697](https://github.com/matrix-org/matrix-react-sdk/pull/2697)
+ * Maintenance: Clean up some stuff around settings
+   [\#2685](https://github.com/matrix-org/matrix-react-sdk/pull/2685)
+ * Support the old room sorting algorithm and SettingsStore watchers
+   [\#2686](https://github.com/matrix-org/matrix-react-sdk/pull/2686)
+ * pin highlight.js as they seem to have broken something in 9.15.2
+   [\#2703](https://github.com/matrix-org/matrix-react-sdk/pull/2703)
+ * Fix NPE relating to toggling notifications
+   [\#2699](https://github.com/matrix-org/matrix-react-sdk/pull/2699)
+ * Only set e2e info callback if the event is encrypted
+   [\#2684](https://github.com/matrix-org/matrix-react-sdk/pull/2684)
+ * Revert "Add some logging for riot-web#7838"
+   [\#2700](https://github.com/matrix-org/matrix-react-sdk/pull/2700)
+ * Add abilities to clear Filter room members input
+   [\#2698](https://github.com/matrix-org/matrix-react-sdk/pull/2698)
+ * make ViewSource less awkward
+   [\#2696](https://github.com/matrix-org/matrix-react-sdk/pull/2696)
+ * Fix share community for guests
+   [\#2695](https://github.com/matrix-org/matrix-react-sdk/pull/2695)
+ * Fix z ordering of the overflow tile
+   [\#2694](https://github.com/matrix-org/matrix-react-sdk/pull/2694)
+ * Toggle Search using Room Header button
+   [\#2693](https://github.com/matrix-org/matrix-react-sdk/pull/2693)
+ * view user on click typing tile
+   [\#2691](https://github.com/matrix-org/matrix-react-sdk/pull/2691)
+ * Change Share Message to Share Permalink if !m.room.message||redacted
+   [\#2690](https://github.com/matrix-org/matrix-react-sdk/pull/2690)
+ * Allow configuration of whether closing window closes or minimizes to tray
+   [\#2688](https://github.com/matrix-org/matrix-react-sdk/pull/2688)
+ * Remove duplicated conversion from `enableRichText`
+   [\#2682](https://github.com/matrix-org/matrix-react-sdk/pull/2682)
+ * Use correct initial phase for server type
+   [\#2683](https://github.com/matrix-org/matrix-react-sdk/pull/2683)
+ * Fix AliasSettings and RelatedGroups UX
+   [\#2679](https://github.com/matrix-org/matrix-react-sdk/pull/2679)
+ * Add `onClick` to Markdown buttons
+   [\#2677](https://github.com/matrix-org/matrix-react-sdk/pull/2677)
+ * Fix toggle for email notifications
+   [\#2678](https://github.com/matrix-org/matrix-react-sdk/pull/2678)
+ * Fix categorization of favourites and new rooms
+   [\#2681](https://github.com/matrix-org/matrix-react-sdk/pull/2681)
+ * Skip server details on registration with a default HS
+   [\#2675](https://github.com/matrix-org/matrix-react-sdk/pull/2675)
+ * Clarify what the username error refers to
+   [\#2673](https://github.com/matrix-org/matrix-react-sdk/pull/2673)
+ * RoomDirectory Dropdown should use roomDirectory.servers
+   [\#2680](https://github.com/matrix-org/matrix-react-sdk/pull/2680)
+ * Fix favourites losing rooms and sorting weirdly
+   [\#2674](https://github.com/matrix-org/matrix-react-sdk/pull/2674)
+ * "Breadcrumb" room sorting algorithm
+   [\#2634](https://github.com/matrix-org/matrix-react-sdk/pull/2634)
+ * Bring back user view
+   [\#2666](https://github.com/matrix-org/matrix-react-sdk/pull/2666)
+ * Restores support for `default_server_name` which discovers URLs via `.well-
+   known`
+   [\#2669](https://github.com/matrix-org/matrix-react-sdk/pull/2669)
+ * Remove unreferenced images
+   [\#2670](https://github.com/matrix-org/matrix-react-sdk/pull/2670)
+ * Only show the first line of each commit in changelog dialog
+   [\#2667](https://github.com/matrix-org/matrix-react-sdk/pull/2667)
+ * Cache-bust languages.json with file-loader
+   [\#2658](https://github.com/matrix-org/matrix-react-sdk/pull/2658)
+ * Fix off by one error for username colors
+   [\#2664](https://github.com/matrix-org/matrix-react-sdk/pull/2664)
+ * Set event-sending-color in dark theme
+   [\#2665](https://github.com/matrix-org/matrix-react-sdk/pull/2665)
+ * Allow captchas on Riot desktop builds
+   [\#2663](https://github.com/matrix-org/matrix-react-sdk/pull/2663)
+ * Show link to login even during UI auth
+   [\#2661](https://github.com/matrix-org/matrix-react-sdk/pull/2661)
+ * Dark theme follow ups round 2
+   [\#2659](https://github.com/matrix-org/matrix-react-sdk/pull/2659)
+ * Rename default theme to light theme
+   [\#2662](https://github.com/matrix-org/matrix-react-sdk/pull/2662)
+ * make mx_SenderProfile inline-block, reduces clickable area around usernames
+   [\#2653](https://github.com/matrix-org/matrix-react-sdk/pull/2653)
+ * Add a bit of safety around reading events for room settings
+   [\#2648](https://github.com/matrix-org/matrix-react-sdk/pull/2648)
+ * Update dark theme bg-color to show hover effect on messages
+   [\#2654](https://github.com/matrix-org/matrix-react-sdk/pull/2654)
+ * Make pre use the same text color as code
+   [\#2655](https://github.com/matrix-org/matrix-react-sdk/pull/2655)
+ * Bring back the lowered opacity for offline/unavailable avatars.
+   [\#2649](https://github.com/matrix-org/matrix-react-sdk/pull/2649)
+ * Set h3-color in dark theme
+   [\#2656](https://github.com/matrix-org/matrix-react-sdk/pull/2656)
+ * Fix typo "Scisors" -> "Scissors"
+   [\#2652](https://github.com/matrix-org/matrix-react-sdk/pull/2652)
+ * highlight e2e icon on event when hovering whole event
+   [\#2647](https://github.com/matrix-org/matrix-react-sdk/pull/2647)
+ * Skinnified more icons
+   [\#2633](https://github.com/matrix-org/matrix-react-sdk/pull/2633)
+
+Changes in [1.0.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.1) (2019-02-15)
+===================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.0...v1.0.1)
+
+ * Fix community invites crashing the app
+   [\#2650](https://github.com/matrix-org/matrix-react-sdk/pull/2650)
+
+Changes in [1.0.0](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.0) (2019-02-14)
+===================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.0-rc.2...v1.0.0)
+
+ * Update from Weblate.
+   [\#2646](https://github.com/matrix-org/matrix-react-sdk/pull/2646)
+ * Remove 'welcome' from top-left menu
+   [\#2641](https://github.com/matrix-org/matrix-react-sdk/pull/2641)
+ * Turn on pin unread rooms for everyone
+   [\#2645](https://github.com/matrix-org/matrix-react-sdk/pull/2645)
+ * Update help buoy text and issue links
+   [\#2640](https://github.com/matrix-org/matrix-react-sdk/pull/2640)
+ * Fix icons being cut off in settings
+   [\#2644](https://github.com/matrix-org/matrix-react-sdk/pull/2644)
+ * Add credit for cover photo usage
+   [\#2643](https://github.com/matrix-org/matrix-react-sdk/pull/2643)
+ * make e2e icons on message transparent
+   [\#2642](https://github.com/matrix-org/matrix-react-sdk/pull/2642)
+ * fix close button being half off screen
+   [\#2639](https://github.com/matrix-org/matrix-react-sdk/pull/2639)
+ * Fix excessive timeline whitespace
+   [\#2638](https://github.com/matrix-org/matrix-react-sdk/pull/2638)
+ * Remove the white screen of welcome
+   [\#2637](https://github.com/matrix-org/matrix-react-sdk/pull/2637)
+ * always rerender room tiles
+   [\#2636](https://github.com/matrix-org/matrix-react-sdk/pull/2636)
+
+Changes in [1.0.0-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.0-rc.2) (2019-02-14)
+=============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v1.0.0-rc.1...v1.0.0-rc.2)
+
+ * Update from Weblate.
+   [\#2635](https://github.com/matrix-org/matrix-react-sdk/pull/2635)
+ * use throttle as its more responsive
+   [\#2632](https://github.com/matrix-org/matrix-react-sdk/pull/2632)
+ * update range when items size changes
+   [\#2631](https://github.com/matrix-org/matrix-react-sdk/pull/2631)
+ * Fix registration after clicking email link
+   [\#2630](https://github.com/matrix-org/matrix-react-sdk/pull/2630)
+ * Re-check key backup status when settings opened
+   [\#2626](https://github.com/matrix-org/matrix-react-sdk/pull/2626)
+ * Improve room list rendering performance
+   [\#2629](https://github.com/matrix-org/matrix-react-sdk/pull/2629)
+ * Adjust top left menu items
+   [\#2628](https://github.com/matrix-org/matrix-react-sdk/pull/2628)
+ * Normalised icon strokes to 1px
+   [\#2627](https://github.com/matrix-org/matrix-react-sdk/pull/2627)
+ * Security: Force TURN setting was inverted
+   [\#2623](https://github.com/matrix-org/matrix-react-sdk/pull/2623)
+ * Add redesigned dark theme
+   [\#2619](https://github.com/matrix-org/matrix-react-sdk/pull/2619)
+ * Fix mx_RoomTile_name weighting
+   [\#2610](https://github.com/matrix-org/matrix-react-sdk/pull/2610)
+ * Add divider between tabs and regular buttons in room header
+   [\#2621](https://github.com/matrix-org/matrix-react-sdk/pull/2621)
+ * Update from Weblate.
+   [\#2622](https://github.com/matrix-org/matrix-react-sdk/pull/2622)
+ * Change taking a community off the left-left panel less scary
+   [\#2609](https://github.com/matrix-org/matrix-react-sdk/pull/2609)
+ * Fixes and styling related to e2e icons and dialogs
+   [\#2620](https://github.com/matrix-org/matrix-react-sdk/pull/2620)
+ * Fix: stickers layout
+   [\#2618](https://github.com/matrix-org/matrix-react-sdk/pull/2618)
+ * Fix: dont assume settings label only has one line
+   [\#2616](https://github.com/matrix-org/matrix-react-sdk/pull/2616)
+ * Labs feature: recent room breadcrumbs
+   [\#2615](https://github.com/matrix-org/matrix-react-sdk/pull/2615)
+ * Fix: roomlist reordering lags
+   [\#2612](https://github.com/matrix-org/matrix-react-sdk/pull/2612)
+ *  Change text in e2e UX to new copy
+   [\#2617](https://github.com/matrix-org/matrix-react-sdk/pull/2617)
+ * Add display name / avatar to incoming sas dialog
+   [\#2613](https://github.com/matrix-org/matrix-react-sdk/pull/2613)
+ * Restore backup on new recovery method dialog
+   [\#2614](https://github.com/matrix-org/matrix-react-sdk/pull/2614)
+ * Welcome page cleanup
+   [\#2611](https://github.com/matrix-org/matrix-react-sdk/pull/2611)
+ * Scale up settings UI to be easier to read
+   [\#2604](https://github.com/matrix-org/matrix-react-sdk/pull/2604)
+ * !important shouldn't have a space
+   [\#2608](https://github.com/matrix-org/matrix-react-sdk/pull/2608)
+ * Add legacy verification button on wait
+   [\#2607](https://github.com/matrix-org/matrix-react-sdk/pull/2607)
+ * Update from Weblate.
+   [\#2606](https://github.com/matrix-org/matrix-react-sdk/pull/2606)
+
+Changes in [1.0.0-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v1.0.0-rc.1) (2019-02-08)
+=============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.8...v1.0.0-rc.1)
+
+ * Call isGuest correctly
+   [\#2603](https://github.com/matrix-org/matrix-react-sdk/pull/2603)
+ * Update from Weblate.
+   [\#2602](https://github.com/matrix-org/matrix-react-sdk/pull/2602)
+ * Prompt to restore backup rather than verify
+   [\#2594](https://github.com/matrix-org/matrix-react-sdk/pull/2594)
+ * Remove key backup & sas from labs
+   [\#2599](https://github.com/matrix-org/matrix-react-sdk/pull/2599)
+ * Update avatar colors
+   [\#2600](https://github.com/matrix-org/matrix-react-sdk/pull/2600)
+ * Fix: typeerror when creating DM
+   [\#2601](https://github.com/matrix-org/matrix-react-sdk/pull/2601)
+ * Render disabled mxField textareas as disabled
+   [\#2591](https://github.com/matrix-org/matrix-react-sdk/pull/2591)
+ * SDK support for welcome page
+   [\#2597](https://github.com/matrix-org/matrix-react-sdk/pull/2597)
+ * Change SAS to decimal / emoji
+   [\#2596](https://github.com/matrix-org/matrix-react-sdk/pull/2596)
+ * Render join rules and guest access changes in the timeline
+   [\#2592](https://github.com/matrix-org/matrix-react-sdk/pull/2592)
+ * Ensure toggle switches listen to property changes
+   [\#2590](https://github.com/matrix-org/matrix-react-sdk/pull/2590)
+ * Local echo on room access settings
+   [\#2593](https://github.com/matrix-org/matrix-react-sdk/pull/2593)
+ * guard custom tags with feature flag
+   [\#2589](https://github.com/matrix-org/matrix-react-sdk/pull/2589)
+ * remove ll feature flag, it's time!
+   [\#2588](https://github.com/matrix-org/matrix-react-sdk/pull/2588)
+ * Trust on decrypt
+   [\#2583](https://github.com/matrix-org/matrix-react-sdk/pull/2583)
+ * Remove click-to-verify from SAS
+   [\#2586](https://github.com/matrix-org/matrix-react-sdk/pull/2586)
+ * Fix: make sure custom tag scroller doesn't overflow parent
+   [\#2587](https://github.com/matrix-org/matrix-react-sdk/pull/2587)
+ * Fix: throttle custom tags updating in LLP
+   [\#2585](https://github.com/matrix-org/matrix-react-sdk/pull/2585)
+ * Fix firefox scrolling settings tabs differently
+   [\#2579](https://github.com/matrix-org/matrix-react-sdk/pull/2579)
+ * Actually change power levels when they are changed
+   [\#2580](https://github.com/matrix-org/matrix-react-sdk/pull/2580)
+ * Fix: logging in again breaks CustomRoomTagStore
+   [\#2584](https://github.com/matrix-org/matrix-react-sdk/pull/2584)
+ * Fix: click on notif badge
+   [\#2582](https://github.com/matrix-org/matrix-react-sdk/pull/2582)
+ * Extend slash command '/topic' to display the room topic
+   [\#2532](https://github.com/matrix-org/matrix-react-sdk/pull/2532)
+ * Fix: community badges
+   [\#2581](https://github.com/matrix-org/matrix-react-sdk/pull/2581)
+ * Bring back custom tags, also badges on communities
+   [\#2575](https://github.com/matrix-org/matrix-react-sdk/pull/2575)
+ * Style reset password to match design
+   [\#2578](https://github.com/matrix-org/matrix-react-sdk/pull/2578)
+ * Key Backup: Don't fail if no keys
+   [\#2577](https://github.com/matrix-org/matrix-react-sdk/pull/2577)
+ * Remove old user and room settings
+   [\#2554](https://github.com/matrix-org/matrix-react-sdk/pull/2554)
+ * increase debouncing of filtering because its quite laggy atm
+   [\#2576](https://github.com/matrix-org/matrix-react-sdk/pull/2576)
+ * Tweak field padding to avoid overlapping with selected text
+   [\#2573](https://github.com/matrix-org/matrix-react-sdk/pull/2573)
+ * Adapt login flow for the v2 design
+   [\#2574](https://github.com/matrix-org/matrix-react-sdk/pull/2574)
+ * Remove the arrow-paren lint rule
+   [\#2572](https://github.com/matrix-org/matrix-react-sdk/pull/2572)
+ * Ensure we show registration form when custom URLs are disabled
+   [\#2571](https://github.com/matrix-org/matrix-react-sdk/pull/2571)
+ * Fix: search term disappears when collapsing and expanding left panel
+   [\#2568](https://github.com/matrix-org/matrix-react-sdk/pull/2568)
+ * Fix: 'jump to bottom' creates big amounts of whitespace at the bottom
+   [\#2567](https://github.com/matrix-org/matrix-react-sdk/pull/2567)
+ * Fix: being able to size sections in leftpanel larger than their content
+   while filtering
+   [\#2566](https://github.com/matrix-org/matrix-react-sdk/pull/2566)
+ * Redesign: widget makeover
+   [\#2565](https://github.com/matrix-org/matrix-react-sdk/pull/2565)
+ * Restore dropdown chevron to right
+   [\#2564](https://github.com/matrix-org/matrix-react-sdk/pull/2564)
+ * Remove warning about encryption being beta
+   [\#2563](https://github.com/matrix-org/matrix-react-sdk/pull/2563)
+ * Add e2e icon to room header/composer/member info, more ...
+   [\#2557](https://github.com/matrix-org/matrix-react-sdk/pull/2557)
+ * Remove guest warning bar
+   [\#2562](https://github.com/matrix-org/matrix-react-sdk/pull/2562)
+ * Style tweaks to support auth background
+   [\#2561](https://github.com/matrix-org/matrix-react-sdk/pull/2561)
+ * Set a minimum width on the settings tab content
+   [\#2560](https://github.com/matrix-org/matrix-react-sdk/pull/2560)
+ * Fix exception while saving room settings
+   [\#2555](https://github.com/matrix-org/matrix-react-sdk/pull/2555)
+ * Disable old settings, making tabbed settings the default
+   [\#2559](https://github.com/matrix-org/matrix-react-sdk/pull/2559)
+ * fix UnknownDeviceDialog layout
+   [\#2558](https://github.com/matrix-org/matrix-react-sdk/pull/2558)
+ * Misc fixes to settings
+   [\#2553](https://github.com/matrix-org/matrix-react-sdk/pull/2553)
+ * Add error message when registration is disabled
+   [\#2548](https://github.com/matrix-org/matrix-react-sdk/pull/2548)
+ * Hide registration fields that aren't used by any flow
+   [\#2551](https://github.com/matrix-org/matrix-react-sdk/pull/2551)
+ * Ensure correct server URLs with .well-known and server type
+   [\#2547](https://github.com/matrix-org/matrix-react-sdk/pull/2547)
+ * Spell homeserver correctly
+   [\#2552](https://github.com/matrix-org/matrix-react-sdk/pull/2552)
+ * Auto-focus username on registration
+   [\#2546](https://github.com/matrix-org/matrix-react-sdk/pull/2546)
+ * Fixed settings dialog header; Adjust padding on dialog
+   [\#2549](https://github.com/matrix-org/matrix-react-sdk/pull/2549)
+ * Fix empty lightbox when there is no avatarUrl
+   [\#2314](https://github.com/matrix-org/matrix-react-sdk/pull/2314)
+ * make overflow gradients much smaller and turn bottom into drop shadow
+   [\#2544](https://github.com/matrix-org/matrix-react-sdk/pull/2544)
+ * Make auth validation less annoying
+   [\#2539](https://github.com/matrix-org/matrix-react-sdk/pull/2539)
+ * layout composer independent of avatar being present
+   [\#2545](https://github.com/matrix-org/matrix-react-sdk/pull/2545)
+ * Matthew/cyrillic
+   [\#2543](https://github.com/matrix-org/matrix-react-sdk/pull/2543)
+ * Allow expanding the left panel manually when in narrow mode
+   [\#2541](https://github.com/matrix-org/matrix-react-sdk/pull/2541)
+ * Redesign: community page cleanup
+   [\#2538](https://github.com/matrix-org/matrix-react-sdk/pull/2538)
+ * Redesign: Disable ILAG
+   [\#2536](https://github.com/matrix-org/matrix-react-sdk/pull/2536)
+ * Use custom appearance and arrow for field selects
+   [\#2540](https://github.com/matrix-org/matrix-react-sdk/pull/2540)
+ * Fix typo
+   [\#2537](https://github.com/matrix-org/matrix-react-sdk/pull/2537)
+ * Merge redesign into develop
+   [\#2535](https://github.com/matrix-org/matrix-react-sdk/pull/2535)
+ * disable e2e tests everywhere as redesign breaks them for now
+   [\#2534](https://github.com/matrix-org/matrix-react-sdk/pull/2534)
+ * avoid horizontal scrollbar in composer when placeholder doesn't fit
+   [\#2533](https://github.com/matrix-org/matrix-react-sdk/pull/2533)
+ * fix dropdown style when input is shown
+   [\#2531](https://github.com/matrix-org/matrix-react-sdk/pull/2531)
+ * Redesign: tiny fix: stretch device label in member info if content doesn't
+   fill it
+   [\#2530](https://github.com/matrix-org/matrix-react-sdk/pull/2530)
+ * Style registration flow
+   [\#2527](https://github.com/matrix-org/matrix-react-sdk/pull/2527)
+ * Redesign: small member info panel makeover
+   [\#2522](https://github.com/matrix-org/matrix-react-sdk/pull/2522)
+ * Render the home page when viewing the directory
+   [\#2529](https://github.com/matrix-org/matrix-react-sdk/pull/2529)
+ * Fix indentation on all new settings CSS
+   [\#2528](https://github.com/matrix-org/matrix-react-sdk/pull/2528)
+ * Round 1 of misc fixes for settings
+   [\#2526](https://github.com/matrix-org/matrix-react-sdk/pull/2526)
+ * Implement the Security & Privacy tab of new room settings
+   [\#2523](https://github.com/matrix-org/matrix-react-sdk/pull/2523)
+ * Implement the Advanced tab of new room settings
+   [\#2525](https://github.com/matrix-org/matrix-react-sdk/pull/2525)
+ * Implement the Roles & Permissions tab of new room settings
+   [\#2524](https://github.com/matrix-org/matrix-react-sdk/pull/2524)
+ * Redesign: room directory makeover
+   [\#2519](https://github.com/matrix-org/matrix-react-sdk/pull/2519)
+ * Iterate upon the room upgrade warning bar
+   [\#2518](https://github.com/matrix-org/matrix-react-sdk/pull/2518)
+ * redesign: small fixes
+   [\#2520](https://github.com/matrix-org/matrix-react-sdk/pull/2520)
+ * Implement the "general" tab of new room settings
+   [\#2516](https://github.com/matrix-org/matrix-react-sdk/pull/2516)
+ * Tweak auth overflow on Windows and Linux
+   [\#2521](https://github.com/matrix-org/matrix-react-sdk/pull/2521)
+ * Redesign: switch layout when filtering room sublists
+   [\#2515](https://github.com/matrix-org/matrix-react-sdk/pull/2515)
+ * Make native scrollbars prettier
+   [\#2470](https://github.com/matrix-org/matrix-react-sdk/pull/2470)
+ * Add server type selector and style login flow
+   [\#2517](https://github.com/matrix-org/matrix-react-sdk/pull/2517)
+ * Implement flair tab in user settings
+   [\#2512](https://github.com/matrix-org/matrix-react-sdk/pull/2512)
+ * Override UA/OS styles for disabled Field selects
+   [\#2502](https://github.com/matrix-org/matrix-react-sdk/pull/2502)
+ * Be more positive with setting labels
+   [\#2504](https://github.com/matrix-org/matrix-react-sdk/pull/2504)
+ * Redesign: new roomlist layout fixes
+   [\#2514](https://github.com/matrix-org/matrix-react-sdk/pull/2514)
+ * Redesign: new layout algorithm for room sublists.
+   [\#2507](https://github.com/matrix-org/matrix-react-sdk/pull/2507)
+ * Short-Authentication-String Verification
+   [\#2461](https://github.com/matrix-org/matrix-react-sdk/pull/2461)
+ * Fix unmount TypeError in `DeviceVerifyButtons`
+   [\#2513](https://github.com/matrix-org/matrix-react-sdk/pull/2513)
+ * Remove support for team servers
+   [\#2511](https://github.com/matrix-org/matrix-react-sdk/pull/2511)
+ * Initial structure for new room settings
+   [\#2510](https://github.com/matrix-org/matrix-react-sdk/pull/2510)
+ * Tweak wording on logout warning
+   [\#2509](https://github.com/matrix-org/matrix-react-sdk/pull/2509)
+ * Fix NPE in RoomRecoveryReminder
+   [\#2508](https://github.com/matrix-org/matrix-react-sdk/pull/2508)
+ * New text/caption for key backup by verifying device
+   [\#2506](https://github.com/matrix-org/matrix-react-sdk/pull/2506)
+ * Implement the "Security & Privacy" tab of new user settings
+   [\#2499](https://github.com/matrix-org/matrix-react-sdk/pull/2499)
+ * Add simple animations to toggle switches
+   [\#2505](https://github.com/matrix-org/matrix-react-sdk/pull/2505)
+ * Default a Field's placeholder to the label
+   [\#2503](https://github.com/matrix-org/matrix-react-sdk/pull/2503)
+ * Have the settings dialog be fixed in size
+   [\#2501](https://github.com/matrix-org/matrix-react-sdk/pull/2501)
+ * Implement the "Help & About" tab of new user settings
+   [\#2500](https://github.com/matrix-org/matrix-react-sdk/pull/2500)
+ * Implement the "Voice & Video" tab of new user settings
+   [\#2498](https://github.com/matrix-org/matrix-react-sdk/pull/2498)
+ * Add widget screenshots to the Labs section
+   [\#2497](https://github.com/matrix-org/matrix-react-sdk/pull/2497)
+ * Implement the "Preferences" tab on new user settings
+   [\#2495](https://github.com/matrix-org/matrix-react-sdk/pull/2495)
+ * Add target="_blank" to links that don't have it
+   [\#2496](https://github.com/matrix-org/matrix-react-sdk/pull/2496)
+ * Implement the "Notifications" tab of new user settings
+   [\#2494](https://github.com/matrix-org/matrix-react-sdk/pull/2494)
+ * Implement the "Labs" tab of new user settings
+   [\#2492](https://github.com/matrix-org/matrix-react-sdk/pull/2492)
+ * Implement the "General" tab of new user settings
+   [\#2491](https://github.com/matrix-org/matrix-react-sdk/pull/2491)
+ * Appease linter in auth related files
+   [\#2493](https://github.com/matrix-org/matrix-react-sdk/pull/2493)
+ * Update text and links in authentication flows
+   [\#2489](https://github.com/matrix-org/matrix-react-sdk/pull/2489)
+ * Move LanguageSelector to views
+   [\#2490](https://github.com/matrix-org/matrix-react-sdk/pull/2490)
+ * Restyle auth page language selector
+   [\#2488](https://github.com/matrix-org/matrix-react-sdk/pull/2488)
+ * Fix desktop captcha check
+   [\#2487](https://github.com/matrix-org/matrix-react-sdk/pull/2487)
+ * Basic structure for tabbed user settings
+   [\#2476](https://github.com/matrix-org/matrix-react-sdk/pull/2476)
+ * Token encouragement if zxcvbn gives no feedback
+   [\#2471](https://github.com/matrix-org/matrix-react-sdk/pull/2471)
+ * Fix: show rooms and people section when empty while filtering
+   [\#2481](https://github.com/matrix-org/matrix-react-sdk/pull/2481)
+ * Fix AuthFooter CSS rules conflicting with anchors all over the app
+   [\#2486](https://github.com/matrix-org/matrix-react-sdk/pull/2486)
+ * Support selects on Field
+   [\#2484](https://github.com/matrix-org/matrix-react-sdk/pull/2484)
+ * Fix integrations server error popup being hidden behind right panel
+   [\#2482](https://github.com/matrix-org/matrix-react-sdk/pull/2482)
+ * Fix: apparently room can be null here
+   [\#2480](https://github.com/matrix-org/matrix-react-sdk/pull/2480)
+ * Redesign: pull jump to bottom button out of room status bar
+   [\#2478](https://github.com/matrix-org/matrix-react-sdk/pull/2478)
+ * Redesign: set default size of 350px for left panel
+   [\#2479](https://github.com/matrix-org/matrix-react-sdk/pull/2479)
+ * Avoid "jumpiness" with inline typing indicator
+   [\#2456](https://github.com/matrix-org/matrix-react-sdk/pull/2456)
+ * De-lint CompatabilityPage & LoggedInView
+   [\#2472](https://github.com/matrix-org/matrix-react-sdk/pull/2472)
+ * Remove Status theme-specific hacks
+   [\#2473](https://github.com/matrix-org/matrix-react-sdk/pull/2473)
+ * Error if no sessions decrypted
+   [\#2469](https://github.com/matrix-org/matrix-react-sdk/pull/2469)
+ * Fix settings direct chat
+   [\#2466](https://github.com/matrix-org/matrix-react-sdk/pull/2466)
+ * Show verify button when we have a device to verify
+   [\#2464](https://github.com/matrix-org/matrix-react-sdk/pull/2464)
+ * Redesign: Add a form field component
+   [\#2463](https://github.com/matrix-org/matrix-react-sdk/pull/2463)
+ * Load fonts and images via source-relative URLs and requires
+   [\#2460](https://github.com/matrix-org/matrix-react-sdk/pull/2460)
+ * Say when backup is signed by unknown device
+   [\#2455](https://github.com/matrix-org/matrix-react-sdk/pull/2455)
+ * Add an /upgraderoom command to make upgrading easier for development
+   [\#2458](https://github.com/matrix-org/matrix-react-sdk/pull/2458)
+ * Merge develop->experimental
+   [\#2457](https://github.com/matrix-org/matrix-react-sdk/pull/2457)
+ * Fix: show hand cursor in topleft menu so its clear you can click it
+   [\#2454](https://github.com/matrix-org/matrix-react-sdk/pull/2454)
+ * Fix: search makeover missing icons
+   [\#2453](https://github.com/matrix-org/matrix-react-sdk/pull/2453)
+ * Redesign: search makeover
+   [\#2448](https://github.com/matrix-org/matrix-react-sdk/pull/2448)
+ * Revert "Tiled room UI"
+   [\#2451](https://github.com/matrix-org/matrix-react-sdk/pull/2451)
+ * Update from Weblate.
+   [\#2452](https://github.com/matrix-org/matrix-react-sdk/pull/2452)
+ * Improve room sublist resizing
+   [\#2440](https://github.com/matrix-org/matrix-react-sdk/pull/2440)
+ * Different dialog for new trusted backup
+   [\#2435](https://github.com/matrix-org/matrix-react-sdk/pull/2435)
+ * De-lint a few more files
+   [\#2436](https://github.com/matrix-org/matrix-react-sdk/pull/2436)
+ * Recalculate the visible rooms when rooms are upgraded
+   [\#2433](https://github.com/matrix-org/matrix-react-sdk/pull/2433)
+ * Navigate to the upgraded room's create event where possible
+   [\#2432](https://github.com/matrix-org/matrix-react-sdk/pull/2432)
+ * Don't show rooms with tombstones in the address picker
+   [\#2429](https://github.com/matrix-org/matrix-react-sdk/pull/2429)
+ * Add separate dialog for recovery method removed
+   [\#2427](https://github.com/matrix-org/matrix-react-sdk/pull/2427)
+ * Set which servers to try and join upgraded rooms through
+   [\#2428](https://github.com/matrix-org/matrix-react-sdk/pull/2428)
+ * Render a tile for tombstone events
+   [\#2430](https://github.com/matrix-org/matrix-react-sdk/pull/2430)
+ * Regenerate en_EN.json to sort entries
+   [\#2431](https://github.com/matrix-org/matrix-react-sdk/pull/2431)
+ * Key backup: Debounce passphrase feedback
+   [\#2426](https://github.com/matrix-org/matrix-react-sdk/pull/2426)
+ * Set backup niggles: 2
+   [\#2425](https://github.com/matrix-org/matrix-react-sdk/pull/2425)
+ * Fix lint errors in MessageComposerInput
+   [\#2423](https://github.com/matrix-org/matrix-react-sdk/pull/2423)
+ * Set backup niggles: 1
+   [\#2424](https://github.com/matrix-org/matrix-react-sdk/pull/2424)
+ * PoC: Add simple state counters to room heading
+   [\#2388](https://github.com/matrix-org/matrix-react-sdk/pull/2388)
+ * Fix a few things with cancelling recovery reminder
+   [\#2420](https://github.com/matrix-org/matrix-react-sdk/pull/2420)
+ * Add spaces back to async arrow functions
+   [\#2422](https://github.com/matrix-org/matrix-react-sdk/pull/2422)
+ * fix grid growing wider than viewport on chrome
+   [\#2421](https://github.com/matrix-org/matrix-react-sdk/pull/2421)
+ * Tiled room UI
+   [\#2348](https://github.com/matrix-org/matrix-react-sdk/pull/2348)
+ * Fix path to New Recovery Method icon
+   [\#2417](https://github.com/matrix-org/matrix-react-sdk/pull/2417)
+ * run unit tests on riot-web like before
+   [\#2419](https://github.com/matrix-org/matrix-react-sdk/pull/2419)
+ * Refactor travis-ci to use parallel jobs
+   [\#2414](https://github.com/matrix-org/matrix-react-sdk/pull/2414)
+ * Fix black-on-black GIF icon for stickers
+   [\#2408](https://github.com/matrix-org/matrix-react-sdk/pull/2408)
+ * Don't reset cached room list values when they are falsey
+   [\#2413](https://github.com/matrix-org/matrix-react-sdk/pull/2413)
+ * Make logout warning nag about key backups
+   [\#2407](https://github.com/matrix-org/matrix-react-sdk/pull/2407)
+ * Clarify readme instructions for developers
+   [\#2404](https://github.com/matrix-org/matrix-react-sdk/pull/2404)
+ * Add slash command for changing room name
+   [\#2401](https://github.com/matrix-org/matrix-react-sdk/pull/2401)
+ * Flatten and simplify the memberlist sorting algorithm
+   [\#2381](https://github.com/matrix-org/matrix-react-sdk/pull/2381)
+ * Tiny fixes for custom status messages on experimental
+   [\#2403](https://github.com/matrix-org/matrix-react-sdk/pull/2403)
+ * Part 3 of 3: Apply today's changes to experimental again
+   [\#2400](https://github.com/matrix-org/matrix-react-sdk/pull/2400)
+ * Part 2 of 3: Merge develop->experimental minus #2336
+   [\#2399](https://github.com/matrix-org/matrix-react-sdk/pull/2399)
+ * Part 1 of 3: Back out bad merge for develop->experimental
+   [\#2398](https://github.com/matrix-org/matrix-react-sdk/pull/2398)
+ * Fix browser navigation not working between /home, /login, /register, etc
+   [\#2383](https://github.com/matrix-org/matrix-react-sdk/pull/2383)
+ * Don't re-sort the room list if the user is hovering over it
+   [\#2396](https://github.com/matrix-org/matrix-react-sdk/pull/2396)
+ * Merge develop into experimental
+   [\#2395](https://github.com/matrix-org/matrix-react-sdk/pull/2395)
+ * Added colour var to all themes
+   [\#2379](https://github.com/matrix-org/matrix-react-sdk/pull/2379)
+ * Colour, contrast & legibility improvements
+   [\#2378](https://github.com/matrix-org/matrix-react-sdk/pull/2378)
+ * Redesign: add feedback dialog & button in tag panel
+   [\#2376](https://github.com/matrix-org/matrix-react-sdk/pull/2376)
+ * Redesign: add badge with dot to rm button, to see it catches your eye better
+   [\#2371](https://github.com/matrix-org/matrix-react-sdk/pull/2371)
+ * Fix misaligned (+) icon
+   [\#2374](https://github.com/matrix-org/matrix-react-sdk/pull/2374)
+ * Avoid 'transparent black' gradients in left panel
+   [\#2373](https://github.com/matrix-org/matrix-react-sdk/pull/2373)
+ * Normalised icons
+   [\#2370](https://github.com/matrix-org/matrix-react-sdk/pull/2370)
+ * Redesign: give right panel default width
+   [\#2369](https://github.com/matrix-org/matrix-react-sdk/pull/2369)
+ * Redesign:  Fix login field looking inline
+   [\#2368](https://github.com/matrix-org/matrix-react-sdk/pull/2368)
+ * Redesign: select search query on focus
+   [\#2367](https://github.com/matrix-org/matrix-react-sdk/pull/2367)
+ * Redesign: fix remaining right panel collapse issues.
+   [\#2366](https://github.com/matrix-org/matrix-react-sdk/pull/2366)
+ * Redesign: left panel fixes
+   [\#2364](https://github.com/matrix-org/matrix-react-sdk/pull/2364)
+ * Redesign: allow to hide the right panel when clicking already active button
+   & persist
+   [\#2361](https://github.com/matrix-org/matrix-react-sdk/pull/2361)
+ * Redesign: make room tiles less high so more rooms fit on the screen
+   [\#2359](https://github.com/matrix-org/matrix-react-sdk/pull/2359)
+ * Redesign: ignore any unknown tags
+   [\#2358](https://github.com/matrix-org/matrix-react-sdk/pull/2358)
+ * Redesign: disable setting theme completely
+   [\#2357](https://github.com/matrix-org/matrix-react-sdk/pull/2357)
+ * Force use of dharma theme
+   [\#2355](https://github.com/matrix-org/matrix-react-sdk/pull/2355)
+ * Redesign: some small fixes
+   [\#2354](https://github.com/matrix-org/matrix-react-sdk/pull/2354)
+ * Redesign: restyle jump to first unread message & rework read marker logic
+   (rebased)
+   [\#2345](https://github.com/matrix-org/matrix-react-sdk/pull/2345)
+ * Redesign: fix add room button alignment when collapsed
+   [\#2343](https://github.com/matrix-org/matrix-react-sdk/pull/2343)
+ * Redesign: confirm sign out from top left menu
+   [\#2342](https://github.com/matrix-org/matrix-react-sdk/pull/2342)
+ * Redesign: fix room header avatar in edit mode
+   [\#2344](https://github.com/matrix-org/matrix-react-sdk/pull/2344)
+ * Redesign: make community UX usable
+   [\#2341](https://github.com/matrix-org/matrix-react-sdk/pull/2341)
+ * Redesign: resizer persistence
+   [\#2321](https://github.com/matrix-org/matrix-react-sdk/pull/2321)
+ * Redesign: improve room sub list sizing & persist sizes
+   [\#2297](https://github.com/matrix-org/matrix-react-sdk/pull/2297)
+ * Redesign: temp solution to make room settings usable
+   [\#2298](https://github.com/matrix-org/matrix-react-sdk/pull/2298)
+ * Redesign: typing notifications in timeline
+   [\#2276](https://github.com/matrix-org/matrix-react-sdk/pull/2276)
+ * Redesign: add scroll indicator gradients to top and bottom of room sub list
+   [\#2275](https://github.com/matrix-org/matrix-react-sdk/pull/2275)
+ * Redesign: move member query field to bottom of member list
+   [\#2270](https://github.com/matrix-org/matrix-react-sdk/pull/2270)
+ * Redesign: room list visual polish
+   [\#2269](https://github.com/matrix-org/matrix-react-sdk/pull/2269)
+ * Redesign: bring back & restyle room filter field
+   [\#2267](https://github.com/matrix-org/matrix-react-sdk/pull/2267)
+ * Redesign: increase interaction rectangle of resize handles
+   [\#2262](https://github.com/matrix-org/matrix-react-sdk/pull/2262)
+ * Redesign: move right panel below room/group header
+   [\#2260](https://github.com/matrix-org/matrix-react-sdk/pull/2260)
+ * Redesign: use native auto-hiding scrollbars in room sub lists
+   [\#2264](https://github.com/matrix-org/matrix-react-sdk/pull/2264)
+ * Redesign: basic makeover of member info panel
+   [\#2248](https://github.com/matrix-org/matrix-react-sdk/pull/2248)
+ * Redesign: memberlist basic makeover
+   [\#2245](https://github.com/matrix-org/matrix-react-sdk/pull/2245)
+ * Redesign: tweak room list font sizes
+   [\#2246](https://github.com/matrix-org/matrix-react-sdk/pull/2246)
+ * Redesign: Fix room lists sizing
+   [\#2234](https://github.com/matrix-org/matrix-react-sdk/pull/2234)
+ * Redesign: fix import path
+   [\#2243](https://github.com/matrix-org/matrix-react-sdk/pull/2243)
+ * Redesign: update (most) icons
+   [\#2241](https://github.com/matrix-org/matrix-react-sdk/pull/2241)
+ * Redesign: fix basic room header layout
+   [\#2240](https://github.com/matrix-org/matrix-react-sdk/pull/2240)
+ * Redesign: 1st go at top left menu & restyling context menus
+   [\#2239](https://github.com/matrix-org/matrix-react-sdk/pull/2239)
+ * Redesign: Initial timeline tweaks
+   [\#2238](https://github.com/matrix-org/matrix-react-sdk/pull/2238)
+ * Redesign: Align visuals of room list with design
+   [\#2233](https://github.com/matrix-org/matrix-react-sdk/pull/2233)
+ * Redesign: room section header tidbits
+   [\#2229](https://github.com/matrix-org/matrix-react-sdk/pull/2229)
+ * Redesign: Add (+) button in room section header to add rooms
+   [\#2228](https://github.com/matrix-org/matrix-react-sdk/pull/2228)
+ * Redesign: 1st go at resizing room sublists
+   [\#2226](https://github.com/matrix-org/matrix-react-sdk/pull/2226)
+ * Redesign: remove room list truncation and DND
+   [\#2224](https://github.com/matrix-org/matrix-react-sdk/pull/2224)
+ * Redesign: resizeable/collapsible sections
+   [\#2210](https://github.com/matrix-org/matrix-react-sdk/pull/2210)
+
+Changes in [0.14.8](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.8) (2019-01-22)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.8-rc.1...v0.14.8)
+
+ * Fix settings direct chat
+   [\#2467](https://github.com/matrix-org/matrix-react-sdk/pull/2467)
+
+Changes in [0.14.8-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.8-rc.1) (2019-01-17)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.7...v0.14.8-rc.1)
+
+ * Change wording of 'invite anyway' setting
+   [\#2450](https://github.com/matrix-org/matrix-react-sdk/pull/2450)
+ * Minimal lint-fixes to make develop CI build
+   [\#2449](https://github.com/matrix-org/matrix-react-sdk/pull/2449)
+ * Develop->Experimental
+   [\#2445](https://github.com/matrix-org/matrix-react-sdk/pull/2445)
+ * Limit line length in the room directory
+   [\#2438](https://github.com/matrix-org/matrix-react-sdk/pull/2438)
+ * Develop->Experimental
+   [\#2444](https://github.com/matrix-org/matrix-react-sdk/pull/2444)
+ * Fix setting label for unknown invites
+   [\#2443](https://github.com/matrix-org/matrix-react-sdk/pull/2443)
+ * Merge develop -> experimental
+   [\#2441](https://github.com/matrix-org/matrix-react-sdk/pull/2441)
+ * Give a route for retrying invites for users which may not exist
+   [\#2434](https://github.com/matrix-org/matrix-react-sdk/pull/2434)
+ * Show in-room reminder when key backup creating device unverified
+   [\#2394](https://github.com/matrix-org/matrix-react-sdk/pull/2394)
+ * Consistent flair ordering.
+   [\#2389](https://github.com/matrix-org/matrix-react-sdk/pull/2389)
+ * Fetch matching e2e-test branch
+   [\#2387](https://github.com/matrix-org/matrix-react-sdk/pull/2387)
+ * Add some logging for riot-web#7838
+   [\#2385](https://github.com/matrix-org/matrix-react-sdk/pull/2385)
+ * Handle well-known data in the login response
+   [\#2384](https://github.com/matrix-org/matrix-react-sdk/pull/2384)
+ * Custom status messages
+   [\#2347](https://github.com/matrix-org/matrix-react-sdk/pull/2347)
+ * React-sdk changes to support sandboxed electron
+   [\#2372](https://github.com/matrix-org/matrix-react-sdk/pull/2372)
+ * Make sure to grab the InlineSpinner object
+   [\#2363](https://github.com/matrix-org/matrix-react-sdk/pull/2363)
+ * Standardize errors about localpart structure
+   [\#2351](https://github.com/matrix-org/matrix-react-sdk/pull/2351)
+ * Fix translation error on notification icon
+   [\#2352](https://github.com/matrix-org/matrix-react-sdk/pull/2352)
+ * Introduce a default_server_name for aesthetics and rework .well-known
+   [\#2327](https://github.com/matrix-org/matrix-react-sdk/pull/2327)
+ * Show the number of unread notifications above the bell on the right
+   [\#2336](https://github.com/matrix-org/matrix-react-sdk/pull/2336)
+ * Check to make sure email addresses look roughly valid before inviting them
+   to rooms
+   [\#2338](https://github.com/matrix-org/matrix-react-sdk/pull/2338)
+ * Expose hidden notification rules in UI
+   [\#2346](https://github.com/matrix-org/matrix-react-sdk/pull/2346)
+ * Avoid preserving HS url at logout
+   [\#2340](https://github.com/matrix-org/matrix-react-sdk/pull/2340)
+ * Speed up room unread checks by not hitting the SettingsStore so often
+   [\#2339](https://github.com/matrix-org/matrix-react-sdk/pull/2339)
+ * Remove outdated info about custom skins
+   [\#2337](https://github.com/matrix-org/matrix-react-sdk/pull/2337)
+ * Show the IncomingCallBox if the call is for the RoomSubList
+   [\#2333](https://github.com/matrix-org/matrix-react-sdk/pull/2333)
+ * Don't consider ACL'd servers as permalink candidates
+   [\#2331](https://github.com/matrix-org/matrix-react-sdk/pull/2331)
+ * Fix pinning of rooms without badges
+   [\#2330](https://github.com/matrix-org/matrix-react-sdk/pull/2330)
+ * Sort translations by file name
+   [\#2329](https://github.com/matrix-org/matrix-react-sdk/pull/2329)
+ * Update React guide in code style
+   [\#2335](https://github.com/matrix-org/matrix-react-sdk/pull/2335)
+ * Remove temporary account_deactivation_preferences
+   [\#2259](https://github.com/matrix-org/matrix-react-sdk/pull/2259)
+
+Changes in [0.14.7](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.7) (2018-12-10)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.7-rc.2...v0.14.7)
+
+ * No changes since rc.2
+
+Changes in [0.14.7-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.7-rc.2) (2018-12-06)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.7-rc.1...v0.14.7-rc.2)
+
+ * Ship the babelrc file to npm
+   [\#2332](https://github.com/matrix-org/matrix-react-sdk/pull/2332)
+
+Changes in [0.14.7-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.7-rc.1) (2018-12-06)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.6...v0.14.7-rc.1)
+
+ * Suppress CORS errors in the 'failed to join room' dialog
+   [\#2306](https://github.com/matrix-org/matrix-react-sdk/pull/2306)
+ * Check if users exist before inviting them and communicate errors
+   [\#2317](https://github.com/matrix-org/matrix-react-sdk/pull/2317)
+ * Update from Weblate.
+   [\#2328](https://github.com/matrix-org/matrix-react-sdk/pull/2328)
+ * Allow group summary to load when /users fails
+   [\#2326](https://github.com/matrix-org/matrix-react-sdk/pull/2326)
+ * Show correct text if passphrase is skipped
+   [\#2324](https://github.com/matrix-org/matrix-react-sdk/pull/2324)
+ * Add password strength meter to backup creation UI
+   [\#2294](https://github.com/matrix-org/matrix-react-sdk/pull/2294)
+ * Check upload limits before trying to upload large files
+   [\#1876](https://github.com/matrix-org/matrix-react-sdk/pull/1876)
+ * Support .well-known discovery
+   [\#2227](https://github.com/matrix-org/matrix-react-sdk/pull/2227)
+ * Make create key backup dialog async
+   [\#2291](https://github.com/matrix-org/matrix-react-sdk/pull/2291)
+ * Forgot to enable continue button on download
+   [\#2288](https://github.com/matrix-org/matrix-react-sdk/pull/2288)
+ * Online incremental megolm backups (v2)
+   [\#2169](https://github.com/matrix-org/matrix-react-sdk/pull/2169)
+ * Add recovery key download button
+   [\#2284](https://github.com/matrix-org/matrix-react-sdk/pull/2284)
+ * Passphrase Support for e2e backups
+   [\#2283](https://github.com/matrix-org/matrix-react-sdk/pull/2283)
+ * Update async dialog interface to use promises
+   [\#2286](https://github.com/matrix-org/matrix-react-sdk/pull/2286)
+ * Support for m.login.sso
+   [\#2279](https://github.com/matrix-org/matrix-react-sdk/pull/2279)
+ * Added badge to non-autoplay GIFs
+   [\#2235](https://github.com/matrix-org/matrix-react-sdk/pull/2235)
+ * Improve terms auth flow
+   [\#2277](https://github.com/matrix-org/matrix-react-sdk/pull/2277)
+ * Handle crypto db version upgrade
+   [\#2282](https://github.com/matrix-org/matrix-react-sdk/pull/2282)
+
+Changes in [0.14.6](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.6) (2018-11-22)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.5...v0.14.6)
+
+ * Warning when crypto DB is too new to use.
+
+Changes in [0.14.5](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.5) (2018-11-19)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.5-rc.2...v0.14.5)
+
+ * No changes since rc.1
+
+Changes in [0.14.5-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.5-rc.2) (2018-11-15)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.5-rc.1...v0.14.5-rc.2)
+
+ * Update to js-sdk v0.14.0-rc.1 which uses the new Olm API
+   (v0.14.0-rc.1 was broken because of this).
+
+Changes in [0.14.5-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.5-rc.1) (2018-11-15)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.4...v0.14.5-rc.1)
+
+ * Update from Weblate.
+   [\#2278](https://github.com/matrix-org/matrix-react-sdk/pull/2278)
+ * Support room IDs and event permalinks in the join command
+   [\#2272](https://github.com/matrix-org/matrix-react-sdk/pull/2272)
+ * Align encrypted event buttons in Safari
+   [\#2274](https://github.com/matrix-org/matrix-react-sdk/pull/2274)
+ * Align buttons in encrypted event dialog
+   [\#2273](https://github.com/matrix-org/matrix-react-sdk/pull/2273)
+ * Add visible guest warning to encourage login
+   [\#2268](https://github.com/matrix-org/matrix-react-sdk/pull/2268)
+ * Regenerate the room list when m.fully_read is issued
+   [\#2266](https://github.com/matrix-org/matrix-react-sdk/pull/2266)
+ * Remove the request-only stuff we don't need anymore
+   [\#2263](https://github.com/matrix-org/matrix-react-sdk/pull/2263)
+ * Improve performance of room list and fix timestamp ordering when pinning
+   rooms
+   [\#2265](https://github.com/matrix-org/matrix-react-sdk/pull/2265)
+ * Add options to pin unread/mentioned rooms to the top of the room list
+   [\#1936](https://github.com/matrix-org/matrix-react-sdk/pull/1936)
+ * only run e2e tests on PRs targeted on develop
+   [\#2261](https://github.com/matrix-org/matrix-react-sdk/pull/2261)
+ * Fix and test matrix.to alias permalinks
+   [\#2254](https://github.com/matrix-org/matrix-react-sdk/pull/2254)
+ * click-through svg on tag tile context menu to make it less weird
+   [\#2257](https://github.com/matrix-org/matrix-react-sdk/pull/2257)
+ * Hide Matthew's Time Machine
+   [\#2256](https://github.com/matrix-org/matrix-react-sdk/pull/2256)
+ * Update babel-eslint to 8.1.1
+   [\#2255](https://github.com/matrix-org/matrix-react-sdk/pull/2255)
+ * Support routing matrix.to links to joinable rooms
+   [\#2250](https://github.com/matrix-org/matrix-react-sdk/pull/2250)
+ * Fix autoreplacement of ascii emoji
+   [\#2253](https://github.com/matrix-org/matrix-react-sdk/pull/2253)
+ * Repair DevTools button padding by centralizing styles
+   [\#2252](https://github.com/matrix-org/matrix-react-sdk/pull/2252)
+ * Redirect widgets to another location before deleting them
+   [\#2232](https://github.com/matrix-org/matrix-react-sdk/pull/2232)
+ * disable e2e tests for PRs targeted at experimental (redesign)
+   [\#2251](https://github.com/matrix-org/matrix-react-sdk/pull/2251)
+ * Fix emoji replacement in composer
+   [\#2247](https://github.com/matrix-org/matrix-react-sdk/pull/2247)
+ * Add a devtools button to roomsettings
+   [\#2249](https://github.com/matrix-org/matrix-react-sdk/pull/2249)
+ * Add warning when administrator leaves community (#5724)
+   [\#2242](https://github.com/matrix-org/matrix-react-sdk/pull/2242)
+
+Changes in [0.14.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.4) (2018-11-13)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.3...v0.14.4)
+
+ * Include change that was supposed to be included in orevious version
+
+Changes in [0.14.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.3) (2018-11-13)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.2...v0.14.3)
+
+ * Add banner with login/register links for users who aren't logged in
+
+Changes in [0.14.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.2) (2018-10-29)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.2-rc.1...v0.14.2)
+
+ * Fix autoreplacement of ascii emoji
+   [\#2258](https://github.com/matrix-org/matrix-react-sdk/pull/2258)
+
+Changes in [0.14.2-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.2-rc.1) (2018-10-24)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.1...v0.14.2-rc.1)
+
+ * Update from Weblate.
+   [\#2244](https://github.com/matrix-org/matrix-react-sdk/pull/2244)
+ * Show the group member list again
+   [\#2223](https://github.com/matrix-org/matrix-react-sdk/pull/2223)
+ * lint: make colorScheme camel case
+   [\#2237](https://github.com/matrix-org/matrix-react-sdk/pull/2237)
+ * Change leave room button text, OK -> Leave
+   [\#2236](https://github.com/matrix-org/matrix-react-sdk/pull/2236)
+ * Move all dialog buttons to the right and fix their order
+   [\#2231](https://github.com/matrix-org/matrix-react-sdk/pull/2231)
+ * Add a bit of text to explain the purpose of the RoomPreviewSpinner
+   [\#2225](https://github.com/matrix-org/matrix-react-sdk/pull/2225)
+ * Move the login box from the left sidebar to where the composer is
+   [\#2219](https://github.com/matrix-org/matrix-react-sdk/pull/2219)
+ * Fix an error where React doesn't like value=null on a select
+   [\#2230](https://github.com/matrix-org/matrix-react-sdk/pull/2230)
+ * add missing sticker translation
+   [\#2216](https://github.com/matrix-org/matrix-react-sdk/pull/2216)
+ * Support m.login.terms during registration
+   [\#2221](https://github.com/matrix-org/matrix-react-sdk/pull/2221)
+ * Don't show the invite nag bar when peeking
+   [\#2220](https://github.com/matrix-org/matrix-react-sdk/pull/2220)
+ * Apply the user's tint once the MatrixClientPeg is moderately ready
+   [\#2214](https://github.com/matrix-org/matrix-react-sdk/pull/2214)
+ * Make rageshake use less memory
+   [\#2217](https://github.com/matrix-org/matrix-react-sdk/pull/2217)
+ * Fix autocomplete
+   [\#2212](https://github.com/matrix-org/matrix-react-sdk/pull/2212)
+ * Explain feature states in a lot more detail
+   [\#2211](https://github.com/matrix-org/matrix-react-sdk/pull/2211)
+ * Fix various lint errors
+   [\#2213](https://github.com/matrix-org/matrix-react-sdk/pull/2213)
+
+Changes in [0.14.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.1) (2018-10-19)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.0...v0.14.1)
+
+ * Apply the user's tint once the MatrixClientPeg is moderately ready
+   [\#2214](https://github.com/matrix-org/matrix-react-sdk/pull/2214)
+
+Changes in [0.14.0](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.0) (2018-10-16)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.14.0-rc.1...v0.14.0)
+
+ * Phased rollout of lazy loading
+   [\#2218](https://github.com/matrix-org/matrix-react-sdk/pull/2218)
+
+Changes in [0.14.0-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.0-rc.1) (2018-10-11)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.6...v0.14.0-rc.1)
+
+ * turn LL on by default!
+   [\#2209](https://github.com/matrix-org/matrix-react-sdk/pull/2209)
+ * Update from Weblate.
+   [\#2207](https://github.com/matrix-org/matrix-react-sdk/pull/2207)
+ * Fix quote post slate update
+   [\#2206](https://github.com/matrix-org/matrix-react-sdk/pull/2206)
+ * Handle InvalidStoreError from js-sdk
+   [\#2205](https://github.com/matrix-org/matrix-react-sdk/pull/2205)
+ * Fall back to default avatar in RR when member isn't loaded yet
+   [\#2204](https://github.com/matrix-org/matrix-react-sdk/pull/2204)
+ * Update to new version of slate
+   [\#2202](https://github.com/matrix-org/matrix-react-sdk/pull/2202)
+ * Update karma to webpack 4
+   [\#2203](https://github.com/matrix-org/matrix-react-sdk/pull/2203)
+ * More accessible buttons - take 2
+   [\#2194](https://github.com/matrix-org/matrix-react-sdk/pull/2194)
+ * log correct error code when opening log idb
+   [\#2200](https://github.com/matrix-org/matrix-react-sdk/pull/2200)
+ * show warning when LL is disabled but was enabled before
+   [\#2201](https://github.com/matrix-org/matrix-react-sdk/pull/2201)
+ * Fall back to another store if indexeddb start fails
+   [\#2195](https://github.com/matrix-org/matrix-react-sdk/pull/2195)
+ * Silence bluebird warnings
+   [\#2198](https://github.com/matrix-org/matrix-react-sdk/pull/2198)
+ * Use createObjectURL instead of readAsDataURL for videos
+   [\#2197](https://github.com/matrix-org/matrix-react-sdk/pull/2197)
+ * Revert "Use createObjectURL instead of readAsDataURL for videos"
+   [\#2196](https://github.com/matrix-org/matrix-react-sdk/pull/2196)
+ * Track how far the user travels before dismissing their user settings
+   [\#2183](https://github.com/matrix-org/matrix-react-sdk/pull/2183)
+ * Drop (IRC) suffix hacks
+   [\#2193](https://github.com/matrix-org/matrix-react-sdk/pull/2193)
+ * Use createObjectURL instead of readAsDataURL for videos
+   [\#2176](https://github.com/matrix-org/matrix-react-sdk/pull/2176)
+ * Remove old migration code
+   [\#2192](https://github.com/matrix-org/matrix-react-sdk/pull/2192)
+ * Fix brace style in TextForEvent.js
+   [\#2191](https://github.com/matrix-org/matrix-react-sdk/pull/2191)
+ * Fix error logging
+   [\#2190](https://github.com/matrix-org/matrix-react-sdk/pull/2190)
+ * Fix Promise.defer warning in ScalarAuthClient.js
+   [\#2188](https://github.com/matrix-org/matrix-react-sdk/pull/2188)
+ * Communicate early that a 3pid is required during registration if needed
+   [\#2180](https://github.com/matrix-org/matrix-react-sdk/pull/2180)
+ * try to encourage people to attach logs to bugs
+   [\#2185](https://github.com/matrix-org/matrix-react-sdk/pull/2185)
+ * Show the 'homeserver unavailable' warning when the first sync fails
+   [\#2182](https://github.com/matrix-org/matrix-react-sdk/pull/2182)
+ * allow passing initial is_url like hs_url in query params
+   [\#2083](https://github.com/matrix-org/matrix-react-sdk/pull/2083)
+ * Update karma
+   [\#2177](https://github.com/matrix-org/matrix-react-sdk/pull/2177)
+ * fudge hangup reasons
+   [\#2184](https://github.com/matrix-org/matrix-react-sdk/pull/2184)
+ * Provide more helpful errors when i18n generation fails
+   [\#2181](https://github.com/matrix-org/matrix-react-sdk/pull/2181)
+
+Changes in [0.14.0-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.14.0-rc.1) (2018-10-11)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.6...v0.14.0-rc.1)
+
+ * turn LL on by default!
+   [\#2209](https://github.com/matrix-org/matrix-react-sdk/pull/2209)
+ * Update from Weblate.
+   [\#2207](https://github.com/matrix-org/matrix-react-sdk/pull/2207)
+ * Fix quote post slate update
+   [\#2206](https://github.com/matrix-org/matrix-react-sdk/pull/2206)
+ * Handle InvalidStoreError from js-sdk
+   [\#2205](https://github.com/matrix-org/matrix-react-sdk/pull/2205)
+ * Fall back to default avatar in RR when member isn't loaded yet
+   [\#2204](https://github.com/matrix-org/matrix-react-sdk/pull/2204)
+ * Update to new version of slate
+   [\#2202](https://github.com/matrix-org/matrix-react-sdk/pull/2202)
+ * Update karma to webpack 4
+   [\#2203](https://github.com/matrix-org/matrix-react-sdk/pull/2203)
+ * More accessible buttons - take 2
+   [\#2194](https://github.com/matrix-org/matrix-react-sdk/pull/2194)
+ * log correct error code when opening log idb
+   [\#2200](https://github.com/matrix-org/matrix-react-sdk/pull/2200)
+ * show warning when LL is disabled but was enabled before
+   [\#2201](https://github.com/matrix-org/matrix-react-sdk/pull/2201)
+ * Fall back to another store if indexeddb start fails
+   [\#2195](https://github.com/matrix-org/matrix-react-sdk/pull/2195)
+ * Silence bluebird warnings
+   [\#2198](https://github.com/matrix-org/matrix-react-sdk/pull/2198)
+ * Use createObjectURL instead of readAsDataURL for videos
+   [\#2197](https://github.com/matrix-org/matrix-react-sdk/pull/2197)
+ * Revert "Use createObjectURL instead of readAsDataURL for videos"
+   [\#2196](https://github.com/matrix-org/matrix-react-sdk/pull/2196)
+ * Track how far the user travels before dismissing their user settings
+   [\#2183](https://github.com/matrix-org/matrix-react-sdk/pull/2183)
+ * Drop (IRC) suffix hacks
+   [\#2193](https://github.com/matrix-org/matrix-react-sdk/pull/2193)
+ * Use createObjectURL instead of readAsDataURL for videos
+   [\#2176](https://github.com/matrix-org/matrix-react-sdk/pull/2176)
+ * Remove old migration code
+   [\#2192](https://github.com/matrix-org/matrix-react-sdk/pull/2192)
+ * Fix brace style in TextForEvent.js
+   [\#2191](https://github.com/matrix-org/matrix-react-sdk/pull/2191)
+ * Fix error logging
+   [\#2190](https://github.com/matrix-org/matrix-react-sdk/pull/2190)
+ * Fix Promise.defer warning in ScalarAuthClient.js
+   [\#2188](https://github.com/matrix-org/matrix-react-sdk/pull/2188)
+ * Communicate early that a 3pid is required during registration if needed
+   [\#2180](https://github.com/matrix-org/matrix-react-sdk/pull/2180)
+ * try to encourage people to attach logs to bugs
+   [\#2185](https://github.com/matrix-org/matrix-react-sdk/pull/2185)
+ * Show the 'homeserver unavailable' warning when the first sync fails
+   [\#2182](https://github.com/matrix-org/matrix-react-sdk/pull/2182)
+ * allow passing initial is_url like hs_url in query params
+   [\#2083](https://github.com/matrix-org/matrix-react-sdk/pull/2083)
+ * Update karma
+   [\#2177](https://github.com/matrix-org/matrix-react-sdk/pull/2177)
+ * fudge hangup reasons
+   [\#2184](https://github.com/matrix-org/matrix-react-sdk/pull/2184)
+ * Provide more helpful errors when i18n generation fails
+   [\#2181](https://github.com/matrix-org/matrix-react-sdk/pull/2181)
+
+Changes in [0.13.6](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.6) (2018-10-08)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.5...v0.13.6)
+
+ * Fix resuming session in Firefox private mode/Tor browser being broken
+   [\#2195](https://github.com/matrix-org/matrix-react-sdk/pull/2195)
+ * Show warning about using lazy-loading/non-lazy-loading versions simultaneously (/app & /develop)
+   [\#2201](https://github.com/matrix-org/matrix-react-sdk/pull/2201)
+
+Changes in [0.13.5](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.5) (2018-10-01)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.5-rc.1...v0.13.5)
+
+ * No changes since rc.1
+
+Changes in [0.13.5-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.5-rc.1) (2018-09-27)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.4...v0.13.5-rc.1)
+
+ * resync when LL is toggled, show message when enabled
+   [\#2178](https://github.com/matrix-org/matrix-react-sdk/pull/2178)
+ * Update from Weblate.
+   [\#2179](https://github.com/matrix-org/matrix-react-sdk/pull/2179)
+ * Split npm start into an init and watch script
+   [\#2175](https://github.com/matrix-org/matrix-react-sdk/pull/2175)
+ * show canonical aliases in timeline, and set/remove implicit ones
+   [\#2171](https://github.com/matrix-org/matrix-react-sdk/pull/2171)
+ * Fix stale RR and improve LL reliability in RoomView & MemberList.
+   [\#2168](https://github.com/matrix-org/matrix-react-sdk/pull/2168)
+ * pass --travis flag to e2e tests to disable tests known not to work Travis CI
+   [\#2170](https://github.com/matrix-org/matrix-react-sdk/pull/2170)
+ * Add m.room.aliases to the timeline
+   [\#2167](https://github.com/matrix-org/matrix-react-sdk/pull/2167)
+ * postpone loading the members until the user joined the room
+   [\#2165](https://github.com/matrix-org/matrix-react-sdk/pull/2165)
+ * Allow translation tags object to be a variable
+   [\#2166](https://github.com/matrix-org/matrix-react-sdk/pull/2166)
+ * Don't try to exit fullscreen if not fullscreen
+   [\#2164](https://github.com/matrix-org/matrix-react-sdk/pull/2164)
+ * avoid updating the memberlist while the spinner is shown
+   [\#2161](https://github.com/matrix-org/matrix-react-sdk/pull/2161)
+ * fix logging room id when LL members fail
+   [\#2163](https://github.com/matrix-org/matrix-react-sdk/pull/2163)
+ * dont keep the spinner in the memberlist when fetching /members fails
+   [\#2162](https://github.com/matrix-org/matrix-react-sdk/pull/2162)
+ * only dispatch an action for self-membership
+   [\#2160](https://github.com/matrix-org/matrix-react-sdk/pull/2160)
+ * avoid unneeded lookups in memberDict
+   [\#2153](https://github.com/matrix-org/matrix-react-sdk/pull/2153)
+ * Update from Weblate.
+   [\#2157](https://github.com/matrix-org/matrix-react-sdk/pull/2157)
+ * avoid memberlist refresh for events related to rooms other but the current
+   [\#2156](https://github.com/matrix-org/matrix-react-sdk/pull/2156)
+
+Changes in [0.13.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.4) (2018-09-10)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.4-rc.1...v0.13.4)
+
+ * No changes since rc.1
+
+Changes in [0.13.4-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.4-rc.1) (2018-09-07)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.3...v0.13.4-rc.1)
+
+ * Error on splash screen if sync is failing
+   [\#2155](https://github.com/matrix-org/matrix-react-sdk/pull/2155)
+ *  Do full registration if HS doesn't support ILAG
+   [\#2150](https://github.com/matrix-org/matrix-react-sdk/pull/2150)
+ * Re-apply "Don't rely on room members to query power levels"
+   [\#2152](https://github.com/matrix-org/matrix-react-sdk/pull/2152)
+ * s/DidMount/WillMount/ in MessageComposerInput
+   [\#2151](https://github.com/matrix-org/matrix-react-sdk/pull/2151)
+ * Revert "Don't rely on room members to query power levels"
+   [\#2149](https://github.com/matrix-org/matrix-react-sdk/pull/2149)
+ * Don't rely on room members to query power levels
+   [\#2145](https://github.com/matrix-org/matrix-react-sdk/pull/2145)
+ * Correctly mark email as optional
+   [\#2148](https://github.com/matrix-org/matrix-react-sdk/pull/2148)
+ * guests trying to join communities should fire the ILAG flow.
+   [\#2059](https://github.com/matrix-org/matrix-react-sdk/pull/2059)
+ * Fix DM avatars, part 3
+   [\#2146](https://github.com/matrix-org/matrix-react-sdk/pull/2146)
+ * Fix: show spinner again while recovering from connection error
+   [\#2143](https://github.com/matrix-org/matrix-react-sdk/pull/2143)
+ * Fix: infinite spinner on trying to create welcomeUserId room without consent
+   [\#2147](https://github.com/matrix-org/matrix-react-sdk/pull/2147)
+ * Show spinner in member list while loading members
+   [\#2139](https://github.com/matrix-org/matrix-react-sdk/pull/2139)
+ * Slash command to discard megolm session
+   [\#2140](https://github.com/matrix-org/matrix-react-sdk/pull/2140)
+
+Changes in [0.13.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.3) (2018-09-03)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.3-rc.2...v0.13.3)
+
+ * No changes since rc.2
+
+Changes in [0.13.3-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.3-rc.2) (2018-08-31)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.3-rc.1...v0.13.3-rc.2)
+
+ * Update js-sdk to fix exception
+
+Changes in [0.13.3-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.3-rc.1) (2018-08-30)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.2...v0.13.3-rc.1)
+
+ * Fix DM avatar
+   [\#2141](https://github.com/matrix-org/matrix-react-sdk/pull/2141)
+ * Update from Weblate.
+   [\#2142](https://github.com/matrix-org/matrix-react-sdk/pull/2142)
+ * Support m.room.tombstone events
+   [\#2124](https://github.com/matrix-org/matrix-react-sdk/pull/2124)
+ * Support room creation events
+   [\#2123](https://github.com/matrix-org/matrix-react-sdk/pull/2123)
+ * Support for room upgrades
+   [\#2122](https://github.com/matrix-org/matrix-react-sdk/pull/2122)
+ * Fix: dont show 1:1 avatar for rooms +2 members but only <=2 members loaded
+   [\#2137](https://github.com/matrix-org/matrix-react-sdk/pull/2137)
+ * Render terms & conditions in settings
+   [\#2136](https://github.com/matrix-org/matrix-react-sdk/pull/2136)
+ * Don't crash if the value of a room tag is null
+   [\#2133](https://github.com/matrix-org/matrix-react-sdk/pull/2133)
+ * Add stub for getVisibleRooms()
+   [\#2134](https://github.com/matrix-org/matrix-react-sdk/pull/2134)
+ * Fix LL crash trying to render own avatar in composer when member isn't
+   available yet
+   [\#2132](https://github.com/matrix-org/matrix-react-sdk/pull/2132)
+ * Support M_INCOMPATIBLE_ROOM_VERSION
+   [\#2125](https://github.com/matrix-org/matrix-react-sdk/pull/2125)
+ * Hide replaced rooms
+   [\#2127](https://github.com/matrix-org/matrix-react-sdk/pull/2127)
+ * Fix CPU spin on joining large room
+   [\#2128](https://github.com/matrix-org/matrix-react-sdk/pull/2128)
+ * Change format of server usage limit message
+   [\#2131](https://github.com/matrix-org/matrix-react-sdk/pull/2131)
+ * Re-apply "Fix showing peek preview while LL members are loading""
+   [\#2130](https://github.com/matrix-org/matrix-react-sdk/pull/2130)
+ * Revert "Fix showing peek preview while LL members are loading"
+   [\#2129](https://github.com/matrix-org/matrix-react-sdk/pull/2129)
+ * Fix showing peek preview while LL members are loading
+   [\#2126](https://github.com/matrix-org/matrix-react-sdk/pull/2126)
+ * Destroy non-persistent widgets when switching room
+   [\#2098](https://github.com/matrix-org/matrix-react-sdk/pull/2098)
+ * Lazy loading of room members
+   [\#2118](https://github.com/matrix-org/matrix-react-sdk/pull/2118)
+ * Lazy loading: feature toggle
+   [\#2115](https://github.com/matrix-org/matrix-react-sdk/pull/2115)
+ * Lazy loading: cleanup
+   [\#2116](https://github.com/matrix-org/matrix-react-sdk/pull/2116)
+ * Lazy loading: fix end-to-end encryption rooms
+   [\#2113](https://github.com/matrix-org/matrix-react-sdk/pull/2113)
+ * Lazy loading: Lazy load members while backpaginating
+   [\#2104](https://github.com/matrix-org/matrix-react-sdk/pull/2104)
+ * Lazy loading: don't assume we have our own member available
+   [\#2102](https://github.com/matrix-org/matrix-react-sdk/pull/2102)
+ * Lazy load room members - Part I
+   [\#2072](https://github.com/matrix-org/matrix-react-sdk/pull/2072)
+
+Changes in [0.13.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.2) (2018-08-23)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.1...v0.13.2)
+
+ * Don't crash if the value of a room tag is null
+   [\#2135](https://github.com/matrix-org/matrix-react-sdk/pull/2135)
+
+Changes in [0.13.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.1) (2018-08-20)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.1-rc.1...v0.13.1)
+
+ * No changes since rc.1
+
+Changes in [0.13.1-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.1-rc.1) (2018-08-16)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.0...v0.13.1-rc.1)
+
+ * Update from Weblate.
+   [\#2121](https://github.com/matrix-org/matrix-react-sdk/pull/2121)
+ * Shift to M_RESOURCE_LIMIT_EXCEEDED errors
+   [\#2120](https://github.com/matrix-org/matrix-react-sdk/pull/2120)
+ * Fix RoomSettings test
+   [\#2119](https://github.com/matrix-org/matrix-react-sdk/pull/2119)
+ * Show room version number in room settings
+   [\#2117](https://github.com/matrix-org/matrix-react-sdk/pull/2117)
+ * Warning bar for MAU limit hit
+   [\#2114](https://github.com/matrix-org/matrix-react-sdk/pull/2114)
+ * Recognise server notices room(s)
+   [\#2112](https://github.com/matrix-org/matrix-react-sdk/pull/2112)
+ * Update room tags behaviour to match spec more
+   [\#2111](https://github.com/matrix-org/matrix-react-sdk/pull/2111)
+ * while logging out ignore `Session.logged_out` as it is intentional
+   [\#2058](https://github.com/matrix-org/matrix-react-sdk/pull/2058)
+ * Don't show 'connection lost' bar on MAU error
+   [\#2110](https://github.com/matrix-org/matrix-react-sdk/pull/2110)
+ * Support MAU error on sync
+   [\#2108](https://github.com/matrix-org/matrix-react-sdk/pull/2108)
+ * Support active user limit on message send
+   [\#2106](https://github.com/matrix-org/matrix-react-sdk/pull/2106)
+ * Run end to end tests as part of Travis build
+   [\#2091](https://github.com/matrix-org/matrix-react-sdk/pull/2091)
+ * Remove package-lock.json for now
+   [\#2097](https://github.com/matrix-org/matrix-react-sdk/pull/2097)
+ * Support montly active user limit error on /login
+   [\#2103](https://github.com/matrix-org/matrix-react-sdk/pull/2103)
+ * Unpin sanitize-html
+   [\#2105](https://github.com/matrix-org/matrix-react-sdk/pull/2105)
+ * Pin sanitize-html to 0.18.2
+   [\#2101](https://github.com/matrix-org/matrix-react-sdk/pull/2101)
+ * Make clicking on side panels close settings (mk 3)
+   [\#2096](https://github.com/matrix-org/matrix-react-sdk/pull/2096)
+ * Fix persistent element location not updating
+   [\#2092](https://github.com/matrix-org/matrix-react-sdk/pull/2092)
+ * fix Devtools input autofocus && state traversal when len === 1 && key=""
+   [\#2090](https://github.com/matrix-org/matrix-react-sdk/pull/2090)
+ * allow autocompleting Emoji by common aliases, e.g :+1: to :thumbsup:
+   [\#2085](https://github.com/matrix-org/matrix-react-sdk/pull/2085)
+
+Changes in [0.13.0](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.0) (2018-07-30)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.0-rc.2...v0.13.0)
+
+ * Fix composer bug where cursor position would change when Riot regained focus
+   [\#2093](https://github.com/matrix-org/matrix-react-sdk/pull/2093)
+ * Fix persistend element location not updating
+   [\#2094](https://github.com/matrix-org/matrix-react-sdk/pull/2094)
+ * Slate Fixes 42?
+   [\#2089](https://github.com/matrix-org/matrix-react-sdk/pull/2089)
+
+Changes in [0.13.0-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.0-rc.2) (2018-07-24)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.13.0-rc.1...v0.13.0-rc.2)
+
+ * Take jitsi conf calling out of labs
+   [\#2087](https://github.com/matrix-org/matrix-react-sdk/pull/2087)
+
+Changes in [0.13.0-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.13.0-rc.1) (2018-07-24)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.9...v0.13.0-rc.1)
+
+ * Update from Weblate.
+   [\#2086](https://github.com/matrix-org/matrix-react-sdk/pull/2086)
+ * Moar Slate Fixes
+   [\#2082](https://github.com/matrix-org/matrix-react-sdk/pull/2082)
+ * Destroy the widget when its permission is revoked
+   [\#2081](https://github.com/matrix-org/matrix-react-sdk/pull/2081)
+ * Make ActiveWidgetStore clear persistent widgets
+   [\#2084](https://github.com/matrix-org/matrix-react-sdk/pull/2084)
+ * CreateRoomDialog is rendered before getting the config default_federate
+   [\#2078](https://github.com/matrix-org/matrix-react-sdk/pull/2078)
+ * Slate Fixes
+   [\#2076](https://github.com/matrix-org/matrix-react-sdk/pull/2076)
+ * FIX: Don't error on rooms the user has left already
+   [\#2077](https://github.com/matrix-org/matrix-react-sdk/pull/2077)
+ * Fix persistent apps being the wrong size
+   [\#2080](https://github.com/matrix-org/matrix-react-sdk/pull/2080)
+ * Fix widgets resetting when going to the top-left
+   [\#2079](https://github.com/matrix-org/matrix-react-sdk/pull/2079)
+ * Jitsi: Use integrations URL from config
+   [\#2062](https://github.com/matrix-org/matrix-react-sdk/pull/2062)
+ * Allow jitsi in e2e rooms
+   [\#2075](https://github.com/matrix-org/matrix-react-sdk/pull/2075)
+ * Fix border around persisted widgets
+   [\#2071](https://github.com/matrix-org/matrix-react-sdk/pull/2071)
+ * Fix e2e icons floating above jitsi
+   [\#2073](https://github.com/matrix-org/matrix-react-sdk/pull/2073)
+ * hide some commands after space as they have special semantics
+   [\#2074](https://github.com/matrix-org/matrix-react-sdk/pull/2074)
+ * Even More Slate Fixes :D
+   [\#2070](https://github.com/matrix-org/matrix-react-sdk/pull/2070)
+ * Improve UX for Jitsi by adding local echo for widgets
+   [\#2035](https://github.com/matrix-org/matrix-react-sdk/pull/2035)
+ * Jitsi: Check integrations server before call
+   [\#2063](https://github.com/matrix-org/matrix-react-sdk/pull/2063)
+ * Jitsi: Error message on no permission
+   [\#2061](https://github.com/matrix-org/matrix-react-sdk/pull/2061)
+ * Fix read receipts on top of Jitsi
+   [\#2065](https://github.com/matrix-org/matrix-react-sdk/pull/2065)
+ * Moar Slate Fixes
+   [\#2069](https://github.com/matrix-org/matrix-react-sdk/pull/2069)
+ * fix 2nd typo in one PR :(
+   [\#2068](https://github.com/matrix-org/matrix-react-sdk/pull/2068)
+ * check if has some completions, not if >=0
+   [\#2067](https://github.com/matrix-org/matrix-react-sdk/pull/2067)
+ * Slate fixes
+   [\#2066](https://github.com/matrix-org/matrix-react-sdk/pull/2066)
+ *  Implement always-on-screen capability for widgets
+   [\#2056](https://github.com/matrix-org/matrix-react-sdk/pull/2056)
+ * simplify MessageComposerStore and improve its performance
+   [\#2064](https://github.com/matrix-org/matrix-react-sdk/pull/2064)
+ * Replace Draft with Slate
+   [\#1890](https://github.com/matrix-org/matrix-react-sdk/pull/1890)
+ * Fix not stopping to peek when navigating away from peeked room
+   [\#2055](https://github.com/matrix-org/matrix-react-sdk/pull/2055)
+ * T3chguy/slate cont2
+   [\#2049](https://github.com/matrix-org/matrix-react-sdk/pull/2049)
+ * add null-guard for stickerpickerWidget in StickerPicker
+   [\#2057](https://github.com/matrix-org/matrix-react-sdk/pull/2057)
+ * Implement always-on-screen capability for widgets
+   [\#2053](https://github.com/matrix-org/matrix-react-sdk/pull/2053)
+ * fix nullguard on EventTile, getComponent never returns falsey, it throws
+   [\#2024](https://github.com/matrix-org/matrix-react-sdk/pull/2024)
+ * Fix stickerpicker PersistedElement usage
+   [\#2051](https://github.com/matrix-org/matrix-react-sdk/pull/2051)
+ * encrypt for invited users if history visibility allows.
+   [\#2042](https://github.com/matrix-org/matrix-react-sdk/pull/2042)
+ * move nag bar clear statement to any desktop notif toggle not just 0->1
+   [\#2031](https://github.com/matrix-org/matrix-react-sdk/pull/2031)
+ * use TruncatedList to prevent rendering hundreds/thousands of DOM nodes
+   [\#2041](https://github.com/matrix-org/matrix-react-sdk/pull/2041)
+ * Fix stuff
+   [\#2047](https://github.com/matrix-org/matrix-react-sdk/pull/2047)
+ * Show m.room.server_acl
+   [\#2046](https://github.com/matrix-org/matrix-react-sdk/pull/2046)
+
+Changes in [0.12.9](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.9) (2018-07-09)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.9-rc.2...v0.12.9)
+
+ * No changes since rc.1
+
+Changes in [0.12.9-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.9-rc.2) (2018-07-06)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.9-rc.1...v0.12.9-rc.2)
+
+ * Implement aggregation by error type for tracked decryption failures
+   [\#2045](https://github.com/matrix-org/matrix-react-sdk/pull/2045)
+ * make new hiding of roomsublist behaviour opt-in
+   [\#2044](https://github.com/matrix-org/matrix-react-sdk/pull/2044)
+ * Implement aggregation by error type for tracked decryption failures
+   [\#2043](https://github.com/matrix-org/matrix-react-sdk/pull/2043)
+ * make new hiding of roomsublist behaviour opt-in
+   [\#2030](https://github.com/matrix-org/matrix-react-sdk/pull/2030)
+
+Changes in [0.12.9-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.9-rc.1) (2018-07-04)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.8...v0.12.9-rc.1)
+
+ * Update from Weblate.
+   [\#2040](https://github.com/matrix-org/matrix-react-sdk/pull/2040)
+ * Import react as React in src/components/views/messages/MStickerBody.js
+   [\#2039](https://github.com/matrix-org/matrix-react-sdk/pull/2039)
+ * Import react as React in src/GroupAddressPicker.js
+   [\#2038](https://github.com/matrix-org/matrix-react-sdk/pull/2038)
+ * Give PersistedElement a key
+   [\#2036](https://github.com/matrix-org/matrix-react-sdk/pull/2036)
+ * Revert " make click to insert nick work on join/parts, /me's etc"
+   [\#2034](https://github.com/matrix-org/matrix-react-sdk/pull/2034)
+ * Track an event name when tracking a decryption failure
+   [\#2033](https://github.com/matrix-org/matrix-react-sdk/pull/2033)
+ * warn on self-mute
+   [\#1974](https://github.com/matrix-org/matrix-react-sdk/pull/1974)
+ *  make click to insert nick work on join/parts, /me's etc
+   [\#1945](https://github.com/matrix-org/matrix-react-sdk/pull/1945)
+ * Fix layout bug introduced by #2025
+   [\#2029](https://github.com/matrix-org/matrix-react-sdk/pull/2029)
+ * Fix room topics/names resetting when UserSetting re-renders
+   [\#2028](https://github.com/matrix-org/matrix-react-sdk/pull/2028)
+ * Improve tracking of UISIs
+   [\#2027](https://github.com/matrix-org/matrix-react-sdk/pull/2027)
+ * Replace share icons
+   [\#2026](https://github.com/matrix-org/matrix-react-sdk/pull/2026)
+ * Improve status bar errors (namely the consent error)
+   [\#2025](https://github.com/matrix-org/matrix-react-sdk/pull/2025)
+ * Fix incorrectly positioned copy button on `<pre>` blocks
+   [\#2023](https://github.com/matrix-org/matrix-react-sdk/pull/2023)
+ * Redact pathnames with origin `file://`
+   [\#2018](https://github.com/matrix-org/matrix-react-sdk/pull/2018)
+ * Update package-lock.json
+   [\#2022](https://github.com/matrix-org/matrix-react-sdk/pull/2022)
+ * on room sub list badge click goto first relevant room
+   [\#2021](https://github.com/matrix-org/matrix-react-sdk/pull/2021)
+ * improve linkifier AGAIN
+   [\#2020](https://github.com/matrix-org/matrix-react-sdk/pull/2020)
+ * fix historical section
+   [\#2016](https://github.com/matrix-org/matrix-react-sdk/pull/2016)
+ * Fix RoomSubList headers by re-commiting 1faecfd
+   [\#2014](https://github.com/matrix-org/matrix-react-sdk/pull/2014)
+ * don't fire share dialog when clicking timestamp of event,
+   [\#2017](https://github.com/matrix-org/matrix-react-sdk/pull/2017)
+ * Revert "affix copyButton so that it doesn't get scrolled horizontally"
+   [\#2013](https://github.com/matrix-org/matrix-react-sdk/pull/2013)
+ * when the user switches room, close room settings
+   [\#2019](https://github.com/matrix-org/matrix-react-sdk/pull/2019)
+ * Refactor widgets code
+   [\#2015](https://github.com/matrix-org/matrix-react-sdk/pull/2015)
+ * Login local errors for blank fields
+   [\#2009](https://github.com/matrix-org/matrix-react-sdk/pull/2009)
+ * Update lolex to 2.7.0
+   [\#1917](https://github.com/matrix-org/matrix-react-sdk/pull/1917)
+ * Improve Linkifier
+   [\#2011](https://github.com/matrix-org/matrix-react-sdk/pull/2011)
+ * use enum constants for EventStatus and correct isSent check
+   [\#2010](https://github.com/matrix-org/matrix-react-sdk/pull/2010)
+ * accent insensitive autocomplete
+   [\#2007](https://github.com/matrix-org/matrix-react-sdk/pull/2007)
+ * default to not showing url previews in e2ee rooms.
+   [\#2001](https://github.com/matrix-org/matrix-react-sdk/pull/2001)
+ * allow chaining right click contextmenus
+   [\#1999](https://github.com/matrix-org/matrix-react-sdk/pull/1999)
+ * hide empty roomsublists when filtering via search/tagpanel
+   [\#1954](https://github.com/matrix-org/matrix-react-sdk/pull/1954)
+ * prevent user,room,group autocomplete firing mid-word
+   [\#2012](https://github.com/matrix-org/matrix-react-sdk/pull/2012)
+ * fix instances of composer not getting/regaining focus
+   [\#2008](https://github.com/matrix-org/matrix-react-sdk/pull/2008)
+ * notif panel fixes
+   [\#2006](https://github.com/matrix-org/matrix-react-sdk/pull/2006)
+ * factor out conditional LanguageSelector as functional component
+   [\#2003](https://github.com/matrix-org/matrix-react-sdk/pull/2003)
+ * Autocomplete and Pillify Communities
+   [\#1993](https://github.com/matrix-org/matrix-react-sdk/pull/1993)
+ * Very basic Jitsi integration
+   [\#1971](https://github.com/matrix-org/matrix-react-sdk/pull/1971)
+ * add additional classes which protect the text from overflowing
+   [\#1994](https://github.com/matrix-org/matrix-react-sdk/pull/1994)
+ * Upload File confirmation modal steals focus, send it back to composer
+   [\#1992](https://github.com/matrix-org/matrix-react-sdk/pull/1992)
+ * delint MImageBody, fixes anonymous class and hyphenated style keys which
+   made react cry
+   [\#1991](https://github.com/matrix-org/matrix-react-sdk/pull/1991)
+ * allow using tab to navigate room list in a smarter way
+   [\#1977](https://github.com/matrix-org/matrix-react-sdk/pull/1977)
+ * fix no displayname usersettings
+   [\#1990](https://github.com/matrix-org/matrix-react-sdk/pull/1990)
+ * trigger TagTile context menu on right click
+   [\#1989](https://github.com/matrix-org/matrix-react-sdk/pull/1989)
+ * hide already chosen results from AddressPickerDialog
+   [\#2000](https://github.com/matrix-org/matrix-react-sdk/pull/2000)
+ * delint ChatCreateOrReuseDialog
+   [\#2002](https://github.com/matrix-org/matrix-react-sdk/pull/2002)
+ * fix set password & email flow possible to get stuck and onBlur murdering
+   your email
+   [\#1982](https://github.com/matrix-org/matrix-react-sdk/pull/1982)
+
+Changes in [0.12.8](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.8) (2018-06-29)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.8-rc.2...v0.12.8)
+
+ * Revert "affix copyButton so that it doesn't get scrolled horizontally"
+   [\#2013](https://github.com/matrix-org/matrix-react-sdk/pull/2013)
+ * don't fire share dialog when clicking timestamp of event
+   [\#2017](https://github.com/matrix-org/matrix-react-sdk/pull/2017)
+ * when the user switches room, close room settings
+   [\#2019](https://github.com/matrix-org/matrix-react-sdk/pull/2019)
+
+Changes in [0.12.8-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.8-rc.2) (2018-06-22)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.8-rc.1...v0.12.8-rc.2)
+
+ * slash got consumed in the consolidation
+   [\#1998](https://github.com/matrix-org/matrix-react-sdk/pull/1998)
+
+Changes in [0.12.8-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.8-rc.1) (2018-06-21)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.7...v0.12.8-rc.1)
+
+ * Update from Weblate.
+   [\#1997](https://github.com/matrix-org/matrix-react-sdk/pull/1997)
+ * refactor, consolidate and improve SlashCommands
+   [\#1988](https://github.com/matrix-org/matrix-react-sdk/pull/1988)
+ * Take replies out of labs!
+   [\#1996](https://github.com/matrix-org/matrix-react-sdk/pull/1996)
+ * re-merge reset PR
+   [\#1987](https://github.com/matrix-org/matrix-react-sdk/pull/1987)
+ * once command has a space, strict match instead of fuzzy match
+   [\#1985](https://github.com/matrix-org/matrix-react-sdk/pull/1985)
+ * Fix matrix.to URL RegExp
+   [\#1986](https://github.com/matrix-org/matrix-react-sdk/pull/1986)
+ * Fix blank sticker picker
+   [\#1984](https://github.com/matrix-org/matrix-react-sdk/pull/1984)
+ * fix e2ee file/media stuff
+   [\#1972](https://github.com/matrix-org/matrix-react-sdk/pull/1972)
+ * right click for room tile context menu
+   [\#1978](https://github.com/matrix-org/matrix-react-sdk/pull/1978)
+ * only show m.room.message in FilePanel
+   [\#1983](https://github.com/matrix-org/matrix-react-sdk/pull/1983)
+ * improve command provider
+   [\#1981](https://github.com/matrix-org/matrix-react-sdk/pull/1981)
+ * affix copyButton so that it doesn't get scrolled horizontally
+   [\#1980](https://github.com/matrix-org/matrix-react-sdk/pull/1980)
+ * split continuation if there is a gap in conversation
+   [\#1979](https://github.com/matrix-org/matrix-react-sdk/pull/1979)
+ * fix a bunch of instances of react console spam
+   [\#1973](https://github.com/matrix-org/matrix-react-sdk/pull/1973)
+ * Track decryption success/failure rate with piwik
+   [\#1949](https://github.com/matrix-org/matrix-react-sdk/pull/1949)
+ * route matrix.to/#/+... links internally (not just group ids)
+   [\#1975](https://github.com/matrix-org/matrix-react-sdk/pull/1975)
+ * implement `hitting enter after Ctrl-K should switch to the first result`
+   [\#1976](https://github.com/matrix-org/matrix-react-sdk/pull/1976)
+ * Remove tag panel feature flag
+   [\#1970](https://github.com/matrix-org/matrix-react-sdk/pull/1970)
+ * QuestionDialog pass hasCancelButton to DialogButtons
+   [\#1968](https://github.com/matrix-org/matrix-react-sdk/pull/1968)
+ * check type before msgtype in the case of `m.sticker` with msgtype
+   [\#1965](https://github.com/matrix-org/matrix-react-sdk/pull/1965)
+ * apply roomlist searchFilter to aliases if it begins with a `#`
+   [\#1957](https://github.com/matrix-org/matrix-react-sdk/pull/1957)
+ * Share Dialog
+   [\#1948](https://github.com/matrix-org/matrix-react-sdk/pull/1948)
+ * make RoomTooltip generic and add ContextMenu&Tooltip to GroupInviteTile
+   [\#1950](https://github.com/matrix-org/matrix-react-sdk/pull/1950)
+ *  Fix widgets re-appearing after being deleted
+   [\#1958](https://github.com/matrix-org/matrix-react-sdk/pull/1958)
+ * Fix crash on unspecified thumbnail info, and handle gracefully
+   [\#1967](https://github.com/matrix-org/matrix-react-sdk/pull/1967)
+ * fix styling of clearButton when its not there
+   [\#1964](https://github.com/matrix-org/matrix-react-sdk/pull/1964)
+ *  Implement slightly magical CSS soln. to thumbnail sizing
+   [\#1912](https://github.com/matrix-org/matrix-react-sdk/pull/1912)
+ * Select audio output for WebRTC
+   [\#1932](https://github.com/matrix-org/matrix-react-sdk/pull/1932)
+ * move css rule to be more generic; remove overriden rule
+   [\#1962](https://github.com/matrix-org/matrix-react-sdk/pull/1962)
+ * improve tag panel accessibility and remove a no-op dispatch
+   [\#1960](https://github.com/matrix-org/matrix-react-sdk/pull/1960)
+ * Revert "Fix exception when opening dev tools"
+   [\#1963](https://github.com/matrix-org/matrix-react-sdk/pull/1963)
+ * fix message appears unencrypted while encrypting and not_sent
+   [\#1959](https://github.com/matrix-org/matrix-react-sdk/pull/1959)
+ * Fix exception when opening dev tools
+   [\#1961](https://github.com/matrix-org/matrix-react-sdk/pull/1961)
+ * show redacted stickers like other redacted messages
+   [\#1956](https://github.com/matrix-org/matrix-react-sdk/pull/1956)
+ * add mx_filterFlipColor to mx_MemberInfo_cancel img
+   [\#1951](https://github.com/matrix-org/matrix-react-sdk/pull/1951)
+ * don't set the displayname on registration as Synapse now does it
+   [\#1953](https://github.com/matrix-org/matrix-react-sdk/pull/1953)
+ * allow CreateRoom to scale properly horizontally
+   [\#1955](https://github.com/matrix-org/matrix-react-sdk/pull/1955)
+ * Keep context menus that extend downwards vertically on screen
+   [\#1952](https://github.com/matrix-org/matrix-react-sdk/pull/1952)
+ * re-run checkIfAlone if a member change occurred in the active room
+   [\#1947](https://github.com/matrix-org/matrix-react-sdk/pull/1947)
+ * Persist pinned message open-ness between room switches
+   [\#1935](https://github.com/matrix-org/matrix-react-sdk/pull/1935)
+ * Pinned message cosmetic improvements
+   [\#1933](https://github.com/matrix-org/matrix-react-sdk/pull/1933)
+ * Update sinon to 5.0.7
+   [\#1916](https://github.com/matrix-org/matrix-react-sdk/pull/1916)
+ * re-run checkIfAlone if a member change occurred in the active room
+   [\#1946](https://github.com/matrix-org/matrix-react-sdk/pull/1946)
+ * Replace "Login as guest" with "Try the app first" on login page
+   [\#1937](https://github.com/matrix-org/matrix-react-sdk/pull/1937)
+ * kill stream when using gUM for permission to device labels to turn off
+   camera
+   [\#1931](https://github.com/matrix-org/matrix-react-sdk/pull/1931)
+
+Changes in [0.12.7](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.7) (2018-06-12)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.7-rc.1...v0.12.7)
+
+ * No changes since rc.1
+
+Changes in [0.12.7-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.7-rc.1) (2018-06-06)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.6...v0.12.7-rc.1)
+
+ * Update from Weblate.
+   [\#1944](https://github.com/matrix-org/matrix-react-sdk/pull/1944)
+ * Import react as React in src/components/views/elements/DNDTagTile.js
+   [\#1943](https://github.com/matrix-org/matrix-react-sdk/pull/1943)
+ * Fix click on faded left/right/middle panel -> close settings
+   [\#1940](https://github.com/matrix-org/matrix-react-sdk/pull/1940)
+ * Add null-guard to support browsers that don't support performance
+   [\#1942](https://github.com/matrix-org/matrix-react-sdk/pull/1942)
+ * Support third party integration managers in AppPermission
+   [\#1455](https://github.com/matrix-org/matrix-react-sdk/pull/1455)
+ * Update pinned messages in real time
+   [\#1934](https://github.com/matrix-org/matrix-react-sdk/pull/1934)
+ * Expose at-room power level setting
+   [\#1938](https://github.com/matrix-org/matrix-react-sdk/pull/1938)
+
+Changes in [0.12.6](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.6) (2018-05-25)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.6-rc.1...v0.12.6)
+
+ * No changes since v0.12.6-rc.1
+
+Changes in [0.12.6-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.6-rc.1) (2018-05-24)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.5...v0.12.6-rc.1)
+
+ * Add a "reload widget" button.
+   [\#1920](https://github.com/matrix-org/matrix-react-sdk/pull/1920)
+ * Make devTools styling more consistent and easier to edit event data.
+   [\#1923](https://github.com/matrix-org/matrix-react-sdk/pull/1923)
+ * Update from Weblate.
+   [\#1930](https://github.com/matrix-org/matrix-react-sdk/pull/1930)
+ * Cookie bar update
+   [\#1929](https://github.com/matrix-org/matrix-react-sdk/pull/1929)
+ * Message for leaving server notices room
+   [\#1928](https://github.com/matrix-org/matrix-react-sdk/pull/1928)
+ * More thorough check of IM URL validity.
+   [\#1927](https://github.com/matrix-org/matrix-react-sdk/pull/1927)
+ * Add usage data link to cookie bar
+   [\#1926](https://github.com/matrix-org/matrix-react-sdk/pull/1926)
+ * Change wording and appearance of Deactivate Account dialog
+   [\#1925](https://github.com/matrix-org/matrix-react-sdk/pull/1925)
+ * fix membership list ordering when presence is disabled.
+   [\#1924](https://github.com/matrix-org/matrix-react-sdk/pull/1924)
+ * Implement erasure option upon deactivation
+   [\#1922](https://github.com/matrix-org/matrix-react-sdk/pull/1922)
+ * Add cookie warning to widget warning (AppPermission)
+   [\#1921](https://github.com/matrix-org/matrix-react-sdk/pull/1921)
+ * Terms and Conditions dialog
+   [\#1919](https://github.com/matrix-org/matrix-react-sdk/pull/1919)
+ * improve privileged section users in room settings
+   [\#1902](https://github.com/matrix-org/matrix-react-sdk/pull/1902)
+ * Space between sentences in 'leave room' warning
+   [\#1918](https://github.com/matrix-org/matrix-react-sdk/pull/1918)
+ * Specify valid address types to "Start a chat" dialog
+   [\#1908](https://github.com/matrix-org/matrix-react-sdk/pull/1908)
+ * Implement opt-in analytics with cookie bar
+   [\#1906](https://github.com/matrix-org/matrix-react-sdk/pull/1906)
+ * Fix vector-im/riot-web#6523 Emoji rendering destroys paragraphs
+   [\#1910](https://github.com/matrix-org/matrix-react-sdk/pull/1910)
+
+Changes in [0.12.5](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.5) (2018-05-17)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.4...v0.12.5)
+
+ * Fix image size jumping regression
+   [\#1909](https://github.com/matrix-org/matrix-react-sdk/pull/1909)
+
+Changes in [0.12.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.4) (2018-05-16)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.4-rc.6...v0.12.4)
+
+ * No changes from rc.5
+
+Changes in [0.12.4-rc.6](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.4-rc.6) (2018-05-15)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.4-rc.5...v0.12.4-rc.6)
+
+ * Wait for deletion of widgets as well addition
+   [\#1907](https://github.com/matrix-org/matrix-react-sdk/pull/1907)
+
+Changes in [0.12.4-rc.5](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.4-rc.5) (2018-05-15)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.4-rc.4...v0.12.4-rc.5)
+
+ * Wait for echo from server when adding user widgets
+   [\#1905](https://github.com/matrix-org/matrix-react-sdk/pull/1905)
+
+Changes in [0.12.4-rc.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.4-rc.4) (2018-05-14)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.4-rc.3...v0.12.4-rc.4)
+
+ * Update from Weblate.
+   [\#1904](https://github.com/matrix-org/matrix-react-sdk/pull/1904)
+ * Correctly identify sticker picker widgets
+   [\#1894](https://github.com/matrix-org/matrix-react-sdk/pull/1894)
+ * Quick fix for sticker picker position
+   [\#1903](https://github.com/matrix-org/matrix-react-sdk/pull/1903)
+ * Remove redundant logging (currently shown on every render when no sti…
+   [\#1901](https://github.com/matrix-org/matrix-react-sdk/pull/1901)
+ * Fix stickers briefly being 2x the size
+   [\#1899](https://github.com/matrix-org/matrix-react-sdk/pull/1899)
+ * Send required properties when making requests to widgets over postMessage
+   [\#1891](https://github.com/matrix-org/matrix-react-sdk/pull/1891)
+ * Fix room widget second load infini spinner
+   [\#1897](https://github.com/matrix-org/matrix-react-sdk/pull/1897)
+ * Update widget state when account data changes
+   [\#1896](https://github.com/matrix-org/matrix-react-sdk/pull/1896)
+ * Remove margins when in a ReplyThread to stop them taking so much space
+   [\#1882](https://github.com/matrix-org/matrix-react-sdk/pull/1882)
+ * Add setting to enable widget screenshots (if widgets declare support)
+   [\#1892](https://github.com/matrix-org/matrix-react-sdk/pull/1892)
+ * T3chguy/replies html tag
+   [\#1889](https://github.com/matrix-org/matrix-react-sdk/pull/1889)
+ * Instant Sticker Picker
+   [\#1888](https://github.com/matrix-org/matrix-react-sdk/pull/1888)
+ * Update widget 'widgetData' key to 'data' to match spec.
+   [\#1887](https://github.com/matrix-org/matrix-react-sdk/pull/1887)
+ * Fix 'state_key' field name.
+   [\#1886](https://github.com/matrix-org/matrix-react-sdk/pull/1886)
+ * Improve appearance of short-lived app loading spinner
+   [\#1885](https://github.com/matrix-org/matrix-react-sdk/pull/1885)
+ * Take feature_sticker_messagse out of labs
+   [\#1883](https://github.com/matrix-org/matrix-react-sdk/pull/1883)
+ * Fix issue incorrect positioning with widget loading indicator
+   [\#1884](https://github.com/matrix-org/matrix-react-sdk/pull/1884)
+ * Users should always be able to edit their user/non-room  widgets
+   [\#1879](https://github.com/matrix-org/matrix-react-sdk/pull/1879)
+
+Changes in [0.12.4-rc.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.4-rc.3) (2018-05-11)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.4-rc.2...v0.12.4-rc.3)
+
+ * Instant Sticker Picker :zap:
+   [\#1888](https://github.com/matrix-org/matrix-react-sdk/pull/1888)
+
+Changes in [0.12.4-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.4-rc.2) (2018-05-09)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.4-rc.1...v0.12.4-rc.2)
+
+ * Improve appearance of short-lived widget loading spinner
+ * Make sticker picker fully-fledged feature
+ * Fix incorrect positioning with widget loading indicator
+
+Changes in [0.12.4-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.4-rc.1) (2018-05-09)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.3...v0.12.4-rc.1)
+
+ * Update from Weblate.
+   [\#1881](https://github.com/matrix-org/matrix-react-sdk/pull/1881)
+ * Pin lolex at 2.3.2 to avoid bug causing tests to fail
+   [\#1880](https://github.com/matrix-org/matrix-react-sdk/pull/1880)
+ * Replies: un-break click-to-mention on SenderProfile for reply&preview
+   [\#1878](https://github.com/matrix-org/matrix-react-sdk/pull/1878)
+ * Add tests for RoomList
+   [\#1877](https://github.com/matrix-org/matrix-react-sdk/pull/1877)
+ * Fix crash when browser doesn't report page change measurement
+   [\#1874](https://github.com/matrix-org/matrix-react-sdk/pull/1874)
+ * fix thinko when changing from ClientPeg to context in static method (DUH)
+   [\#1875](https://github.com/matrix-org/matrix-react-sdk/pull/1875)
+ * Fix Replies :D
+   [\#1873](https://github.com/matrix-org/matrix-react-sdk/pull/1873)
+ * Update eslint-plugin-react
+   [\#1871](https://github.com/matrix-org/matrix-react-sdk/pull/1871)
+ * relax lint for jsx-curly-spacing and arrow-parens
+   [\#1872](https://github.com/matrix-org/matrix-react-sdk/pull/1872)
+ * Use develop js-sdk in jenkins build
+   [\#1870](https://github.com/matrix-org/matrix-react-sdk/pull/1870)
+ * Replies
+   [\#1741](https://github.com/matrix-org/matrix-react-sdk/pull/1741)
+ * Use the right js-sdk branch when testing
+   [\#1869](https://github.com/matrix-org/matrix-react-sdk/pull/1869)
+ * Prevent error responses wedging group request concurrency limit
+   [\#1867](https://github.com/matrix-org/matrix-react-sdk/pull/1867)
+ * Refresh group rooms and members when selecting a tag
+   [\#1868](https://github.com/matrix-org/matrix-react-sdk/pull/1868)
+ * Refactor GroupStores into one global GroupStore
+   [\#1866](https://github.com/matrix-org/matrix-react-sdk/pull/1866)
+ * Switch back to using blob URLs for rendering e2e attachments
+   [\#1864](https://github.com/matrix-org/matrix-react-sdk/pull/1864)
+ * Hide inline encryption icons except when hovering over a message
+   [\#1845](https://github.com/matrix-org/matrix-react-sdk/pull/1845)
+ *  UI fixes in SessionRestoreErrorDialog
+   [\#1860](https://github.com/matrix-org/matrix-react-sdk/pull/1860)
+ *  Fix UX issues with bug report dialog
+   [\#1863](https://github.com/matrix-org/matrix-react-sdk/pull/1863)
+ * fix ugly img errors and correctly render SVG thumbnails
+   [\#1865](https://github.com/matrix-org/matrix-react-sdk/pull/1865)
+ * Fix error handling on session restore
+   [\#1859](https://github.com/matrix-org/matrix-react-sdk/pull/1859)
+ * Add tests for GroupView
+   [\#1862](https://github.com/matrix-org/matrix-react-sdk/pull/1862)
+ * Update version of hoek
+   [\#1861](https://github.com/matrix-org/matrix-react-sdk/pull/1861)
+ *  Fix bug that caused crash when analytics HS/IS whitelists not specified
+   [\#1858](https://github.com/matrix-org/matrix-react-sdk/pull/1858)
+ * Fix Analytics to not import DEFAULTS, therefore avoiding NPE
+   [\#1857](https://github.com/matrix-org/matrix-react-sdk/pull/1857)
+ * Null check piwik config before using it
+   [\#1856](https://github.com/matrix-org/matrix-react-sdk/pull/1856)
+ * Track actual window location origin and hash
+   [\#1853](https://github.com/matrix-org/matrix-react-sdk/pull/1853)
+ * Replace document.origin with window.location.origin
+   [\#1855](https://github.com/matrix-org/matrix-react-sdk/pull/1855)
+ * Optionally hide widget popout button.
+   [\#1854](https://github.com/matrix-org/matrix-react-sdk/pull/1854)
+ * Add a button to 'pop out' widgets in to their own tab.
+   [\#1851](https://github.com/matrix-org/matrix-react-sdk/pull/1851)
+
+Changes in [0.12.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.3) (2018-04-30)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.3-rc.3...v0.12.3)
+
+ * No changes since rc.3
+
+Changes in [0.12.3-rc.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.3-rc.3) (2018-04-26)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.3-rc.2...v0.12.3-rc.3)
+
+ * Replace document.origin with window.location.origin
+   [\#1855](https://github.com/matrix-org/matrix-react-sdk/pull/1855)
+
+Changes in [0.12.3-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.3-rc.2) (2018-04-25)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.3-rc.1...v0.12.3-rc.2)
+
+ * Fix npm packaging
+
+Changes in [0.12.3-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.3-rc.1) (2018-04-25)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.2...v0.12.3-rc.1)
+
+ * Update from Weblate.
+   [\#1852](https://github.com/matrix-org/matrix-react-sdk/pull/1852)
+ * Support origin lock in cross-origin renderer
+   [\#1849](https://github.com/matrix-org/matrix-react-sdk/pull/1849)
+ * s/contian/contain/g
+   [\#1850](https://github.com/matrix-org/matrix-react-sdk/pull/1850)
+ * Don't autocomplete users for single "@"
+   [\#1848](https://github.com/matrix-org/matrix-react-sdk/pull/1848)
+ * Update from Weblate.
+   [\#1844](https://github.com/matrix-org/matrix-react-sdk/pull/1844)
+ * Bind onImageError in constructor
+   [\#1846](https://github.com/matrix-org/matrix-react-sdk/pull/1846)
+ * Use mxid as sender name on set display name
+   [\#1841](https://github.com/matrix-org/matrix-react-sdk/pull/1841)
+ * Fix rageshake
+   [\#1840](https://github.com/matrix-org/matrix-react-sdk/pull/1840)
+ * Add UI for displaying room avatars full size
+   [\#1843](https://github.com/matrix-org/matrix-react-sdk/pull/1843)
+ * Update from Weblate.
+   [\#1842](https://github.com/matrix-org/matrix-react-sdk/pull/1842)
+ * move everything not explicitly riot (or status) branded into matrix-react-
+   sdk
+   [\#1836](https://github.com/matrix-org/matrix-react-sdk/pull/1836)
+ * Null check node before we pass it to velocity
+   [\#1838](https://github.com/matrix-org/matrix-react-sdk/pull/1838)
+ * Remove presence management
+   [\#1676](https://github.com/matrix-org/matrix-react-sdk/pull/1676)
+ * Null check stylesheet href
+   [\#1835](https://github.com/matrix-org/matrix-react-sdk/pull/1835)
+ * TopUnreadMessagesBar a11y
+   [\#1819](https://github.com/matrix-org/matrix-react-sdk/pull/1819)
+ * Use correct 1-1 room avatar after users leave
+   [\#593](https://github.com/matrix-org/matrix-react-sdk/pull/593)
+ * Use GeminiScrollbarWrapper in Flair settings of UserSettings
+   [\#1833](https://github.com/matrix-org/matrix-react-sdk/pull/1833)
+ * Add 500ms delay to show `membershipBusy` for longer
+   [\#1832](https://github.com/matrix-org/matrix-react-sdk/pull/1832)
+ * Improve group join/leave feedback
+   [\#1831](https://github.com/matrix-org/matrix-react-sdk/pull/1831)
+ * Update from Weblate.
+   [\#1830](https://github.com/matrix-org/matrix-react-sdk/pull/1830)
+ * Bump source-map-loader version to avoid bug /w inline base64 maps
+   [\#1829](https://github.com/matrix-org/matrix-react-sdk/pull/1829)
+ * Make stickers/messages continuations of each other
+   [\#1828](https://github.com/matrix-org/matrix-react-sdk/pull/1828)
+ * Update to match is_openly_joinable API
+   [\#1827](https://github.com/matrix-org/matrix-react-sdk/pull/1827)
+ * Fix to prevent guests from seeing features
+   [\#1826](https://github.com/matrix-org/matrix-react-sdk/pull/1826)
+ * Fix broken ForgotPassword component
+   [\#1825](https://github.com/matrix-org/matrix-react-sdk/pull/1825)
+ * Fix warning "Unknown prop `wrappedRef` on <div> tag..."
+   [\#1824](https://github.com/matrix-org/matrix-react-sdk/pull/1824)
+ * Add radio button for setting group is_joinable
+   [\#1817](https://github.com/matrix-org/matrix-react-sdk/pull/1817)
+ * Fix widget grant / revoke permission binding
+   [\#1823](https://github.com/matrix-org/matrix-react-sdk/pull/1823)
+ * Sticker picker styling
+   [\#1822](https://github.com/matrix-org/matrix-react-sdk/pull/1822)
+ * Bi-directional widget postMessaging API (stickerpacks) [WIP]
+   [\#1672](https://github.com/matrix-org/matrix-react-sdk/pull/1672)
+ * Add null-guard to prevent RoomAvatar NPE when room is null
+   [\#1821](https://github.com/matrix-org/matrix-react-sdk/pull/1821)
+ * Don't notify for bad encrypted messages
+   [\#1818](https://github.com/matrix-org/matrix-react-sdk/pull/1818)
+ * Join this community button
+   [\#1815](https://github.com/matrix-org/matrix-react-sdk/pull/1815)
+ * Reword group setting delay
+   [\#1816](https://github.com/matrix-org/matrix-react-sdk/pull/1816)
+ * Track duration of page changes
+   [\#1814](https://github.com/matrix-org/matrix-react-sdk/pull/1814)
+ * Wrap GeminiScrollbar in a component, enabled forceGemini
+   [\#1810](https://github.com/matrix-org/matrix-react-sdk/pull/1810)
+ * Add display name to the read receipt view
+   [\#1742](https://github.com/matrix-org/matrix-react-sdk/pull/1742)
+ * Fix broken import preventing people tag
+   [\#1811](https://github.com/matrix-org/matrix-react-sdk/pull/1811)
+ * Add /devtools to Autocomplete and run gen-i18n
+   [\#1778](https://github.com/matrix-org/matrix-react-sdk/pull/1778)
+ * Fix PresenceLabel in MemberInfo
+   [\#1809](https://github.com/matrix-org/matrix-react-sdk/pull/1809)
+ * Fix room tile badge not disappearing when receiving a read receipt
+   [\#1807](https://github.com/matrix-org/matrix-react-sdk/pull/1807)
+ * Option to remove the presence feature by HS
+   [\#1806](https://github.com/matrix-org/matrix-react-sdk/pull/1806)
+ * Dialog a11y
+   [\#1652](https://github.com/matrix-org/matrix-react-sdk/pull/1652)
+ * Change wording of debug log submission
+   [\#1740](https://github.com/matrix-org/matrix-react-sdk/pull/1740)
+ * Fix TextualBody.js to remove NodeList.forEach()
+   [\#1768](https://github.com/matrix-org/matrix-react-sdk/pull/1768)
+ * Use undocumented piwik cmd to disable heartbeattimer
+   [\#1770](https://github.com/matrix-org/matrix-react-sdk/pull/1770)
+ * Enable autocompletion for non-English languages.
+   [\#1800](https://github.com/matrix-org/matrix-react-sdk/pull/1800)
+
+Changes in [0.12.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.2) (2018-04-12)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.1...v0.12.2)
+
+ * Null check stylesheet href
+  [\#1835](https://github.com/matrix-org/matrix-react-sdk/pull/1835)
+ * Remove the presence management labs feature
+
+Changes in [0.12.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.1) (2018-04-11)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.0...v0.12.1)
+
+ * Use correct js-sdk version
+
+Changes in [0.12.0](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.0) (2018-04-11)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.0-rc.7...v0.12.0)
+
+ * Further improve group joining/leaving feedback
+  [\#1832](https://github.com/matrix-org/matrix-react-sdk/pull/1832)
+ * Cosmetic changes to Communities button
+
+Changes in [0.12.0-rc.7](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.0-rc.7) (2018-04-10)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.0-rc.6...v0.12.0-rc.7)
+
+ * Reword group setting delay
+  [\#1816](https://github.com/matrix-org/matrix-react-sdk/pull/1816)
+ * Improve group joining/leaving feedback
+  [\#1831](https://github.com/matrix-org/matrix-react-sdk/pull/1831)
+
+Changes in [0.12.0-rc.6](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.0-rc.6) (2018-04-09)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.0-rc.5...v0.12.0-rc.6)
+
+ * Fix group join button not appearing
+
+Changes in [0.12.0-rc.5](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.0-rc.5) (2018-04-09)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.0-rc.4...v0.12.0-rc.5)
+
+ * Added radio button to set group join policy
+ * Fix to prevent guests from accessing lab features
+ * Fix broken forgot password page
+ * Fix crash when joining a room after peeking
+
+Changes in [0.12.0-rc.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.0-rc.4) (2018-03-22)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.0-rc.3...v0.12.0-rc.4)
+
+ * Fix broken import preventing people tag
+   [\#1811](https://github.com/matrix-org/matrix-react-sdk/pull/1811)
+
+Changes in [0.12.0-rc.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.0-rc.3) (2018-03-20)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.0-rc.2...v0.12.0-rc.3)
+
+ * Fix room tile badge not disappearing when receiving a read receipt
+   [\#1807](https://github.com/matrix-org/matrix-react-sdk/pull/1807)
+
+Changes in [0.12.0-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.0-rc.2) (2018-03-19)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.12.0-rc.1...v0.12.0-rc.2)
+
+ * Take TagPanel out of labs
+   [\#1805](https://github.com/matrix-org/matrix-react-sdk/pull/1805)
+
+Changes in [0.12.0-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.12.0-rc.1) (2018-03-19)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.11.4...v0.12.0-rc.1)
+
+ * Remove the message on migrating crypto data
+   [\#1803](https://github.com/matrix-org/matrix-react-sdk/pull/1803)
+ * Update from Weblate.
+   [\#1804](https://github.com/matrix-org/matrix-react-sdk/pull/1804)
+ * Improve room list performance when receiving messages
+   [\#1801](https://github.com/matrix-org/matrix-react-sdk/pull/1801)
+ * Add change delay warning in GroupView settings
+   [\#1802](https://github.com/matrix-org/matrix-react-sdk/pull/1802)
+ * Only use `dangerouslySetInnerHTML` for HTML messages
+   [\#1799](https://github.com/matrix-org/matrix-react-sdk/pull/1799)
+ * Limit group requests to 3 at once
+   [\#1798](https://github.com/matrix-org/matrix-react-sdk/pull/1798)
+ * Show GroupMemberList after inviting a group member
+   [\#1796](https://github.com/matrix-org/matrix-react-sdk/pull/1796)
+ * Fix syntax fail
+   [\#1794](https://github.com/matrix-org/matrix-react-sdk/pull/1794)
+ * Use TintableSvg for TagPanel clear filter button
+   [\#1793](https://github.com/matrix-org/matrix-react-sdk/pull/1793)
+ * Fix missing space between "...is a" and user ID
+   [\#1792](https://github.com/matrix-org/matrix-react-sdk/pull/1792)
+ * E2E "fudge-button"
+   [\#1791](https://github.com/matrix-org/matrix-react-sdk/pull/1791)
+ * Remove spurious console.trace
+   [\#1790](https://github.com/matrix-org/matrix-react-sdk/pull/1790)
+ * Don't reset the presence timer on every dispatch
+   [\#1789](https://github.com/matrix-org/matrix-react-sdk/pull/1789)
+ * Potentially fix a memory leak in FlairStore
+   [\#1788](https://github.com/matrix-org/matrix-react-sdk/pull/1788)
+ * Implement transparent RoomTile for use in some places
+   [\#1785](https://github.com/matrix-org/matrix-react-sdk/pull/1785)
+ * Fix varying default group avatar colour for given group
+   [\#1784](https://github.com/matrix-org/matrix-react-sdk/pull/1784)
+ * Fix bug where avatar change not reflected in LLP
+   [\#1783](https://github.com/matrix-org/matrix-react-sdk/pull/1783)
+ * Workaround for atlassian/react-beautiful-dnd#273
+   [\#1782](https://github.com/matrix-org/matrix-react-sdk/pull/1782)
+ * Add setting to disable TagPanel
+   [\#1781](https://github.com/matrix-org/matrix-react-sdk/pull/1781)
+ * [DO NOT MERGE] Tests proven to fail
+   [\#1780](https://github.com/matrix-org/matrix-react-sdk/pull/1780)
+ * Fix room power level settings
+   [\#1779](https://github.com/matrix-org/matrix-react-sdk/pull/1779)
+ * fix shouldHideEvent saying an event is a leave/join when a profile ch…
+   [\#1769](https://github.com/matrix-org/matrix-react-sdk/pull/1769)
+ * Add "Did you know:..." microcopy to groups view
+   [\#1777](https://github.com/matrix-org/matrix-react-sdk/pull/1777)
+ * Give emptySubListTip a container for correct bg colour
+   [\#1753](https://github.com/matrix-org/matrix-react-sdk/pull/1753)
+ * Do proper null-checks on decypted events to fix NPEs
+   [\#1776](https://github.com/matrix-org/matrix-react-sdk/pull/1776)
+ * Reorder the RoomListStore lists on Event.decrypted
+   [\#1775](https://github.com/matrix-org/matrix-react-sdk/pull/1775)
+ * Fix bug where global "Never send to unverified..." is ignored
+   [\#1772](https://github.com/matrix-org/matrix-react-sdk/pull/1772)
+ * Fix bug that prevented tint updates
+   [\#1767](https://github.com/matrix-org/matrix-react-sdk/pull/1767)
+ * Fix group member spinner being out of flex order
+   [\#1765](https://github.com/matrix-org/matrix-react-sdk/pull/1765)
+ * Allow widget iframes to request camera and microphone permissions.
+   [\#1766](https://github.com/matrix-org/matrix-react-sdk/pull/1766)
+ * Change icon from "R" to "X"
+   [\#1764](https://github.com/matrix-org/matrix-react-sdk/pull/1764)
+ * Regenerate room lists on Room event
+   [\#1762](https://github.com/matrix-org/matrix-react-sdk/pull/1762)
+ *  Fix DMs being marked as with the current user ("me")
+   [\#1761](https://github.com/matrix-org/matrix-react-sdk/pull/1761)
+ * Make RoomListStore aware of Room.timeline events
+   [\#1756](https://github.com/matrix-org/matrix-react-sdk/pull/1756)
+ * improve origin check of ScalarMessaging postmessage API.
+   [\#1760](https://github.com/matrix-org/matrix-react-sdk/pull/1760)
+ * Implement global filter to deselect all tags
+   [\#1759](https://github.com/matrix-org/matrix-react-sdk/pull/1759)
+ * Don't show empty custom tags when filtering tags
+   [\#1758](https://github.com/matrix-org/matrix-react-sdk/pull/1758)
+ * Do not assume that tags have been removed
+   [\#1757](https://github.com/matrix-org/matrix-react-sdk/pull/1757)
+ * Change CSS class for message panel spinner
+   [\#1747](https://github.com/matrix-org/matrix-react-sdk/pull/1747)
+ * Remove RoomListStore listener
+   [\#1752](https://github.com/matrix-org/matrix-react-sdk/pull/1752)
+ * Implement GroupTile avatar dragging to TagPanel
+   [\#1751](https://github.com/matrix-org/matrix-react-sdk/pull/1751)
+ * Fix custom tags not being ordered manually
+   [\#1750](https://github.com/matrix-org/matrix-react-sdk/pull/1750)
+ * Store component state for editors
+   [\#1746](https://github.com/matrix-org/matrix-react-sdk/pull/1746)
+ * Give the login page its spinner back
+   [\#1745](https://github.com/matrix-org/matrix-react-sdk/pull/1745)
+ * Add context menu to TagTile
+   [\#1743](https://github.com/matrix-org/matrix-react-sdk/pull/1743)
+ * If a tag is unrecognised, assume manual ordering
+   [\#1748](https://github.com/matrix-org/matrix-react-sdk/pull/1748)
+ * Move RoomList state to RoomListStore
+   [\#1719](https://github.com/matrix-org/matrix-react-sdk/pull/1719)
+ * Move groups button to TagPanel
+   [\#1744](https://github.com/matrix-org/matrix-react-sdk/pull/1744)
+ * Add seconds to timestamp on hover
+   [\#1738](https://github.com/matrix-org/matrix-react-sdk/pull/1738)
+ * Do not truncate autocompleted users in composer
+   [\#1739](https://github.com/matrix-org/matrix-react-sdk/pull/1739)
+ * RoomView: guard against unmounting during peeking
+   [\#1737](https://github.com/matrix-org/matrix-react-sdk/pull/1737)
+ * Fix HS/IS URL reset when switching to Registration
+   [\#1736](https://github.com/matrix-org/matrix-react-sdk/pull/1736)
+ * Fix the reject/accept call buttons in canary (mk2)
+   [\#1734](https://github.com/matrix-org/matrix-react-sdk/pull/1734)
+ * Make ratelimitedfunc time from the function's end
+   [\#1731](https://github.com/matrix-org/matrix-react-sdk/pull/1731)
+ * Give dialogs a matrixClient context
+   [\#1735](https://github.com/matrix-org/matrix-react-sdk/pull/1735)
+ * Fix key bindings in address picker dialog
+   [\#1732](https://github.com/matrix-org/matrix-react-sdk/pull/1732)
+ * Try upgrading eslint-plugin-react
+   [\#1712](https://github.com/matrix-org/matrix-react-sdk/pull/1712)
+ * Fix display name change text
+   [\#1730](https://github.com/matrix-org/matrix-react-sdk/pull/1730)
+ * Persist contentState when sending SlashCommand via MessageComposerInput
+   [\#1721](https://github.com/matrix-org/matrix-react-sdk/pull/1721)
+ * This is actually MFileBody not MImageBody, change classname
+   [\#1726](https://github.com/matrix-org/matrix-react-sdk/pull/1726)
+ * Use invite_3pid prop of createRoom instead of manual invite after create
+   [\#1717](https://github.com/matrix-org/matrix-react-sdk/pull/1717)
+ * guard against m.room.aliases events with no keys (redaction?)
+   [\#1729](https://github.com/matrix-org/matrix-react-sdk/pull/1729)
+ * Fix not showing Invited section if all invites are 3PID
+   [\#1718](https://github.com/matrix-org/matrix-react-sdk/pull/1718)
+ * Fix Rich Replies on files
+   [\#1720](https://github.com/matrix-org/matrix-react-sdk/pull/1720)
+ * Update from Weblate.
+   [\#1728](https://github.com/matrix-org/matrix-react-sdk/pull/1728)
+ * Null guard against falsey (non-null) props.node, to make react happy
+   [\#1724](https://github.com/matrix-org/matrix-react-sdk/pull/1724)
+ * Use correct condition for getting account data after first sync
+   [\#1722](https://github.com/matrix-org/matrix-react-sdk/pull/1722)
+ * Fix order calculation logic when reordering a room
+   [\#1725](https://github.com/matrix-org/matrix-react-sdk/pull/1725)
+ * Linear Rich Quoting
+   [\#1715](https://github.com/matrix-org/matrix-react-sdk/pull/1715)
+ * Fix CreateGroupDialog issues
+   [\#1714](https://github.com/matrix-org/matrix-react-sdk/pull/1714)
+ * Show a warning if the user attempts to leave a room that is invite only
+   [\#1713](https://github.com/matrix-org/matrix-react-sdk/pull/1713)
+ * Swap RoomList to react-beautiful-dnd
+   [\#1711](https://github.com/matrix-org/matrix-react-sdk/pull/1711)
+ * don't pass back {} when we have no `org.matrix.room.color_scheme`
+   [\#1710](https://github.com/matrix-org/matrix-react-sdk/pull/1710)
+ * Don't paginate whilst decrypting events
+   [\#1700](https://github.com/matrix-org/matrix-react-sdk/pull/1700)
+ * Fall back for missing i18n plurals
+   [\#1699](https://github.com/matrix-org/matrix-react-sdk/pull/1699)
+ * Fix group store redundant requests
+   [\#1709](https://github.com/matrix-org/matrix-react-sdk/pull/1709)
+ * Ignore remote echos caused by this client
+   [\#1708](https://github.com/matrix-org/matrix-react-sdk/pull/1708)
+ * Replace TagPanel react-dnd with react-beautiful-dnd
+   [\#1705](https://github.com/matrix-org/matrix-react-sdk/pull/1705)
+ * Only set selected tags state when updating rooms
+   [\#1704](https://github.com/matrix-org/matrix-react-sdk/pull/1704)
+ * Add formatFullDateNoTime to DateUtils and stop passing 12/24h to DateSep
+   [\#1702](https://github.com/matrix-org/matrix-react-sdk/pull/1702)
+ * Fix autofocus on QuestionDialog
+   [\#1698](https://github.com/matrix-org/matrix-react-sdk/pull/1698)
+ * Iterative fixes on Rich Quoting
+   [\#1697](https://github.com/matrix-org/matrix-react-sdk/pull/1697)
+ * Fix missing negation
+   [\#1696](https://github.com/matrix-org/matrix-react-sdk/pull/1696)
+ * Add Analytics Info and add Piwik to SdkConfig.DEFAULTS
+   [\#1625](https://github.com/matrix-org/matrix-react-sdk/pull/1625)
+ * Attempt to re-register for a scalar token if ours is invalid
+   [\#1668](https://github.com/matrix-org/matrix-react-sdk/pull/1668)
+ * Normalise dialogs
+   [\#1674](https://github.com/matrix-org/matrix-react-sdk/pull/1674)
+ * Add 'send without verifying' to status bar
+   [\#1695](https://github.com/matrix-org/matrix-react-sdk/pull/1695)
+ * Implement Rich Quoting/Replies
+   [\#1660](https://github.com/matrix-org/matrix-react-sdk/pull/1660)
+ * Revert "MD-escape URLs/alises/user IDs prior to parsing markdown"
+   [\#1694](https://github.com/matrix-org/matrix-react-sdk/pull/1694)
+ * Cache isConfCallRoom
+   [\#1693](https://github.com/matrix-org/matrix-react-sdk/pull/1693)
+ * Improve performance of tag panel selection (when tags are selected)
+   [\#1687](https://github.com/matrix-org/matrix-react-sdk/pull/1687)
+ * Hide status bar on visible->hidden transition
+   [\#1680](https://github.com/matrix-org/matrix-react-sdk/pull/1680)
+ * [revived] Singularise unsent message prompt, if applicable
+   [\#1692](https://github.com/matrix-org/matrix-react-sdk/pull/1692)
+ * small refactor && warn on self-demotion
+   [\#1683](https://github.com/matrix-org/matrix-react-sdk/pull/1683)
+ * Remove use of deprecated React.PropTypes
+   [\#1677](https://github.com/matrix-org/matrix-react-sdk/pull/1677)
+ * only save RelatedGroupSettings if it was modified. Otherwise perms issue
+   [\#1691](https://github.com/matrix-org/matrix-react-sdk/pull/1691)
+ * Fix a couple more issues with granular settings
+   [\#1675](https://github.com/matrix-org/matrix-react-sdk/pull/1675)
+ * Allow argument to op slashcommand to be negative as PLs can be -ve
+   [\#1673](https://github.com/matrix-org/matrix-react-sdk/pull/1673)
+ * Update from Weblate.
+   [\#1645](https://github.com/matrix-org/matrix-react-sdk/pull/1645)
+ * make RoomDetailRow reusable for the Room Directory
+   [\#1624](https://github.com/matrix-org/matrix-react-sdk/pull/1624)
+ * Prefetch group data for all joined groups when RoomList mounts
+   [\#1686](https://github.com/matrix-org/matrix-react-sdk/pull/1686)
+ * Remove unused selectedRoom prop
+   [\#1690](https://github.com/matrix-org/matrix-react-sdk/pull/1690)
+ * Fix shift and shift-ctrl click in TagPanel
+   [\#1684](https://github.com/matrix-org/matrix-react-sdk/pull/1684)
+ * skip direct chats which either you or the target have left
+   [\#1344](https://github.com/matrix-org/matrix-react-sdk/pull/1344)
+ * Make scroll on paste in RTE compatible with https://github.com/vector-im
+   /riot-web/pull/5900
+   [\#1682](https://github.com/matrix-org/matrix-react-sdk/pull/1682)
+ * Remove extra full stop
+   [\#1685](https://github.com/matrix-org/matrix-react-sdk/pull/1685)
+ * Dedupe requests to fetch group profile data
+   [\#1666](https://github.com/matrix-org/matrix-react-sdk/pull/1666)
+ * Get Group profile from TagTile instead of TagPanel
+   [\#1667](https://github.com/matrix-org/matrix-react-sdk/pull/1667)
+ *  Fix leaking of GroupStore listeners in RoomList
+   [\#1664](https://github.com/matrix-org/matrix-react-sdk/pull/1664)
+ * Add option to also output untranslated string
+   [\#1658](https://github.com/matrix-org/matrix-react-sdk/pull/1658)
+ * Give the current theme to widgets and the integration manager
+   [\#1669](https://github.com/matrix-org/matrix-react-sdk/pull/1669)
+ * Fixes #1953 Allow multiple file uploads using drag & drop for RoomView
+   [\#1671](https://github.com/matrix-org/matrix-react-sdk/pull/1671)
+ * Fix issue with preview of phone number on register and waiting for sms code
+   confirmation code
+   [\#1670](https://github.com/matrix-org/matrix-react-sdk/pull/1670)
+ * Attempt to improve TagPanel performance
+   [\#1647](https://github.com/matrix-org/matrix-react-sdk/pull/1647)
+ * Fix one variant of a scroll jump that occurs when decrypting an m.text
+   [\#1656](https://github.com/matrix-org/matrix-react-sdk/pull/1656)
+ * Avoid NPEs by using ref method for collecting loggedInView in MatrixChat
+   [\#1665](https://github.com/matrix-org/matrix-react-sdk/pull/1665)
+ * DnD Ordered TagPanel
+   [\#1653](https://github.com/matrix-org/matrix-react-sdk/pull/1653)
+ * Update widget title on edit.
+   [\#1663](https://github.com/matrix-org/matrix-react-sdk/pull/1663)
+ * Set widget title
+   [\#1661](https://github.com/matrix-org/matrix-react-sdk/pull/1661)
+ * Display custom widget content titles
+   [\#1650](https://github.com/matrix-org/matrix-react-sdk/pull/1650)
+ * Add maximize / minimize apps drawer icons.
+   [\#1649](https://github.com/matrix-org/matrix-react-sdk/pull/1649)
+ * Warn when migrating e2e data to indexeddb
+   [\#1654](https://github.com/matrix-org/matrix-react-sdk/pull/1654)
+ * Don't Auto-show UnknownDeviceDialog
+   [\#1600](https://github.com/matrix-org/matrix-react-sdk/pull/1600)
+ * Remove logging.
+   [\#1655](https://github.com/matrix-org/matrix-react-sdk/pull/1655)
+ * Add messaging endpoint for room encryption status.
+   [\#1648](https://github.com/matrix-org/matrix-react-sdk/pull/1648)
+ * Add some missing translatable strings
+   [\#1588](https://github.com/matrix-org/matrix-react-sdk/pull/1588)
+ * Add widget -> riot postMessage API
+   [\#1640](https://github.com/matrix-org/matrix-react-sdk/pull/1640)
+ * Add some null checks
+   [\#1646](https://github.com/matrix-org/matrix-react-sdk/pull/1646)
+ * Implement shift-click and ctrl-click semantics for TP
+   [\#1641](https://github.com/matrix-org/matrix-react-sdk/pull/1641)
+ * Don't show group when clicking tag panel
+   [\#1642](https://github.com/matrix-org/matrix-react-sdk/pull/1642)
+ * Implement TagPanel (or LeftLeftPanel) for group filtering
+   [\#1639](https://github.com/matrix-org/matrix-react-sdk/pull/1639)
+ * Implement UI for using bulk device deletion API
+   [\#1638](https://github.com/matrix-org/matrix-react-sdk/pull/1638)
+ * Replace (IRC) with flair
+   [\#1637](https://github.com/matrix-org/matrix-react-sdk/pull/1637)
+ * Allow guests to view individual groups
+   [\#1635](https://github.com/matrix-org/matrix-react-sdk/pull/1635)
+ * Allow guest to see MyGroups, show ILAG when creating a group
+   [\#1636](https://github.com/matrix-org/matrix-react-sdk/pull/1636)
+ * Move group publication toggles to UserSettings
+   [\#1634](https://github.com/matrix-org/matrix-react-sdk/pull/1634)
+ * Pull the theme through the default process
+   [\#1617](https://github.com/matrix-org/matrix-react-sdk/pull/1617)
+ * Rebase ConfirmRedactDialog on QuestionDialog
+   [\#1630](https://github.com/matrix-org/matrix-react-sdk/pull/1630)
+ * Fix logging of missing substitution variables
+   [\#1629](https://github.com/matrix-org/matrix-react-sdk/pull/1629)
+ * Rename Related Groups to improve readability
+   [\#1632](https://github.com/matrix-org/matrix-react-sdk/pull/1632)
+ * Make PresenceLabel more easily translatable
+   [\#1616](https://github.com/matrix-org/matrix-react-sdk/pull/1616)
+ * Perform substitution on all parts, not just the last one
+   [\#1618](https://github.com/matrix-org/matrix-react-sdk/pull/1618)
+ * Send Access Token in Headers to help prevent it being spit out in errors
+   [\#1552](https://github.com/matrix-org/matrix-react-sdk/pull/1552)
+ * Add aria-labels to ActionButtons
+   [\#1628](https://github.com/matrix-org/matrix-react-sdk/pull/1628)
+ * MemberPresenceAvatar: fix null references
+   [\#1620](https://github.com/matrix-org/matrix-react-sdk/pull/1620)
+ * Disable presence controls if there's no presence
+   [\#1623](https://github.com/matrix-org/matrix-react-sdk/pull/1623)
+ * Fix GroupMemberList search for users without displayname
+   [\#1627](https://github.com/matrix-org/matrix-react-sdk/pull/1627)
+ * Remove redundant super class EventEmitter for FlairStore
+   [\#1626](https://github.com/matrix-org/matrix-react-sdk/pull/1626)
+ * Fix granular URL previews
+   [\#1622](https://github.com/matrix-org/matrix-react-sdk/pull/1622)
+ * Flairstore: Fix broken reference
+   [\#1619](https://github.com/matrix-org/matrix-react-sdk/pull/1619)
+ * Do something more sensible for sender profile name/aux opacity
+   [\#1615](https://github.com/matrix-org/matrix-react-sdk/pull/1615)
+ * Add eslint rule keyword-spacing
+   [\#1614](https://github.com/matrix-org/matrix-react-sdk/pull/1614)
+ * Fix various issues surrounding granular settings to date
+   [\#1613](https://github.com/matrix-org/matrix-react-sdk/pull/1613)
+ * differentiate between state events and message events
+   [\#1612](https://github.com/matrix-org/matrix-react-sdk/pull/1612)
+ * Refactor translations
+   [\#1608](https://github.com/matrix-org/matrix-react-sdk/pull/1608)
+ * Make TintableSvg links behave like normal image links
+   [\#1611](https://github.com/matrix-org/matrix-react-sdk/pull/1611)
+ * Fix linting errors.
+   [\#1610](https://github.com/matrix-org/matrix-react-sdk/pull/1610)
+ * Granular settings
+   [\#1516](https://github.com/matrix-org/matrix-react-sdk/pull/1516)
+ * Implement user-controlled presence
+   [\#1482](https://github.com/matrix-org/matrix-react-sdk/pull/1482)
+ * Edit widget icon styling
+   [\#1609](https://github.com/matrix-org/matrix-react-sdk/pull/1609)
+ * Attempt to improve textual power levels
+   [\#1607](https://github.com/matrix-org/matrix-react-sdk/pull/1607)
+ * Determine whether power level is custom once Roles have been determined
+   [\#1606](https://github.com/matrix-org/matrix-react-sdk/pull/1606)
+ * Status.im theme
+   [\#1605](https://github.com/matrix-org/matrix-react-sdk/pull/1605)
+ * Revert "Lowercase all usernames"
+   [\#1604](https://github.com/matrix-org/matrix-react-sdk/pull/1604)
+
+Changes in [0.11.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.11.4) (2018-02-09)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.11.3...v0.11.4)
+
+ * Add isUrlPermitted function to sanity check URLs
+
+Changes in [0.11.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.11.3) (2017-12-04)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.11.2...v0.11.3)
+
+ * Bump js-sdk version to pull in fix for [setting room publicity in a group](https://github.com/matrix-org/matrix-js-sdk/commit/aa3201ebb0fff5af2fb733080aa65ed1f7213de6).
+
+Changes in [0.11.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.11.2) (2017-11-28)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.11.1...v0.11.2)
+
+ * Ignore unrecognised login flows
+   [\#1633](https://github.com/matrix-org/matrix-react-sdk/pull/1633)
+
+Changes in [0.11.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.11.1) (2017-11-17)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.11.0...v0.11.1)
+
+ * Fix the force TURN option
+   [\#1621](https://github.com/matrix-org/matrix-react-sdk/pull/1621)
+
+Changes in [0.11.0](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.11.0) (2017-11-15)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.11.0-rc.3...v0.11.0)
+
+
+Changes in [0.11.0-rc.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.11.0-rc.3) (2017-11-14)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.11.0-rc.2...v0.11.0-rc.3)
+
+
+Changes in [0.11.0-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.11.0-rc.2) (2017-11-10)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.11.0-rc.1...v0.11.0-rc.2)
+
+ * Make groups a fully-fleged baked-in feature
+   [\#1603](https://github.com/matrix-org/matrix-react-sdk/pull/1603)
+
+Changes in [0.11.0-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.11.0-rc.1) (2017-11-10)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.7...v0.11.0-rc.1)
+
+ * Improve widget rendering on prop updates
+   [\#1548](https://github.com/matrix-org/matrix-react-sdk/pull/1548)
+ * Display group member profile (avatar/displayname) in ConfirmUserActionDialog
+   [\#1595](https://github.com/matrix-org/matrix-react-sdk/pull/1595)
+ * Don't crash if there isn't a room notif rule
+   [\#1602](https://github.com/matrix-org/matrix-react-sdk/pull/1602)
+ * Show group name in flair tooltip if one is set
+   [\#1596](https://github.com/matrix-org/matrix-react-sdk/pull/1596)
+ * Convert group avatar URL to HTTP before handing to BaseAvatar
+   [\#1597](https://github.com/matrix-org/matrix-react-sdk/pull/1597)
+ * Add group features as starting points for ILAG
+   [\#1601](https://github.com/matrix-org/matrix-react-sdk/pull/1601)
+ * Modify the group room visibility API to reflect the js-sdk changes
+   [\#1598](https://github.com/matrix-org/matrix-react-sdk/pull/1598)
+ * Update from Weblate.
+   [\#1599](https://github.com/matrix-org/matrix-react-sdk/pull/1599)
+ * Revert "UnknownDeviceDialog: get devices from SDK"
+   [\#1594](https://github.com/matrix-org/matrix-react-sdk/pull/1594)
+ * Order users in the group member list with admins first
+   [\#1591](https://github.com/matrix-org/matrix-react-sdk/pull/1591)
+ * Fetch group members after accepting an invite
+   [\#1592](https://github.com/matrix-org/matrix-react-sdk/pull/1592)
+ * Improve address picker for rooms
+   [\#1589](https://github.com/matrix-org/matrix-react-sdk/pull/1589)
+ * Fix FlairStore getPublicisedGroupsCached to give the correct, existing
+   promise
+   [\#1590](https://github.com/matrix-org/matrix-react-sdk/pull/1590)
+ * Use the getProfileInfo API for group inviter profile
+   [\#1585](https://github.com/matrix-org/matrix-react-sdk/pull/1585)
+ * Add checkbox to GroupAddressPicker for determining visibility of group rooms
+   [\#1587](https://github.com/matrix-org/matrix-react-sdk/pull/1587)
+ * Alter group member api
+   [\#1581](https://github.com/matrix-org/matrix-react-sdk/pull/1581)
+ * Improve group creation UX
+   [\#1580](https://github.com/matrix-org/matrix-react-sdk/pull/1580)
+ * Disable RoomDetailList in GroupView when editing
+   [\#1583](https://github.com/matrix-org/matrix-react-sdk/pull/1583)
+ * Default to no read pins if there is no applicable account data
+   [\#1586](https://github.com/matrix-org/matrix-react-sdk/pull/1586)
+ * UnknownDeviceDialog: get devices from SDK
+   [\#1584](https://github.com/matrix-org/matrix-react-sdk/pull/1584)
+ * Add a small indicator for when a new event is pinned
+   [\#1486](https://github.com/matrix-org/matrix-react-sdk/pull/1486)
+ * Implement tooltip for group rooms
+   [\#1582](https://github.com/matrix-org/matrix-react-sdk/pull/1582)
+ * Room notifs in autocomplete & composer
+   [\#1577](https://github.com/matrix-org/matrix-react-sdk/pull/1577)
+ * Ignore img tags in HTML if src is not specified
+   [\#1579](https://github.com/matrix-org/matrix-react-sdk/pull/1579)
+ * Indicate admins in the group member list with a sheriff badge
+   [\#1578](https://github.com/matrix-org/matrix-react-sdk/pull/1578)
+ * Remember whether widget drawer was hidden per-room
+   [\#1533](https://github.com/matrix-org/matrix-react-sdk/pull/1533)
+ * Throw an error when trying to create a group store with falsey groupId
+   [\#1576](https://github.com/matrix-org/matrix-react-sdk/pull/1576)
+ * Fixes React warning
+   [\#1571](https://github.com/matrix-org/matrix-react-sdk/pull/1571)
+ * Fix Flair not appearing due to missing this._usersInFlight
+   [\#1575](https://github.com/matrix-org/matrix-react-sdk/pull/1575)
+ * Use, if possible, a room's canonical or first alias when viewing the …
+   [\#1574](https://github.com/matrix-org/matrix-react-sdk/pull/1574)
+ * Add CSS classes to group ID input in CreateGroupDialog
+   [\#1573](https://github.com/matrix-org/matrix-react-sdk/pull/1573)
+ * Give autocomplete providers the room they're in
+   [\#1568](https://github.com/matrix-org/matrix-react-sdk/pull/1568)
+ * Fix multiple pills on one line
+   [\#1572](https://github.com/matrix-org/matrix-react-sdk/pull/1572)
+ * Fix group invites such that they look similar to room invites
+   [\#1570](https://github.com/matrix-org/matrix-react-sdk/pull/1570)
+ * Add a GeminiScrollbar to Your Communities
+   [\#1569](https://github.com/matrix-org/matrix-react-sdk/pull/1569)
+ * Fix multiple requests for publicised groups of given user
+   [\#1567](https://github.com/matrix-org/matrix-react-sdk/pull/1567)
+ * Add toggle to alter visibility of a room-group association
+   [\#1566](https://github.com/matrix-org/matrix-react-sdk/pull/1566)
+ * Pillify room notifs in the timeline
+   [\#1564](https://github.com/matrix-org/matrix-react-sdk/pull/1564)
+ *  Implement simple GroupRoomInfo
+   [\#1563](https://github.com/matrix-org/matrix-react-sdk/pull/1563)
+ * turn NPE on flair resolution errors into a logged error
+   [\#1565](https://github.com/matrix-org/matrix-react-sdk/pull/1565)
+ * Less translation in parts
+   [\#1484](https://github.com/matrix-org/matrix-react-sdk/pull/1484)
+ * Redact group IDs from analytics
+   [\#1562](https://github.com/matrix-org/matrix-react-sdk/pull/1562)
+ * Display whether the group summary/room list is loading
+   [\#1560](https://github.com/matrix-org/matrix-react-sdk/pull/1560)
+ * Change client-side validation of group IDs to match synapse
+   [\#1558](https://github.com/matrix-org/matrix-react-sdk/pull/1558)
+ * Prevent non-members from opening group settings
+   [\#1559](https://github.com/matrix-org/matrix-react-sdk/pull/1559)
+ * Alter UI for disinviting a group member
+   [\#1556](https://github.com/matrix-org/matrix-react-sdk/pull/1556)
+ * Only show admin tools to privileged users
+   [\#1555](https://github.com/matrix-org/matrix-react-sdk/pull/1555)
+ * Try lowercase username on login
+   [\#1550](https://github.com/matrix-org/matrix-react-sdk/pull/1550)
+ * Don't refresh page on password change prompt
+   [\#1554](https://github.com/matrix-org/matrix-react-sdk/pull/1554)
+ * Fix initial in GroupAvatar in GroupView
+   [\#1553](https://github.com/matrix-org/matrix-react-sdk/pull/1553)
+ * Use "crop" method to scale group avatars in MyGroups
+   [\#1549](https://github.com/matrix-org/matrix-react-sdk/pull/1549)
+ * Lowercase all usernames
+   [\#1547](https://github.com/matrix-org/matrix-react-sdk/pull/1547)
+ * Add sensible missing entry generator for MELS tests
+   [\#1546](https://github.com/matrix-org/matrix-react-sdk/pull/1546)
+ * Fix prompt to re-use chat room
+   [\#1545](https://github.com/matrix-org/matrix-react-sdk/pull/1545)
+ * Add unregiseterListener to GroupStore
+   [\#1544](https://github.com/matrix-org/matrix-react-sdk/pull/1544)
+ * Fix groups invited users err for non members
+   [\#1543](https://github.com/matrix-org/matrix-react-sdk/pull/1543)
+ * Add Mention button to MemberInfo
+   [\#1532](https://github.com/matrix-org/matrix-react-sdk/pull/1532)
+ * Only show group settings cog to members
+   [\#1541](https://github.com/matrix-org/matrix-react-sdk/pull/1541)
+ * Use correct icon for group room deletion and make themeable
+   [\#1540](https://github.com/matrix-org/matrix-react-sdk/pull/1540)
+ * Add invite button to MemberInfo if user has left or wasn't in room
+   [\#1534](https://github.com/matrix-org/matrix-react-sdk/pull/1534)
+ * Add option to mirror local video feed
+   [\#1539](https://github.com/matrix-org/matrix-react-sdk/pull/1539)
+ * Use the correct userId when displaying who redacted a message
+   [\#1538](https://github.com/matrix-org/matrix-react-sdk/pull/1538)
+ * Only show editing UI for aliases/related_groups for users /w power
+   [\#1529](https://github.com/matrix-org/matrix-react-sdk/pull/1529)
+ * Swap from `ui_opacity` to `panel_disabled`
+   [\#1535](https://github.com/matrix-org/matrix-react-sdk/pull/1535)
+ * Fix room address picker tiles default name
+   [\#1536](https://github.com/matrix-org/matrix-react-sdk/pull/1536)
+ * T3chguy/hide level change on 50
+   [\#1531](https://github.com/matrix-org/matrix-react-sdk/pull/1531)
+ * fix missing date sep caused by hidden event at start of day
+   [\#1537](https://github.com/matrix-org/matrix-react-sdk/pull/1537)
+ * Add a delete confirmation dialog for widgets
+   [\#1520](https://github.com/matrix-org/matrix-react-sdk/pull/1520)
+ * When dispatching view_[my_]group[s], reset RoomViewStore
+   [\#1530](https://github.com/matrix-org/matrix-react-sdk/pull/1530)
+ * Prevent editing of UI requiring user privilege if user unprivileged
+   [\#1528](https://github.com/matrix-org/matrix-react-sdk/pull/1528)
+ * Use the correct property of the API room objects
+   [\#1526](https://github.com/matrix-org/matrix-react-sdk/pull/1526)
+ * Don't include the |other in the translation value
+   [\#1527](https://github.com/matrix-org/matrix-react-sdk/pull/1527)
+ * Re-run gen-i18n after fixing https://github.com/matrix-org/matrix-react-
+   sdk/pull/1521
+   [\#1525](https://github.com/matrix-org/matrix-react-sdk/pull/1525)
+ * Fix some react warnings in GroupMemberList
+   [\#1522](https://github.com/matrix-org/matrix-react-sdk/pull/1522)
+ * Fix bug with gen-i18n/js when adding new plurals
+   [\#1521](https://github.com/matrix-org/matrix-react-sdk/pull/1521)
+ * Make GroupStoreCache global for cross-package access
+   [\#1524](https://github.com/matrix-org/matrix-react-sdk/pull/1524)
+ * Add fields needed by RoomDetailList to groupRoomFromApiObject
+   [\#1523](https://github.com/matrix-org/matrix-react-sdk/pull/1523)
+ * Only show flair for groups with avatars set
+   [\#1519](https://github.com/matrix-org/matrix-react-sdk/pull/1519)
+ * Refresh group member lists after inviting users
+   [\#1518](https://github.com/matrix-org/matrix-react-sdk/pull/1518)
+ * Invalidate the user's public groups cache when changing group publicity
+   [\#1517](https://github.com/matrix-org/matrix-react-sdk/pull/1517)
+ * Make the gen-i18n script validate _t calls
+   [\#1515](https://github.com/matrix-org/matrix-react-sdk/pull/1515)
+ * Add placeholder to MyGroups page, adjust CSS classes
+   [\#1514](https://github.com/matrix-org/matrix-react-sdk/pull/1514)
+ * Rxl881/parallelshell
+   [\#1338](https://github.com/matrix-org/matrix-react-sdk/pull/1338)
+ * Run prunei18n
+   [\#1513](https://github.com/matrix-org/matrix-react-sdk/pull/1513)
+ * Update from Weblate.
+   [\#1512](https://github.com/matrix-org/matrix-react-sdk/pull/1512)
+ * Add script to prune unused translations
+   [\#1502](https://github.com/matrix-org/matrix-react-sdk/pull/1502)
+ * Fix creation of DM rooms
+   [\#1510](https://github.com/matrix-org/matrix-react-sdk/pull/1510)
+ * Group create dialog: only enter localpart
+   [\#1507](https://github.com/matrix-org/matrix-react-sdk/pull/1507)
+ * Improve MyGroups UI
+   [\#1509](https://github.com/matrix-org/matrix-react-sdk/pull/1509)
+ * Use object URLs to load Files in to images
+   [\#1508](https://github.com/matrix-org/matrix-react-sdk/pull/1508)
+ * Add clientside error for non-alphanumeric group ID
+   [\#1506](https://github.com/matrix-org/matrix-react-sdk/pull/1506)
+ * Fix invites to groups without names
+   [\#1505](https://github.com/matrix-org/matrix-react-sdk/pull/1505)
+ * Add warning when adding group rooms/users
+   [\#1504](https://github.com/matrix-org/matrix-react-sdk/pull/1504)
+ * More Groups->Communities
+   [\#1503](https://github.com/matrix-org/matrix-react-sdk/pull/1503)
+ * Groups -> Communities
+   [\#1501](https://github.com/matrix-org/matrix-react-sdk/pull/1501)
+ * Factor out Flair cache into FlairStore
+   [\#1500](https://github.com/matrix-org/matrix-react-sdk/pull/1500)
+ * Add i18n script to package.json
+   [\#1499](https://github.com/matrix-org/matrix-react-sdk/pull/1499)
+ * Make gen-i18n support 'HTML'
+   [\#1498](https://github.com/matrix-org/matrix-react-sdk/pull/1498)
+ * fix editing visuals on groupview header
+   [\#1497](https://github.com/matrix-org/matrix-react-sdk/pull/1497)
+ * Script to generate the translations base file
+   [\#1493](https://github.com/matrix-org/matrix-react-sdk/pull/1493)
+ * Update from Weblate.
+   [\#1495](https://github.com/matrix-org/matrix-react-sdk/pull/1495)
+ * Attempt to relate a group to a room when adding it
+   [\#1494](https://github.com/matrix-org/matrix-react-sdk/pull/1494)
+ * Shuffle GroupView UI
+   [\#1490](https://github.com/matrix-org/matrix-react-sdk/pull/1490)
+ * Fix bug preventing partial group profile
+   [\#1491](https://github.com/matrix-org/matrix-react-sdk/pull/1491)
+ * Don't show room IDs when picking rooms
+   [\#1492](https://github.com/matrix-org/matrix-react-sdk/pull/1492)
+ * Only show invited section if there are invited group members
+   [\#1489](https://github.com/matrix-org/matrix-react-sdk/pull/1489)
+ * Show "Invited" section in the user list
+   [\#1488](https://github.com/matrix-org/matrix-react-sdk/pull/1488)
+ * Refactor class names for an entity tile being hovered over
+   [\#1487](https://github.com/matrix-org/matrix-react-sdk/pull/1487)
+ * Modify GroupView UI
+   [\#1475](https://github.com/matrix-org/matrix-react-sdk/pull/1475)
+ * Message/event pinning
+   [\#1439](https://github.com/matrix-org/matrix-react-sdk/pull/1439)
+ * Remove duplicate declaration that breaks the build
+   [\#1483](https://github.com/matrix-org/matrix-react-sdk/pull/1483)
+ * Include magnet scheme in sanitize HTML params
+   [\#1301](https://github.com/matrix-org/matrix-react-sdk/pull/1301)
+ * Add a way to jump to a user's Read Receipt from MemberInfo
+   [\#1454](https://github.com/matrix-org/matrix-react-sdk/pull/1454)
+ * Use standard subsitution syntax in _tJsx
+   [\#1462](https://github.com/matrix-org/matrix-react-sdk/pull/1462)
+ * Don't suggest grey as a color scheme for a room
+   [\#1442](https://github.com/matrix-org/matrix-react-sdk/pull/1442)
+ * allow hiding of notification body for privacy reasons
+   [\#1362](https://github.com/matrix-org/matrix-react-sdk/pull/1362)
+ * Suggest to invite people when speaking in an empty room
+   [\#1466](https://github.com/matrix-org/matrix-react-sdk/pull/1466)
+ * Buttons to remove room/self avatar
+   [\#1478](https://github.com/matrix-org/matrix-react-sdk/pull/1478)
+ * T3chguy/fix memberlist
+   [\#1480](https://github.com/matrix-org/matrix-react-sdk/pull/1480)
+ * add option to disable BigEmoji
+   [\#1481](https://github.com/matrix-org/matrix-react-sdk/pull/1481)
+
+Changes in [0.10.7](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.7) (2017-10-16)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.7-rc.3...v0.10.7)
+
+ * Update to latest js-sdk
+
+Changes in [0.10.7-rc.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.7-rc.3) (2017-10-13)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.7-rc.2...v0.10.7-rc.3)
+
+ * Fix the enableLabs flag, again
+   [\#1474](https://github.com/matrix-org/matrix-react-sdk/pull/1474)
+
+Changes in [0.10.7-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.7-rc.2) (2017-10-13)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.7-rc.1...v0.10.7-rc.2)
+
+ * Honour the (now legacy) enableLabs flag
+   [\#1473](https://github.com/matrix-org/matrix-react-sdk/pull/1473)
+ * Don't show labs features by default
+   [\#1472](https://github.com/matrix-org/matrix-react-sdk/pull/1472)
+ * Make features disabled by default
+   [\#1470](https://github.com/matrix-org/matrix-react-sdk/pull/1470)
+
+Changes in [0.10.7-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.7-rc.1) (2017-10-13)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.6...v0.10.7-rc.1)
+
+ * Add warm fuzzy dialog for inviting users to a group
+   [\#1459](https://github.com/matrix-org/matrix-react-sdk/pull/1459)
+ * enable/disable features in config.json
+   [\#1468](https://github.com/matrix-org/matrix-react-sdk/pull/1468)
+ * Update from Weblate.
+   [\#1469](https://github.com/matrix-org/matrix-react-sdk/pull/1469)
+ * Don't send RR or RM when peeking at a room
+   [\#1463](https://github.com/matrix-org/matrix-react-sdk/pull/1463)
+ * Fix bug that inserted emoji when typing
+   [\#1467](https://github.com/matrix-org/matrix-react-sdk/pull/1467)
+ * Ignore VS16 char in RTE
+   [\#1458](https://github.com/matrix-org/matrix-react-sdk/pull/1458)
+ * Show failures when sending messages
+   [\#1460](https://github.com/matrix-org/matrix-react-sdk/pull/1460)
+ * Run eslint --fix
+   [\#1461](https://github.com/matrix-org/matrix-react-sdk/pull/1461)
+ * Show who banned the user on hover
+   [\#1441](https://github.com/matrix-org/matrix-react-sdk/pull/1441)
+ * Enhancements to room power level settings
+   [\#1440](https://github.com/matrix-org/matrix-react-sdk/pull/1440)
+ * Added TextInputWithCheckbox dialog
+   [\#868](https://github.com/matrix-org/matrix-react-sdk/pull/868)
+ * Make it clearer which HS you're logging into
+   [\#1456](https://github.com/matrix-org/matrix-react-sdk/pull/1456)
+ * Remove redundant stale onKeyDown
+   [\#1451](https://github.com/matrix-org/matrix-react-sdk/pull/1451)
+ * Only allow event state event handlers on state events
+   [\#1453](https://github.com/matrix-org/matrix-react-sdk/pull/1453)
+ * Modify the group store to include group rooms
+   [\#1452](https://github.com/matrix-org/matrix-react-sdk/pull/1452)
+ * Factor-out GroupStore and create GroupStoreCache
+   [\#1449](https://github.com/matrix-org/matrix-react-sdk/pull/1449)
+ * Put related groups UI behind groups labs flag
+   [\#1448](https://github.com/matrix-org/matrix-react-sdk/pull/1448)
+ * Restrict Flair in the timeline to related groups of the room
+   [\#1447](https://github.com/matrix-org/matrix-react-sdk/pull/1447)
+ * Implement UI for editing related groups of a room
+   [\#1446](https://github.com/matrix-org/matrix-react-sdk/pull/1446)
+ * Fix a couple of bugs with EditableItemList
+   [\#1445](https://github.com/matrix-org/matrix-react-sdk/pull/1445)
+ * Factor out EditableItemList from AliasSettings
+   [\#1444](https://github.com/matrix-org/matrix-react-sdk/pull/1444)
+ * Add dummy translation function to mark translatable strings
+   [\#1421](https://github.com/matrix-org/matrix-react-sdk/pull/1421)
+ * Implement button to remove a room from a group
+   [\#1438](https://github.com/matrix-org/matrix-react-sdk/pull/1438)
+ * Fix showing 3pid invites in member list
+   [\#1443](https://github.com/matrix-org/matrix-react-sdk/pull/1443)
+ * Add button to get to MyGroups (view_my_groups or path #/groups)
+   [\#1435](https://github.com/matrix-org/matrix-react-sdk/pull/1435)
+ * Add eslint rule to disallow spaces inside of curly braces
+   [\#1436](https://github.com/matrix-org/matrix-react-sdk/pull/1436)
+ * Fix ability to invite existing mx users
+   [\#1437](https://github.com/matrix-org/matrix-react-sdk/pull/1437)
+ * Construct address picker message using provided `validAddressTypes`
+   [\#1434](https://github.com/matrix-org/matrix-react-sdk/pull/1434)
+ * Fix GroupView summary rooms displaying without avatars
+   [\#1433](https://github.com/matrix-org/matrix-react-sdk/pull/1433)
+ * Implement adding rooms to a group (or group summary) by room ID
+   [\#1432](https://github.com/matrix-org/matrix-react-sdk/pull/1432)
+ * Give flair avatars a tooltip = the group ID
+   [\#1431](https://github.com/matrix-org/matrix-react-sdk/pull/1431)
+ * Fix ability to feature self in a group summary
+   [\#1430](https://github.com/matrix-org/matrix-react-sdk/pull/1430)
+ * Implement "Add room to group" feature
+   [\#1429](https://github.com/matrix-org/matrix-react-sdk/pull/1429)
+ * Fix group membership publicity
+   [\#1428](https://github.com/matrix-org/matrix-react-sdk/pull/1428)
+ * Add support for Jitsi screensharing in electron app
+   [\#1355](https://github.com/matrix-org/matrix-react-sdk/pull/1355)
+ * Delint and DRY TextForEvent
+   [\#1424](https://github.com/matrix-org/matrix-react-sdk/pull/1424)
+ * Bust the flair caches after 30mins
+   [\#1427](https://github.com/matrix-org/matrix-react-sdk/pull/1427)
+ * Show displayname / avatar in group member info
+   [\#1426](https://github.com/matrix-org/matrix-react-sdk/pull/1426)
+ * Create GroupSummaryStore for storing group summary stuff
+   [\#1418](https://github.com/matrix-org/matrix-react-sdk/pull/1418)
+ * Add status & toggle for publicity
+   [\#1419](https://github.com/matrix-org/matrix-react-sdk/pull/1419)
+ * MemberList: show 100 more on overflow tile click
+   [\#1417](https://github.com/matrix-org/matrix-react-sdk/pull/1417)
+ * Fix NPE in MemberList
+   [\#1425](https://github.com/matrix-org/matrix-react-sdk/pull/1425)
+ * Fix incorrect variable in string
+   [\#1422](https://github.com/matrix-org/matrix-react-sdk/pull/1422)
+ * apply i18n _t to string which has already been translated
+   [\#1420](https://github.com/matrix-org/matrix-react-sdk/pull/1420)
+ * Make the invite section a truncatedlist too
+   [\#1416](https://github.com/matrix-org/matrix-react-sdk/pull/1416)
+ * Implement removal function of features users/rooms
+   [\#1415](https://github.com/matrix-org/matrix-react-sdk/pull/1415)
+ * Allow TruncatedList to get children via a callback
+   [\#1412](https://github.com/matrix-org/matrix-react-sdk/pull/1412)
+ * Experimental: Lazy load user autocomplete entries
+   [\#1413](https://github.com/matrix-org/matrix-react-sdk/pull/1413)
+ * Show displayname & avatar url in group member list
+   [\#1414](https://github.com/matrix-org/matrix-react-sdk/pull/1414)
+ * De-lint TruncatedList
+   [\#1411](https://github.com/matrix-org/matrix-react-sdk/pull/1411)
+ * Remove unneeded strings
+   [\#1409](https://github.com/matrix-org/matrix-react-sdk/pull/1409)
+ * Clean on prerelease
+   [\#1410](https://github.com/matrix-org/matrix-react-sdk/pull/1410)
+ * Redesign membership section in GroupView
+   [\#1408](https://github.com/matrix-org/matrix-react-sdk/pull/1408)
+ * Implement adding rooms to the group summary
+   [\#1406](https://github.com/matrix-org/matrix-react-sdk/pull/1406)
+ * Honour the is_privileged flag in GroupView
+   [\#1407](https://github.com/matrix-org/matrix-react-sdk/pull/1407)
+ * Update when a group arrives
+   [\#1405](https://github.com/matrix-org/matrix-react-sdk/pull/1405)
+ * Implement `view_group` dispatch when clicking flair
+   [\#1404](https://github.com/matrix-org/matrix-react-sdk/pull/1404)
+ * GroupView: Add a User
+   [\#1402](https://github.com/matrix-org/matrix-react-sdk/pull/1402)
+ * Track action button click event
+   [\#1403](https://github.com/matrix-org/matrix-react-sdk/pull/1403)
+ * Separate sender profile into elements with classes
+   [\#1401](https://github.com/matrix-org/matrix-react-sdk/pull/1401)
+ * Fix ugly integration button, use hover to show error
+   [\#1399](https://github.com/matrix-org/matrix-react-sdk/pull/1399)
+ * Fix promise error in flair
+   [\#1400](https://github.com/matrix-org/matrix-react-sdk/pull/1400)
+ * Flair!
+   [\#1351](https://github.com/matrix-org/matrix-react-sdk/pull/1351)
+ * Group Membership UI
+   [\#1328](https://github.com/matrix-org/matrix-react-sdk/pull/1328)
+
+Changes in [0.10.6](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.6) (2017-09-21)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.5...v0.10.6)
+
+ * New version of js-sdk with fixed build
+
+Changes in [0.10.5](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.5) (2017-09-21)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.4...v0.10.5)
+
+ * Fix build error (https://github.com/vector-im/riot-web/issues/5091)
+
+Changes in [0.10.4](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.4) (2017-09-20)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.4-rc.1...v0.10.4)
+
+ * No changes
+
+Changes in [0.10.4-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.4-rc.1) (2017-09-19)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.3...v0.10.4-rc.1)
+
+ * Fix RoomView stuck in 'accept invite' state
+   [\#1396](https://github.com/matrix-org/matrix-react-sdk/pull/1396)
+ * Only show the integ management button if user is joined
+   [\#1398](https://github.com/matrix-org/matrix-react-sdk/pull/1398)
+ * suppressOnHover for member entity tiles which have no onClick
+   [\#1273](https://github.com/matrix-org/matrix-react-sdk/pull/1273)
+ * add /devtools command
+   [\#1268](https://github.com/matrix-org/matrix-react-sdk/pull/1268)
+ * Fix broken Link
+   [\#1359](https://github.com/matrix-org/matrix-react-sdk/pull/1359)
+ * Show who redacted an event on hover
+   [\#1387](https://github.com/matrix-org/matrix-react-sdk/pull/1387)
+ * start MELS expanded if it contains a highlighted/permalinked event.
+   [\#1388](https://github.com/matrix-org/matrix-react-sdk/pull/1388)
+ * Add ignore user API support
+   [\#1389](https://github.com/matrix-org/matrix-react-sdk/pull/1389)
+ * Add option to disable Emoji suggestions
+   [\#1392](https://github.com/matrix-org/matrix-react-sdk/pull/1392)
+ * sanitize the i18n for fn:textForHistoryVisibilityEvent
+   [\#1397](https://github.com/matrix-org/matrix-react-sdk/pull/1397)
+ * Don't check for only-emoji if there were none
+   [\#1394](https://github.com/matrix-org/matrix-react-sdk/pull/1394)
+ * Fix emojification of symbol characters
+   [\#1393](https://github.com/matrix-org/matrix-react-sdk/pull/1393)
+ * Update from Weblate.
+   [\#1395](https://github.com/matrix-org/matrix-react-sdk/pull/1395)
+ * Make /join join again
+   [\#1391](https://github.com/matrix-org/matrix-react-sdk/pull/1391)
+ * Display spinner not room preview after room create
+   [\#1390](https://github.com/matrix-org/matrix-react-sdk/pull/1390)
+ * Fix the avatar / room name in room preview
+   [\#1384](https://github.com/matrix-org/matrix-react-sdk/pull/1384)
+ * Remove spurious cancel button
+   [\#1381](https://github.com/matrix-org/matrix-react-sdk/pull/1381)
+ * Fix starting a chat by email address
+   [\#1386](https://github.com/matrix-org/matrix-react-sdk/pull/1386)
+ * respond on copy code block
+   [\#1363](https://github.com/matrix-org/matrix-react-sdk/pull/1363)
+ * fix DateUtils inconsistency with 12/24h
+   [\#1383](https://github.com/matrix-org/matrix-react-sdk/pull/1383)
+ * allow sending sub,sup and whitelist them on receive
+   [\#1382](https://github.com/matrix-org/matrix-react-sdk/pull/1382)
+ * Update roomlist when an event is decrypted
+   [\#1380](https://github.com/matrix-org/matrix-react-sdk/pull/1380)
+ * Update from Weblate.
+   [\#1379](https://github.com/matrix-org/matrix-react-sdk/pull/1379)
+ * fix radio for theme selection
+   [\#1368](https://github.com/matrix-org/matrix-react-sdk/pull/1368)
+ * fix some more zh_Hans - remove entirely broken lines
+   [\#1378](https://github.com/matrix-org/matrix-react-sdk/pull/1378)
+ * fix placeholder causing app to break when using zh
+   [\#1377](https://github.com/matrix-org/matrix-react-sdk/pull/1377)
+ * Avoid re-rendering RoomList on room switch
+   [\#1375](https://github.com/matrix-org/matrix-react-sdk/pull/1375)
+ * Fix 'Failed to load timeline position' regression
+   [\#1376](https://github.com/matrix-org/matrix-react-sdk/pull/1376)
+ * Fast path for emojifying strings
+   [\#1372](https://github.com/matrix-org/matrix-react-sdk/pull/1372)
+ * Consolidate the code copy button
+   [\#1374](https://github.com/matrix-org/matrix-react-sdk/pull/1374)
+ * Only add the code copy button for HTML messages
+   [\#1373](https://github.com/matrix-org/matrix-react-sdk/pull/1373)
+ * Don't re-render matrixchat unnecessarily
+   [\#1371](https://github.com/matrix-org/matrix-react-sdk/pull/1371)
+ * Don't wait for setState to run onHaveRoom
+   [\#1370](https://github.com/matrix-org/matrix-react-sdk/pull/1370)
+ * Introduce a RoomScrollStateStore
+   [\#1367](https://github.com/matrix-org/matrix-react-sdk/pull/1367)
+ * Don't always paginate when mounting a ScrollPanel
+   [\#1369](https://github.com/matrix-org/matrix-react-sdk/pull/1369)
+ * Remove unused scrollStateMap from LoggedinView
+   [\#1366](https://github.com/matrix-org/matrix-react-sdk/pull/1366)
+ * Revert "Implement sticky date separators"
+   [\#1365](https://github.com/matrix-org/matrix-react-sdk/pull/1365)
+ * Remove unused string "changing room on a RoomView is not supported"
+   [\#1361](https://github.com/matrix-org/matrix-react-sdk/pull/1361)
+ * Remove unused translation code translations
+   [\#1360](https://github.com/matrix-org/matrix-react-sdk/pull/1360)
+ * Implement sticky date separators
+   [\#1353](https://github.com/matrix-org/matrix-react-sdk/pull/1353)
+
+Changes in [0.10.3](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.3) (2017-09-06)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.3-rc.2...v0.10.3)
+
+ * No changes
+
+Changes in [0.10.3-rc.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.3-rc.2) (2017-09-05)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.3-rc.1...v0.10.3-rc.2)
+
+ * Fix plurals in translations
+   [\#1358](https://github.com/matrix-org/matrix-react-sdk/pull/1358)
+ * Fix typo
+   [\#1357](https://github.com/matrix-org/matrix-react-sdk/pull/1357)
+ * Update from Weblate.
+   [\#1356](https://github.com/matrix-org/matrix-react-sdk/pull/1356)
+
+Changes in [0.10.3-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.3-rc.1) (2017-09-01)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.2...v0.10.3-rc.1)
+
+ * Fix room change sometimes being very slow
+   [\#1354](https://github.com/matrix-org/matrix-react-sdk/pull/1354)
+ * apply shouldHideEvent fn to onRoomTimeline for RoomStatusBar
+   [\#1346](https://github.com/matrix-org/matrix-react-sdk/pull/1346)
+ * text4event widget modified, used to show widget added each time.
+   [\#1345](https://github.com/matrix-org/matrix-react-sdk/pull/1345)
+ * separate concepts of showing and managing RRs to fix regression
+   [\#1352](https://github.com/matrix-org/matrix-react-sdk/pull/1352)
+ * Make staging widgets work with live and vice versa.
+   [\#1350](https://github.com/matrix-org/matrix-react-sdk/pull/1350)
+ * Avoid breaking /sync with uncaught exceptions
+   [\#1349](https://github.com/matrix-org/matrix-react-sdk/pull/1349)
+ * we need to pass whether it is an invite RoomSubList explicitly (i18n)
+   [\#1343](https://github.com/matrix-org/matrix-react-sdk/pull/1343)
+ * Percent encoding isn't a valid thing within _t
+   [\#1348](https://github.com/matrix-org/matrix-react-sdk/pull/1348)
+ * Fix spurious notifications
+   [\#1339](https://github.com/matrix-org/matrix-react-sdk/pull/1339)
+ * Unbreak password reset with a non-default HS
+   [\#1347](https://github.com/matrix-org/matrix-react-sdk/pull/1347)
+ * Remove unnecessary 'load' on notif audio element
+   [\#1341](https://github.com/matrix-org/matrix-react-sdk/pull/1341)
+ * _tJsx returns a React Object, the sub fn must return a React Object
+   [\#1340](https://github.com/matrix-org/matrix-react-sdk/pull/1340)
+ * Fix deprecation warning about promise.defer()
+   [\#1292](https://github.com/matrix-org/matrix-react-sdk/pull/1292)
+ * Fix click to insert completion
+   [\#1331](https://github.com/matrix-org/matrix-react-sdk/pull/1331)
+
+Changes in [0.10.2](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.2) (2017-08-24)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.1...v0.10.2)
+
+ * Force update on timelinepanel when event decrypted
+   [\#1334](https://github.com/matrix-org/matrix-react-sdk/pull/1334)
+ * Dispatch incoming_call synchronously
+   [\#1337](https://github.com/matrix-org/matrix-react-sdk/pull/1337)
+ * Fix React crying on machines without internet due to return undefined
+   [\#1335](https://github.com/matrix-org/matrix-react-sdk/pull/1335)
+ * Catch the promise rejection if scalar fails
+   [\#1333](https://github.com/matrix-org/matrix-react-sdk/pull/1333)
+ * Update from Weblate.
+   [\#1329](https://github.com/matrix-org/matrix-react-sdk/pull/1329)
+
+Changes in [0.10.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.1) (2017-08-23)
+=====================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.1-rc.1...v0.10.1)
+
+ * [No changes]
+
+Changes in [0.10.1-rc.1](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.10.1-rc.1) (2017-08-22)
+===============================================================================================================
+[Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.10.0-rc.2...v0.10.1-rc.1)
+
+ * Matthew/multiple widgets
+   [\#1327](https://github.com/matrix-org/matrix-react-sdk/pull/1327)
+ * Fix proptypes on UserPickerDialog
+   [\#1326](https://github.com/matrix-org/matrix-react-sdk/pull/1326)
+ * AppsDrawer: Remove unnecessary bind
+   [\#1325](https://github.com/matrix-org/matrix-react-sdk/pull/1325)
+ * Position add app widget link
+   [\#1322](https://github.com/matrix-org/matrix-react-sdk/pull/1322)
+ * Remove app tile beta tag.
+   [\#1323](https://github.com/matrix-org/matrix-react-sdk/pull/1323)
+ * Add missing translation.
+   [\#1324](https://github.com/matrix-org/matrix-react-sdk/pull/1324)
+ * Note that apps are not E2EE
+   [\#1319](https://github.com/matrix-org/matrix-react-sdk/pull/1319)
+ * Only render appTile body (including warnings) if drawer shown.
+   [\#1321](https://github.com/matrix-org/matrix-react-sdk/pull/1321)
+ * Timeline improvements
+   [\#1320](https://github.com/matrix-org/matrix-react-sdk/pull/1320)
+ * Add a space between widget name and "widget" in widget event tiles
+   [\#1318](https://github.com/matrix-org/matrix-react-sdk/pull/1318)
+ * Move manage integrations button from settings page to room header as a
+   stand-alone component
+   [\#1286](https://github.com/matrix-org/matrix-react-sdk/pull/1286)
+ * Don't apply case logic to app names
+   [\#1316](https://github.com/matrix-org/matrix-react-sdk/pull/1316)
+ * Stop integ manager opening on every room switch
+   [\#1315](https://github.com/matrix-org/matrix-react-sdk/pull/1315)
+ * Add behaviour to toggle app draw on app tile header click
+   [\#1313](https://github.com/matrix-org/matrix-react-sdk/pull/1313)
+ * Change OOO so that MELS generation will continue over hidden events
+   [\#1308](https://github.com/matrix-org/matrix-react-sdk/pull/1308)
+ * Implement TextualEvent tiles for im.vector.modular.widgets
+   [\#1312](https://github.com/matrix-org/matrix-react-sdk/pull/1312)
+ * Don't show widget security warning to the person that added it to the room
+   [\#1314](https://github.com/matrix-org/matrix-react-sdk/pull/1314)
+ * remove unused strings introduced by string change
+   [\#1311](https://github.com/matrix-org/matrix-react-sdk/pull/1311)
+ * hotfix bad fn signature regression
+   [\#1310](https://github.com/matrix-org/matrix-react-sdk/pull/1310)
+ * Show a dialog if the maximum number of widgets allowed has been reached.
+   [\#1291](https://github.com/matrix-org/matrix-react-sdk/pull/1291)
+ * Fix Robot translation
+   [\#1309](https://github.com/matrix-org/matrix-react-sdk/pull/1309)
+ * Refactor ChatInviteDialog to be UserPickerDialog
+   [\#1300](https://github.com/matrix-org/matrix-react-sdk/pull/1300)
+ * Update Link to Translation status
+   [\#1302](https://github.com/matrix-org/matrix-react-sdk/pull/1302)
+
 Changes in [0.9.7](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v0.9.7) (2017-06-22)
 ===================================================================================================
 [Full Changelog](https://github.com/matrix-org/matrix-react-sdk/compare/v0.9.6...v0.9.7)
@@ -1731,7 +4934,7 @@ Changes in [0.6.0](https://github.com/matrix-org/matrix-react-sdk/releases/tag/v
    [\#297](https://github.com/matrix-org/matrix-react-sdk/pull/297)
  * multiple URL preview support
    [\#290](https://github.com/matrix-org/matrix-react-sdk/pull/290)
- * Add a fallback home server to log into
+ * Add a fallback homeserver to log into
    [\#293](https://github.com/matrix-org/matrix-react-sdk/pull/293)
  * Hopefully fix memory leak with velocity
    [\#291](https://github.com/matrix-org/matrix-react-sdk/pull/291)

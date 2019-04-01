@@ -24,8 +24,8 @@ const RoomDirectoryButton = function(props) {
     return (
         <ActionButton action="view_room_directory"
             mouseOverAction={props.callout ? "callout_room_directory" : null}
-            label={ _t("Room directory") }
-            iconPath="img/icons-directory.svg"
+            label={_t("Room directory")}
+            iconPath={require("../../../../res/img/icons-directory.svg")}
             size={props.size}
             tooltip={props.tooltip}
         />

@@ -1,5 +1,6 @@
 /*
 Copyright 2015, 2016 OpenMarket Ltd
+Copyright 2018-2019 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-'use strict';
+import Field from "../elements/Field";
 
-var React = require('react');
-var MatrixClientPeg = require("../../../MatrixClientPeg");
-var Modal = require("../../../Modal");
-var sdk = require("../../../index");
+const React = require('react');
+import PropTypes from 'prop-types';
+const MatrixClientPeg = require("../../../MatrixClientPeg");
+const Modal = require("../../../Modal");
+const sdk = require("../../../index");
 
+import dis from "../../../dispatcher";
 import Promise from 'bluebird';
 import AccessibleButton from '../elements/AccessibleButton';
 import { _t } from '../../../languageHandler';
@@ -30,22 +33,21 @@ import sessionStore from '../../../stores/SessionStore';
 module.exports = React.createClass({
     displayName: 'ChangePassword',
     propTypes: {
-        onFinished: React.PropTypes.func,
-        onError: React.PropTypes.func,
-        onCheckPassword: React.PropTypes.func,
-        rowClassName: React.PropTypes.string,
-        rowLabelClassName: React.PropTypes.string,
-        rowInputClassName: React.PropTypes.string,
-        buttonClassName: React.PropTypes.string,
-        confirm: React.PropTypes.bool,
+        onFinished: PropTypes.func,
+        onError: PropTypes.func,
+        onCheckPassword: PropTypes.func,
+        rowClassName: PropTypes.string,
+        buttonClassName: PropTypes.string,
+        buttonKind: PropTypes.string,
+        confirm: PropTypes.bool,
         // Whether to autoFocus the new password input
-        autoFocusNewPasswordInput: React.PropTypes.bool,
+        autoFocusNewPasswordInput: PropTypes.bool,
     },
 
     Phases: {
         Edit: "edit",
         Uploading: "uploading",
-        Error: "error"
+        Error: "error",
     },
 
     getDefaultProps: function() {
@@ -55,11 +57,11 @@ module.exports = React.createClass({
             onCheckPassword: function(oldPass, newPass, confirmPass) {
                 if (newPass !== confirmPass) {
                     return {
-                        error: _t("New passwords don't match")
+                        error: _t("New passwords don't match"),
                     };
                 } else if (!newPass || newPass.length === 0) {
                     return {
-                        error: _t("Passwords can't be empty")
+                        error: _t("Passwords can't be empty"),
                     };
                 }
             },
@@ -104,7 +106,7 @@ module.exports = React.createClass({
         }
 
         const QuestionDialog = sdk.getComponent("dialogs.QuestionDialog");
-        Modal.createDialog(QuestionDialog, {
+        Modal.createTrackedDialog('Change Password', '', QuestionDialog, {
             title: _t("Warning!"),
             description:
                 <div>
@@ -112,15 +114,19 @@ module.exports = React.createClass({
                         'Changing password will currently reset any end-to-end encryption keys on all devices, ' +
                         'making encrypted chat history unreadable, unless you first export your room keys ' +
                         'and re-import them afterwards. ' +
-                        'In future this will be improved.'
-                    ) } (<a href="https://github.com/vector-im/riot-web/issues/2671">https://github.com/vector-im/riot-web/issues/2671</a>)
+                        'In future this will be improved.',
+                    ) }
+                    {' '}
+                    <a href="https://github.com/vector-im/riot-web/issues/2671" target="_blank" rel="noopener">
+                        https://github.com/vector-im/riot-web/issues/2671
+                    </a>
                 </div>,
             button: _t("Continue"),
             extraButtons: [
                 <button className="mx_Dialog_primary"
                         onClick={this._onExportE2eKeysClicked}>
                     { _t('Export E2E room keys') }
-                </button>
+                </button>,
             ],
             onFinished: (confirmed) => {
                 if (confirmed) {
@@ -142,6 +148,9 @@ module.exports = React.createClass({
         });
 
         cli.setPassword(authDict, newPassword).then(() => {
+            // Notify SessionStore that the user's password was changed
+            dis.dispatch({action: 'password_changed'});
+
             if (this.props.shouldAskForEmail) {
                 return this._optionallySetEmail().then((confirmed) => {
                     this.props.onFinished({
@@ -164,7 +173,7 @@ module.exports = React.createClass({
         const deferred = Promise.defer();
         // Ask for an email otherwise the user has no way to reset their password
         const SetEmailDialog = sdk.getComponent("dialogs.SetEmailDialog");
-        Modal.createDialog(SetEmailDialog, {
+        Modal.createTrackedDialog('Do you want to set an email address?', '', SetEmailDialog, {
             title: _t('Do you want to set an email address?'),
             onFinished: (confirmed) => {
                 // ignore confirmed, setting an email is optional
@@ -175,18 +184,16 @@ module.exports = React.createClass({
     },
 
     _onExportE2eKeysClicked: function() {
-        Modal.createDialogAsync(
-            (cb) => {
-                require.ensure(['../../../async-components/views/dialogs/ExportE2eKeysDialog'], () => {
-                    cb(require('../../../async-components/views/dialogs/ExportE2eKeysDialog'));
-                }, "e2e-export");
-            }, {
+        Modal.createTrackedDialogAsync('Export E2E Keys', 'Change Password',
+            import('../../../async-components/views/dialogs/ExportE2eKeysDialog'),
+            {
                 matrixClient: MatrixClientPeg.get(),
-            }
+            },
         );
     },
 
-    onClickChange: function() {
+    onClickChange: function(ev) {
+        ev.preventDefault();
         const oldPassword = this.state.cachedPassword || this.refs.old_input.value;
         const newPassword = this.refs.new_input.value;
         const confirmPassword = this.refs.confirm_input.value;
@@ -201,21 +208,18 @@ module.exports = React.createClass({
     },
 
     render: function() {
+        // TODO: Live validation on `new pw == confirm pw`
+
         const rowClassName = this.props.rowClassName;
-        const rowLabelClassName = this.props.rowLabelClassName;
-        const rowInputClassName = this.props.rowInputClassName;
         const buttonClassName = this.props.buttonClassName;
 
         let currentPassword = null;
         if (!this.state.cachedPassword) {
-            currentPassword = <div className={rowClassName}>
-                <div className={rowLabelClassName}>
-                    <label htmlFor="passwordold">Current password</label>
+            currentPassword = (
+                <div className={rowClassName}>
+                    <Field id="passwordold" type="password" ref="old_input" label={_t('Current password')} />
                 </div>
-                <div className={rowInputClassName}>
-                    <input id="passwordold" type="password" ref="old_input" />
-                </div>
-            </div>;
+            );
         }
 
         switch (this.state.phase) {
@@ -226,24 +230,13 @@ module.exports = React.createClass({
                     <form className={this.props.className} onSubmit={this.onClickChange}>
                         { currentPassword }
                         <div className={rowClassName}>
-                            <div className={rowLabelClassName}>
-                                <label htmlFor="password1">{ passwordLabel }</label>
-                            </div>
-                            <div className={rowInputClassName}>
-                                <input id="password1" type="password" ref="new_input" autoFocus={this.props.autoFocusNewPasswordInput} />
-                            </div>
+                            <Field id="password1" type="password" ref="new_input" label={passwordLabel}
+                                   autoFocus={this.props.autoFocusNewPasswordInput} />
                         </div>
                         <div className={rowClassName}>
-                            <div className={rowLabelClassName}>
-                                <label htmlFor="password2">{ _t('Confirm password') }</label>
-                            </div>
-                            <div className={rowInputClassName}>
-                                <input id="password2" type="password" ref="confirm_input" />
-                            </div>
+                            <Field id="password2" type="password" ref="confirm_input" label={_t("Confirm password")} />
                         </div>
-                        <AccessibleButton className={buttonClassName}
-                                onClick={this.onClickChange}
-                                element="button">
+                        <AccessibleButton className={buttonClassName} kind={this.props.buttonKind} onClick={this.onClickChange}>
                             { _t('Change Password') }
                         </AccessibleButton>
                     </form>
@@ -256,5 +249,5 @@ module.exports = React.createClass({
                     </div>
                 );
         }
-    }
+    },
 });

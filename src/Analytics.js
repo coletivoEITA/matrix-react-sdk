@@ -14,25 +14,92 @@
  limitations under the License.
  */
 
-import { getCurrentLanguage } from './languageHandler';
-import MatrixClientPeg from './MatrixClientPeg';
+import { getCurrentLanguage, _t, _td } from './languageHandler';
 import PlatformPeg from './PlatformPeg';
 import SdkConfig from './SdkConfig';
+import Modal from './Modal';
+import sdk from './index';
 
+const hashRegex = /#\/(groups?|room|user|settings|register|login|forgot_password|home|directory)/;
+const hashVarRegex = /#\/(group|room|user)\/.*$/;
+
+// Remove all but the first item in the hash path. Redact unexpected hashes.
+function getRedactedHash(hash) {
+    // Don't leak URLs we aren't expecting - they could contain tokens/PII
+    const match = hashRegex.exec(hash);
+    if (!match) {
+        console.warn(`Unexpected hash location "${hash}"`);
+        return '#/<unexpected hash location>';
+    }
+
+    if (hashVarRegex.test(hash)) {
+        return hash.replace(hashVarRegex, "#/$1/<redacted>");
+    }
+
+    return hash.replace(hashRegex, "#/$1");
+}
+
+// Return the current origin, path and hash separated with a `/`. This does
+// not include query parameters.
 function getRedactedUrl() {
-    const redactedHash = window.location.hash.replace(/#\/(room|user)\/(.+)/, "#/$1/<redacted>");
-    // hardcoded url to make piwik happy
-    return 'https://riot.im/app/' + redactedHash;
+    const { origin, hash } = window.location;
+    let { pathname } = window.location;
+
+    // Redact paths which could contain unexpected PII
+    if (origin.startsWith('file://')) {
+        pathname = "/<redacted>/";
+    }
+
+    return origin + pathname + getRedactedHash(hash);
 }
 
 const customVariables = {
-    'App Platform': 1,
-    'App Version': 2,
-    'User Type': 3,
-    'Chosen Language': 4,
-    'Instance': 5,
+    'App Platform': {
+        id: 1,
+        expl: _td('The platform you\'re on'),
+        example: 'Electron Platform',
+    },
+    'App Version': {
+        id: 2,
+        expl: _td('The version of Riot.im'),
+        example: '15.0.0',
+    },
+    'User Type': {
+        id: 3,
+        expl: _td('Whether or not you\'re logged in (we don\'t record your username)'),
+        example: 'Logged In',
+    },
+    'Chosen Language': {
+        id: 4,
+        expl: _td('Your language of choice'),
+        example: 'en',
+    },
+    'Instance': {
+        id: 5,
+        expl: _td('Which officially provided instance you are using, if any'),
+        example: 'app',
+    },
+    'RTE: Uses Richtext Mode': {
+        id: 6,
+        expl: _td('Whether or not you\'re using the Richtext mode of the Rich Text Editor'),
+        example: 'off',
+    },
+    'Homeserver URL': {
+        id: 7,
+        expl: _td('Your homeserver\'s URL'),
+        example: 'https://matrix.org',
+    },
+    'Identity Server URL': {
+        id: 8,
+        expl: _td('Your identity server\'s URL'),
+        example: 'https://vector.im',
+    },
 };
 
+function whitelistRedact(whitelist, str) {
+    if (whitelist.includes(str)) return str;
+    return '<redacted>';
+}
 
 class Analytics {
     constructor() {
@@ -57,6 +124,10 @@ class Analytics {
      */
     disable() {
         this.trackEvent('Analytics', 'opt-out');
+        // disableHeartBeatTimer is undocumented but exists in the piwik code
+        // the _paq.push method will result in an error being printed in the console
+        // if an unknown method signature is passed
+        this._paq.push(['disableHeartBeatTimer']);
         this.disabled = true;
     }
 
@@ -76,7 +147,7 @@ class Analytics {
         this._paq.push(['trackAllContentImpressions']);
         this._paq.push(['discardHashTag', false]);
         this._paq.push(['enableHeartBeatTimer']);
-        this._paq.push(['enableLinkTracking', true]);
+        // this._paq.push(['enableLinkTracking', true]);
 
         const platform = PlatformPeg.get();
         this._setVisitVariable('App Platform', platform.getHumanReadableName());
@@ -108,7 +179,7 @@ class Analytics {
         return true;
     }
 
-    trackPageChange() {
+    trackPageChange(generationTimeMs) {
         if (this.disabled) return;
         if (this.firstPage) {
             // De-duplicate first page
@@ -116,13 +187,21 @@ class Analytics {
             this.firstPage = false;
             return;
         }
+
+        if (typeof generationTimeMs === 'number') {
+            this._paq.push(['setGenerationTimeMs', generationTimeMs]);
+        } else {
+            console.warn('Analytics.trackPageChange: expected generationTimeMs to be a number');
+            // But continue anyway because we still want to track the change
+        }
+
         this._paq.push(['setCustomUrl', getRedactedUrl()]);
         this._paq.push(['trackPageView']);
     }
 
-    trackEvent(category, action, name) {
+    trackEvent(category, action, name, value) {
         if (this.disabled) return;
-        this._paq.push(['trackEvent', category, action, name]);
+        this._paq.push(['trackEvent', category, action, name, value]);
     }
 
     logout() {
@@ -130,20 +209,86 @@ class Analytics {
         this._paq.push(['deleteCookies']);
     }
 
-    login() { // not used currently
-        const cli = MatrixClientPeg.get();
-        if (this.disabled || !cli) return;
-
-        this._paq.push(['setUserId', `@${cli.getUserIdLocalpart()}:${cli.getDomain()}`]);
-    }
-
     _setVisitVariable(key, value) {
-        this._paq.push(['setCustomVariable', customVariables[key], key, value, 'visit']);
+        if (this.disabled) return;
+        this._paq.push(['setCustomVariable', customVariables[key].id, key, value, 'visit']);
     }
 
-    setGuest(guest) {
+    setLoggedIn(isGuest, homeserverUrl, identityServerUrl) {
         if (this.disabled) return;
-        this._setVisitVariable('User Type', guest ? 'Guest' : 'Logged In');
+
+        const config = SdkConfig.get();
+        if (!config.piwik) return;
+
+        const whitelistedHSUrls = config.piwik.whitelistedHSUrls || [];
+        const whitelistedISUrls = config.piwik.whitelistedISUrls || [];
+
+        this._setVisitVariable('User Type', isGuest ? 'Guest' : 'Logged In');
+        this._setVisitVariable('Homeserver URL', whitelistRedact(whitelistedHSUrls, homeserverUrl));
+        this._setVisitVariable('Identity Server URL', whitelistRedact(whitelistedISUrls, identityServerUrl));
+    }
+
+    setRichtextMode(state) {
+        if (this.disabled) return;
+        this._setVisitVariable('RTE: Uses Richtext Mode', state ? 'on' : 'off');
+    }
+
+    showDetailsModal() {
+        let rows = [];
+        if (window.Piwik) {
+            const Tracker = window.Piwik.getAsyncTracker();
+            rows = Object.values(customVariables).map((v) => Tracker.getCustomVariable(v.id)).filter(Boolean);
+        } else {
+            // Piwik may not have been enabled, so show example values
+            rows = Object.keys(customVariables).map(
+                (k) => [
+                    k,
+                    _t('e.g. %(exampleValue)s', { exampleValue: customVariables[k].example }),
+                ],
+            );
+        }
+
+        const resolution = `${window.screen.width}x${window.screen.height}`;
+        const otherVariables = [
+            {
+                expl: _td('Every page you use in the app'),
+                value: _t(
+                    'e.g. <CurrentPageURL>',
+                    {},
+                    {
+                        CurrentPageURL: getRedactedUrl(),
+                    },
+                ),
+            },
+            { expl: _td('Your User Agent'), value: navigator.userAgent },
+            { expl: _td('Your device resolution'), value: resolution },
+        ];
+
+        const ErrorDialog = sdk.getComponent('dialogs.ErrorDialog');
+        Modal.createTrackedDialog('Analytics Details', '', ErrorDialog, {
+            title: _t('Analytics'),
+            description: <div className="mx_AnalyticsModal">
+                <div>
+                    { _t('The information being sent to us to help make Riot.im better includes:') }
+                </div>
+                <table>
+                    { rows.map((row) => <tr key={row[0]}>
+                        <td>{ _t(customVariables[row[0]].expl) }</td>
+                        { row[1] !== undefined && <td><code>{ row[1] }</code></td> }
+                    </tr>) }
+                    { otherVariables.map((item, index) =>
+                        <tr key={index}>
+                            <td>{ _t(item.expl) }</td>
+                            <td><code>{ item.value }</code></td>
+                        </tr>,
+                    ) }
+                </table>
+                <div>
+                    { _t('Where this page includes identifiable information, such as a room, '
+                        + 'user or group ID, that data is removed before being sent to the server.') }
+                </div>
+            </div>,
+        });
     }
 }
 

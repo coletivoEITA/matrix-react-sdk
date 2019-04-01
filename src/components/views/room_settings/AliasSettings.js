@@ -1,5 +1,6 @@
 /*
 Copyright 2016 OpenMarket Ltd
+Copyright 2018, 2019 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,301 +15,241 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import Promise from 'bluebird';
-var React = require('react');
-var ObjectUtils = require("../../../ObjectUtils");
-var MatrixClientPeg = require('../../../MatrixClientPeg');
-var sdk = require("../../../index");
+const React = require('react');
+import PropTypes from 'prop-types';
+const MatrixClientPeg = require('../../../MatrixClientPeg');
+const sdk = require("../../../index");
 import { _t } from '../../../languageHandler';
-var Modal = require("../../../Modal");
+import Field from "../elements/Field";
+import ErrorDialog from "../dialogs/ErrorDialog";
+const Modal = require("../../../Modal");
 
-module.exports = React.createClass({
-    displayName: 'AliasSettings',
+export default class AliasSettings extends React.Component {
+    static propTypes = {
+        roomId: PropTypes.string.isRequired,
+        canSetCanonicalAlias: PropTypes.bool.isRequired,
+        canSetAliases: PropTypes.bool.isRequired,
+        aliasEvents: PropTypes.array, // [MatrixEvent]
+        canonicalAliasEvent: PropTypes.object, // MatrixEvent
+    };
 
-    propTypes: {
-        roomId: React.PropTypes.string.isRequired,
-        canSetCanonicalAlias: React.PropTypes.bool.isRequired,
-        canSetAliases: React.PropTypes.bool.isRequired,
-        aliasEvents: React.PropTypes.array, // [MatrixEvent]
-        canonicalAliasEvent: React.PropTypes.object // MatrixEvent
-    },
+    static defaultProps = {
+        canSetAliases: false,
+        canSetCanonicalAlias: false,
+        aliasEvents: [],
+    };
 
-    getDefaultProps: function() {
-        return {
-            canSetAliases: false,
-            canSetCanonicalAlias: false,
-            aliasEvents: []
-        };
-    },
+    constructor(props) {
+        super(props);
 
-    getInitialState: function() {
-        return this.recalculateState(this.props.aliasEvents, this.props.canonicalAliasEvent);
-    },
-
-    recalculateState: function(aliasEvents, canonicalAliasEvent) {
-        aliasEvents = aliasEvents || [];
-
-        var state = {
+        const state = {
             domainToAliases: {}, // { domain.com => [#alias1:domain.com, #alias2:domain.com] }
             remoteDomains: [], // [ domain.com, foobar.com ]
-            canonicalAlias: null // #canonical:domain.com
+            canonicalAlias: null, // #canonical:domain.com
+            updatingCanonicalAlias: false,
+            newItem: "",
         };
-        var localDomain = MatrixClientPeg.get().getDomain();
 
-        state.domainToAliases = this.aliasEventsToDictionary(aliasEvents);
-
-        state.remoteDomains = Object.keys(state.domainToAliases).filter((alias) => {
-            return alias !== localDomain;
+        const localDomain = MatrixClientPeg.get().getDomain();
+        state.domainToAliases = this.aliasEventsToDictionary(props.aliasEvents || []);
+        state.remoteDomains = Object.keys(state.domainToAliases).filter((domain) => {
+            return domain !== localDomain && state.domainToAliases[domain].length > 0;
         });
 
-        if (canonicalAliasEvent) {
-            state.canonicalAlias = canonicalAliasEvent.getContent().alias;
+        if (props.canonicalAliasEvent) {
+            state.canonicalAlias = props.canonicalAliasEvent.getContent().alias;
         }
 
-        return state;
-    },
+        this.state = state;
+    }
 
-    saveSettings: function() {
-        var promises = [];
-
-        // save new aliases for m.room.aliases
-        var aliasOperations = this.getAliasOperations();
-        for (var i = 0; i < aliasOperations.length; i++) {
-            var alias_operation = aliasOperations[i];
-            console.log("alias %s %s", alias_operation.place, alias_operation.val);
-            switch (alias_operation.place) {
-                case 'add':
-                    promises.push(
-                        MatrixClientPeg.get().createAlias(
-                            alias_operation.val, this.props.roomId
-                        )
-                    );
-                    break;
-                case 'del':
-                    promises.push(
-                        MatrixClientPeg.get().deleteAlias(
-                            alias_operation.val
-                        )
-                    );
-                    break;
-                default:
-                    console.log("Unknown alias operation, ignoring: " + alias_operation.place);
-            }
-        }
-
-
-        // save new canonical alias
-        var oldCanonicalAlias = null;
-        if (this.props.canonicalAliasEvent) {
-            oldCanonicalAlias = this.props.canonicalAliasEvent.getContent().alias;
-        }
-        if (oldCanonicalAlias !== this.state.canonicalAlias) {
-            console.log("AliasSettings: Updating canonical alias");
-            promises = [Promise.all(promises).then(
-                MatrixClientPeg.get().sendStateEvent(
-                    this.props.roomId, "m.room.canonical_alias", {
-                        alias: this.state.canonicalAlias
-                    }, ""
-                )
-            )];
-        }
-
-        return promises;
-    },
-
-    aliasEventsToDictionary: function(aliasEvents) { // m.room.alias events
-        var dict = {};
+    aliasEventsToDictionary(aliasEvents) { // m.room.alias events
+        const dict = {};
         aliasEvents.forEach((event) => {
             dict[event.getStateKey()] = (
                 (event.getContent().aliases || []).slice() // shallow-copy
             );
         });
         return dict;
-    },
+    }
 
-    isAliasValid: function(alias) {
-        // XXX: FIXME SPEC-1
-        return (alias.match(/^#([^\/:,]+?):(.+)$/) && encodeURI(alias) === alias);
-    },
+    isAliasValid(alias) {
+        // XXX: FIXME https://github.com/matrix-org/matrix-doc/issues/668
+        return (alias.match(/^#([^/:,]+?):(.+)$/) && encodeURI(alias) === alias);
+    }
 
-    getAliasOperations: function() {
-        var oldAliases = this.aliasEventsToDictionary(this.props.aliasEvents);
-        return ObjectUtils.getKeyValueArrayDiffs(oldAliases, this.state.domainToAliases);
-    },
+    changeCanonicalAlias(alias) {
+        if (!this.props.canSetCanonicalAlias) return;
 
-    onAliasAdded: function(alias) {
+        this.setState({
+            canonicalAlias: alias,
+            updatingCanonicalAlias: true,
+        });
+
+        const eventContent = {};
+        if (alias) eventContent["alias"] = alias;
+
+        MatrixClientPeg.get().sendStateEvent(this.props.roomId, "m.room.canonical_alias",
+            eventContent, "").catch((err) => {
+            console.error(err);
+            Modal.createTrackedDialog('Error updating main address', '', ErrorDialog, {
+                title: _t("Error updating main address"),
+                description: _t(
+                    "There was an error updating the room's main address. It may not be allowed by the server " +
+                    "or a temporary failure occurred.",
+                ),
+            });
+        }).finally(() => {
+            this.setState({updatingCanonicalAlias: false});
+        });
+    }
+
+    onNewAliasChanged = (value) => {
+        this.setState({newAlias: value});
+    };
+
+    onLocalAliasAdded = (alias) => {
         if (!alias || alias.length === 0) return; // ignore attempts to create blank aliases
 
-        if (this.isAliasValid(alias)) {
-            // add this alias to the domain to aliases dict
-            var domain = alias.replace(/^.*?:/, '');
-            // XXX: do we need to deep copy aliases before editing it?
-            this.state.domainToAliases[domain] = this.state.domainToAliases[domain] || [];
-            this.state.domainToAliases[domain].push(alias);
-            this.setState({
-                domainToAliases: this.state.domainToAliases
-            });
+        const localDomain = MatrixClientPeg.get().getDomain();
+        if (!alias.includes(':')) alias += ':' + localDomain;
+        if (this.isAliasValid(alias) && alias.endsWith(localDomain)) {
+            MatrixClientPeg.get().createAlias(alias, this.props.roomId).then(() => {
+                const localAliases = this.state.domainToAliases[localDomain] || [];
+                const domainAliases = Object.assign({}, this.state.domainToAliases);
+                domainAliases[localDomain] = [...localAliases, alias];
 
-            // reset the add field
-            this.refs.add_alias.setValue(''); // FIXME
-        }
-        else {
-            var ErrorDialog = sdk.getComponent("dialogs.ErrorDialog");
-            Modal.createDialog(ErrorDialog, {
+                this.setState({
+                    domainToAliases: domainAliases,
+                    // Reset the add field
+                    newAlias: "",
+                });
+
+                if (!this.state.canonicalAlias) {
+                    this.changeCanonicalAlias(alias);
+                }
+            }).catch((err) => {
+                console.error(err);
+                Modal.createTrackedDialog('Error creating alias', '', ErrorDialog, {
+                    title: _t("Error creating alias"),
+                    description: _t(
+                        "There was an error creating that alias. It may not be allowed by the server " +
+                        "or a temporary failure occurred.",
+                    ),
+                });
+            });
+        } else {
+            const ErrorDialog = sdk.getComponent("dialogs.ErrorDialog");
+            Modal.createTrackedDialog('Invalid alias format', '', ErrorDialog, {
                 title: _t('Invalid alias format'),
                 description: _t('\'%(alias)s\' is not a valid format for an alias', { alias: alias }),
             });
         }
-    },
+    };
 
-    onAliasChanged: function(domain, index, alias) {
-        if (alias === "") return; // hit the delete button to delete please
-        var oldAlias;
-        if (this.isAliasValid(alias)) {
-            oldAlias = this.state.domainToAliases[domain][index];
-            this.state.domainToAliases[domain][index] = alias;
-        }
-        else {
-            var ErrorDialog = sdk.getComponent("dialogs.ErrorDialog");
-            Modal.createDialog(ErrorDialog, {
-                title: _t('Invalid address format'),
-                description: _t('\'%(alias)s\' is not a valid format for an address', { alias: alias }),
+    onLocalAliasDeleted = (index) => {
+        const localDomain = MatrixClientPeg.get().getDomain();
+
+        const alias = this.state.domainToAliases[localDomain][index];
+
+        // TODO: In future, we should probably be making sure that the alias actually belongs
+        // to this room. See https://github.com/vector-im/riot-web/issues/7353
+        MatrixClientPeg.get().deleteAlias(alias).then(() => {
+            const localAliases = this.state.domainToAliases[localDomain].filter((a) => a !== alias);
+            const domainAliases = Object.assign({}, this.state.domainToAliases);
+            domainAliases[localDomain] = localAliases;
+
+            this.setState({domainToAliases: domainAliases});
+
+            if (this.state.canonicalAlias === alias) {
+                this.changeCanonicalAlias(null);
+            }
+        }).catch((err) => {
+            console.error(err);
+            Modal.createTrackedDialog('Error removing alias', '', ErrorDialog, {
+                title: _t("Error removing alias"),
+                description: _t(
+                    "There was an error removing that alias. It may no longer exist or a temporary " +
+                    "error occurred.",
+                ),
             });
-        }
-    },
-
-    onAliasDeleted: function(domain, index) {
-        // It's a bit naughty to directly manipulate this.state, and React would
-        // normally whine at you, but it can't see us doing the splice.  Given we
-        // promptly setState anyway, it's just about acceptable.  The alternative
-        // would be to arbitrarily deepcopy to a temp variable and then setState
-        // that, but why bother when we can cut this corner.
-        var alias = this.state.domainToAliases[domain].splice(index, 1);
-        this.setState({
-            domainToAliases: this.state.domainToAliases
         });
-    },
+    };
 
-    onCanonicalAliasChange: function(event) {
-        this.setState({
-            canonicalAlias: event.target.value
-        });
-    },
+    onCanonicalAliasChange = (event) => {
+        this.changeCanonicalAlias(event.target.value);
+    };
 
-    render: function() {
-        var self = this;
-        var EditableText = sdk.getComponent("elements.EditableText");
-        var localDomain = MatrixClientPeg.get().getDomain();
+    render() {
+        const EditableItemList = sdk.getComponent("elements.EditableItemList");
+        const localDomain = MatrixClientPeg.get().getDomain();
 
-        var canonical_alias_section;
-        if (this.props.canSetCanonicalAlias) {
-            canonical_alias_section = (
-                <select onChange={this.onCanonicalAliasChange} defaultValue={ this.state.canonicalAlias }>
-                    <option value="" key="unset">{ _t('not specified') }</option>
-                    {
-                        Object.keys(self.state.domainToAliases).map(function(domain, i) {
-                            return self.state.domainToAliases[domain].map(function(alias, j) {
-                                return (
-                                    <option value={ alias } key={ i + "_" + j }>
-                                        { alias }
-                                    </option>
-                                );
-                            });
-                        })
-                    }
-                </select>
-            );
-        }
-        else {
-            canonical_alias_section = (
-                <b>{ this.state.canonicalAlias || _t('not set') }</b>
-            );
-        }
+        let found = false;
+        const canonicalValue = this.state.canonicalAlias || "";
+        const canonicalAliasSection = (
+            <Field onChange={this.onCanonicalAliasChange} value={canonicalValue}
+                   disabled={this.state.updatingCanonicalAlias || !this.props.canSetCanonicalAlias}
+                   element='select' id='canonicalAlias' label={_t('Main address')}>
+                <option value="" key="unset">{ _t('not specified') }</option>
+                {
+                    Object.keys(this.state.domainToAliases).map((domain, i) => {
+                        return this.state.domainToAliases[domain].map((alias, j) => {
+                            if (alias === this.state.canonicalAlias) found = true;
+                            return (
+                                <option value={alias} key={i + "_" + j}>
+                                    { alias }
+                                </option>
+                            );
+                        });
+                    })
+                }
+                {
+                    found || !this.state.canonicalAlias ? '' :
+                    <option value={ this.state.canonicalAlias } key='arbitrary'>
+                        { this.state.canonicalAlias }
+                    </option>
+                }
+            </Field>
+        );
 
-        var remote_aliases_section;
+        let remoteAliasesSection;
         if (this.state.remoteDomains.length) {
-            remote_aliases_section = (
+            remoteAliasesSection = (
                 <div>
-                    <div className="mx_RoomSettings_aliasLabel">
-                        {_t("Remote addresses for this room:")}
+                    <div>
+                        { _t("Remote addresses for this room:") }
                     </div>
-                    <div className="mx_RoomSettings_aliasesTable">
+                    <ul>
                         { this.state.remoteDomains.map((domain, i) => {
-                            return this.state.domainToAliases[domain].map(function(alias, j) {
-                                return (
-                                    <div className="mx_RoomSettings_aliasesTableRow" key={ i + "_" + j }>
-                                        <EditableText
-                                             className="mx_RoomSettings_alias mx_RoomSettings_editable"
-                                             blurToCancel={ false }
-                                             editable={ false }
-                                             initialValue={ alias } />
-                                    </div>
-                                );
+                            return this.state.domainToAliases[domain].map((alias, j) => {
+                                return <li key={i + "_" + j}>{alias}</li>;
                             });
-                        })}
-                    </div>
+                        }) }
+                    </ul>
                 </div>
             );
         }
 
         return (
-            <div>
-                <h3>Addresses</h3>
-                <div className="mx_RoomSettings_aliasLabel">
-                    { _t('The main address for this room is') }: { canonical_alias_section }
-                </div>
-                <div className="mx_RoomSettings_aliasLabel">
-                    { (this.state.domainToAliases[localDomain] &&
-                        this.state.domainToAliases[localDomain].length > 0)
-                      ? _t('Local addresses for this room:')
-                      : _t('This room has no local addresses') }
-                </div>
-                <div className="mx_RoomSettings_aliasesTable">
-                    { (this.state.domainToAliases[localDomain] || []).map((alias, i) => {
-                        var deleteButton;
-                        if (this.props.canSetAliases) {
-                            deleteButton = (
-                                <img src="img/cancel-small.svg" width="14" height="14"
-                                    alt={ _t('Delete') } onClick={ self.onAliasDeleted.bind(self, localDomain, i) } />
-                            );
-                        }
-                        return (
-                            <div className="mx_RoomSettings_aliasesTableRow" key={ i }>
-                                <EditableText
-                                    className="mx_RoomSettings_alias mx_RoomSettings_editable"
-                                    placeholderClassName="mx_RoomSettings_aliasPlaceholder"
-                                    placeholder={ _t('New address (e.g. #foo:%(localDomain)s)', { localDomain: localDomain}) }
-                                    blurToCancel={ false }
-                                    onValueChanged={ self.onAliasChanged.bind(self, localDomain, i) }
-                                    editable={ self.props.canSetAliases }
-                                    initialValue={ alias } />
-                                <div className="mx_RoomSettings_deleteAlias mx_filterFlipColor">
-                                     { deleteButton }
-                                </div>
-                            </div>
-                        );
-                    })}
-
-                    { this.props.canSetAliases ?
-                        <div className="mx_RoomSettings_aliasesTableRow" key="new">
-                            <EditableText
-                                ref="add_alias"
-                                className="mx_RoomSettings_alias mx_RoomSettings_editable"
-                                placeholderClassName="mx_RoomSettings_aliasPlaceholder"
-                                placeholder={ _t('New address (e.g. #foo:%(localDomain)s)', { localDomain: localDomain}) }
-                                blurToCancel={ false }
-                                onValueChanged={ self.onAliasAdded } />
-                            <div className="mx_RoomSettings_addAlias mx_filterFlipColor">
-                                 <img src="img/plus.svg" width="14" height="14" alt="Add"
-                                      onClick={ self.onAliasAdded.bind(self, undefined) }/>
-                            </div>
-                        </div> : ""
-                    }
-                </div>
-
-                { remote_aliases_section }
-
+            <div className='mx_AliasSettings'>
+                {canonicalAliasSection}
+                <EditableItemList
+                    className={"mx_RoomSettings_localAliases"}
+                    items={this.state.domainToAliases[localDomain] || []}
+                    newItem={this.state.newAlias}
+                    onNewItemChanged={this.onNewAliasChanged}
+                    canRemove={this.props.canSetAliases}
+                    canEdit={this.props.canSetAliases}
+                    onItemAdded={this.onLocalAliasAdded}
+                    onItemRemoved={this.onLocalAliasDeleted}
+                    itemsLabel={_t('Local addresses for this room:')}
+                    noItemsLabel={_t('This room has no local addresses')}
+                    placeholder={_t(
+                        'New address (e.g. #foo:%(localDomain)s)', {localDomain: localDomain},
+                    )}
+                />
+                {remoteAliasesSection}
             </div>
         );
     }
-});
+}

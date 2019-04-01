@@ -18,26 +18,27 @@ import Matrix from 'matrix-js-sdk';
 const InteractiveAuth = Matrix.InteractiveAuth;
 
 import React from 'react';
+import PropTypes from 'prop-types';
 
-import {getEntryComponentForLoginType} from '../views/login/InteractiveAuthEntryComponents';
+import {getEntryComponentForLoginType} from '../views/auth/InteractiveAuthEntryComponents';
 
 export default React.createClass({
     displayName: 'InteractiveAuth',
 
     propTypes: {
         // matrix client to use for UI auth requests
-        matrixClient: React.PropTypes.object.isRequired,
+        matrixClient: PropTypes.object.isRequired,
 
         // response from initial request. If not supplied, will do a request on
         // mount.
-        authData: React.PropTypes.shape({
-            flows: React.PropTypes.array,
-            params: React.PropTypes.object,
-            session: React.PropTypes.string,
+        authData: PropTypes.shape({
+            flows: PropTypes.array,
+            params: PropTypes.object,
+            session: PropTypes.string,
         }),
 
         // callback
-        makeRequest: React.PropTypes.func.isRequired,
+        makeRequest: PropTypes.func.isRequired,
 
         // callback called when the auth process has finished,
         // successfully or unsuccessfully.
@@ -51,22 +52,27 @@ export default React.createClass({
         //            the auth session.
         //      * clientSecret {string} The client secret used in auth
         //            sessions with the ID server.
-        onAuthFinished: React.PropTypes.func.isRequired,
+        onAuthFinished: PropTypes.func.isRequired,
 
         // Inputs provided by the user to the auth process
         // and used by various stages. As passed to js-sdk
         // interactive-auth
-        inputs: React.PropTypes.object,
+        inputs: PropTypes.object,
 
         // As js-sdk interactive-auth
-        makeRegistrationUrl: React.PropTypes.func,
-        sessionId: React.PropTypes.string,
-        clientSecret: React.PropTypes.string,
-        emailSid: React.PropTypes.string,
+        makeRegistrationUrl: PropTypes.func,
+        sessionId: PropTypes.string,
+        clientSecret: PropTypes.string,
+        emailSid: PropTypes.string,
 
         // If true, poll to see if the auth flow has been completed
         // out-of-band
-        poll: React.PropTypes.bool,
+        poll: PropTypes.bool,
+
+        // If true, components will be told that the 'Continue' button
+        // is managed by some other party and should not be managed by
+        // the component itself.
+        continueIsManaged: PropTypes.bool,
     },
 
     getInitialState: function() {
@@ -107,7 +113,7 @@ export default React.createClass({
 
             const msg = error.message || error.toString();
             this.setState({
-                errorText: msg
+                errorText: msg,
             });
         }).done();
 
@@ -124,6 +130,12 @@ export default React.createClass({
 
         if (this._intervalId !== null) {
             clearInterval(this._intervalId);
+        }
+    },
+
+    tryContinue: function() {
+        if (this.refs.stageComponent && this.refs.stageComponent.tryContinue) {
+            this.refs.stageComponent.tryContinue();
         }
     },
 
@@ -191,6 +203,7 @@ export default React.createClass({
                 fail={this._onAuthStageFailed}
                 setEmailSid={this._setEmailSid}
                 makeRegistrationUrl={this.props.makeRegistrationUrl}
+                showContinue={!this.props.continueIsManaged}
             />
         );
     },
@@ -207,7 +220,7 @@ export default React.createClass({
         if (this.state.errorText) {
             error = (
                 <div className="error">
-                    {this.state.errorText}
+                    { this.state.errorText }
                 </div>
             );
         }
@@ -215,8 +228,8 @@ export default React.createClass({
         return (
             <div>
                 <div>
-                    {this._renderCurrentStage()}
-                    {error}
+                    { this._renderCurrentStage() }
+                    { error }
                 </div>
             </div>
         );

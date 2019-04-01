@@ -16,23 +16,70 @@ limitations under the License.
 
 'use strict';
 
-var React = require('react');
+import SettingsStore from "../../../settings/SettingsStore";
 
-var MatrixClientPeg = require('../../../MatrixClientPeg');
-var sdk = require('../../../index');
-var dis = require('../../../dispatcher');
-var Modal = require("../../../Modal");
+const React = require('react');
+import PropTypes from 'prop-types';
+
+const sdk = require('../../../index');
+const dis = require('../../../dispatcher');
 import { _t } from '../../../languageHandler';
 
 module.exports = React.createClass({
     displayName: 'MemberTile',
 
     propTypes: {
-        member: React.PropTypes.any.isRequired, // RoomMember
+        member: PropTypes.any.isRequired, // RoomMember
+        showPresence: PropTypes.bool,
+    },
+
+    getDefaultProps: function() {
+        return {
+            showPresence: true,
+        };
     },
 
     getInitialState: function() {
-        return {};
+        return {
+            statusMessage: this.getStatusMessage(),
+        };
+    },
+
+    componentDidMount() {
+        if (!SettingsStore.isFeatureEnabled("feature_custom_status")) {
+            return;
+        }
+        const { user } = this.props.member;
+        if (!user) {
+            return;
+        }
+        user.on("User._unstable_statusMessage", this._onStatusMessageCommitted);
+    },
+
+    componentWillUmount() {
+        const { user } = this.props.member;
+        if (!user) {
+            return;
+        }
+        user.removeListener(
+            "User._unstable_statusMessage",
+            this._onStatusMessageCommitted,
+        );
+    },
+
+    getStatusMessage() {
+        const { user } = this.props.member;
+        if (!user) {
+            return "";
+        }
+        return user._unstable_statusMessage;
+    },
+
+    _onStatusMessageCommitted() {
+        // The `User` object has observed a status message change.
+        this.setState({
+            statusMessage: this.getStatusMessage(),
+        });
     },
 
     shouldComponentUpdate: function(nextProps, nextState) {
@@ -64,20 +111,26 @@ module.exports = React.createClass({
     },
 
     getPowerLabel: function() {
-        return _t("%(userName)s (power %(powerLevelNumber)s)", {userName: this.props.member.userId, powerLevelNumber: this.props.member.powerLevel});
+        return _t("%(userName)s (power %(powerLevelNumber)s)", {
+            userName: this.props.member.userId,
+            powerLevelNumber: this.props.member.powerLevel,
+        });
     },
 
     render: function() {
-        var MemberAvatar = sdk.getComponent('avatars.MemberAvatar');
-        var BaseAvatar = sdk.getComponent('avatars.BaseAvatar');
-        var EntityTile = sdk.getComponent('rooms.EntityTile');
+        const MemberAvatar = sdk.getComponent('avatars.MemberAvatar');
+        const EntityTile = sdk.getComponent('rooms.EntityTile');
 
-        var member = this.props.member;
-        var name = this._getDisplayName();
-        var active = -1;
-        var presenceState = member.user ? member.user.presence : null;
+        const member = this.props.member;
+        const name = this._getDisplayName();
+        const presenceState = member.user ? member.user.presence : null;
 
-        var av = (
+        let statusMessage = null;
+        if (member.user && SettingsStore.isFeatureEnabled("feature_custom_status")) {
+            statusMessage = this.state.statusMessage;
+        }
+
+        const av = (
             <MemberAvatar member={member} width={36} height={36} />
         );
 
@@ -86,13 +139,31 @@ module.exports = React.createClass({
         }
         this.member_last_modified_time = member.getLastModifiedTime();
 
+        const powerStatusMap = new Map([
+            [100, EntityTile.POWER_STATUS_ADMIN],
+            [50, EntityTile.POWER_STATUS_MODERATOR],
+        ]);
+
+        // Find the nearest power level with a badge
+        let powerLevel = this.props.member.powerLevel;
+        for (const [pl] of powerStatusMap) {
+            if (this.props.member.powerLevel >= pl) {
+                powerLevel = pl;
+                break;
+            }
+        }
+
+        const powerStatus = powerStatusMap.get(powerLevel);
+
         return (
             <EntityTile {...this.props} presenceState={presenceState}
-                presenceLastActiveAgo={ member.user ? member.user.lastActiveAgo : 0 }
-                presenceLastTs={ member.user ? member.user.lastPresenceTs : 0 }
-                presenceCurrentlyActive={ member.user ? member.user.currentlyActive : false }
+                presenceLastActiveAgo={member.user ? member.user.lastActiveAgo : 0}
+                presenceLastTs={member.user ? member.user.lastPresenceTs : 0}
+                presenceCurrentlyActive={member.user ? member.user.currentlyActive : false}
                 avatarJsx={av} title={this.getPowerLabel()} onClick={this.onClick}
-                name={name} powerLevel={this.props.member.powerLevel} />
+                name={name} powerStatus={powerStatus} showPresence={this.props.showPresence}
+                subtextLabel={statusMessage}
+            />
         );
-    }
+    },
 });

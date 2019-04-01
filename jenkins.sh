@@ -4,29 +4,33 @@ set -e
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-nvm use 4
+nvm use 10
 
 set -x
 
-# install the other dependencies
-npm install
+scripts/fetchdep.sh matrix-org matrix-js-sdk
 
-# we may be using a dev branch of js-sdk in which case we need to build it
-(cd node_modules/matrix-js-sdk && npm install)
+pushd matrix-js-sdk
+yarn link
+yarn install
+popd
+
+yarn link matrix-js-sdk
+
+# install the other dependencies
+yarn install
 
 # run the mocha tests
-npm run test -- --no-colors
+yarn test --no-colors
 
 # run eslint
-npm run lintall -- -f checkstyle -o eslint.xml || true
+yarn lintall -f checkstyle -o eslint.xml || true
 
 # re-run the linter, excluding any files known to have errors or warnings.
-./node_modules/.bin/eslint --max-warnings 0 \
-    --ignore-path .eslintignore.errorfiles \
-    src test
+yarn lintwithexclusions
 
 # delete the old tarball, if it exists
 rm -f matrix-react-sdk-*.tgz
 
 # build our tarball
-npm pack
+yarn pack

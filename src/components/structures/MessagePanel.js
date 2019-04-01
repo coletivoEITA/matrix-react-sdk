@@ -1,5 +1,6 @@
 /*
 Copyright 2016 OpenMarket Ltd
+Copyright 2018 New Vector Ltd
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,14 +17,17 @@ limitations under the License.
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import UserSettingsStore from '../../UserSettingsStore';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import shouldHideEvent from '../../shouldHideEvent';
+import {wantsDateSeparator} from '../../DateUtils';
 import dis from "../../dispatcher";
 import sdk from '../../index';
 
 import MatrixClientPeg from '../../MatrixClientPeg';
 
-const MILLIS_IN_DAY = 86400000;
+const CONTINUATION_MAX_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const continuedTypes = ['m.sticker', 'm.room.message'];
 
 /* (almost) stateless UI component which builds the event tiles in the room timeline.
  */
@@ -32,66 +36,63 @@ module.exports = React.createClass({
 
     propTypes: {
         // true to give the component a 'display: none' style.
-        hidden: React.PropTypes.bool,
+        hidden: PropTypes.bool,
 
         // true to show a spinner at the top of the timeline to indicate
         // back-pagination in progress
-        backPaginating: React.PropTypes.bool,
+        backPaginating: PropTypes.bool,
 
         // true to show a spinner at the end of the timeline to indicate
         // forward-pagination in progress
-        forwardPaginating: React.PropTypes.bool,
+        forwardPaginating: PropTypes.bool,
 
         // the list of MatrixEvents to display
-        events: React.PropTypes.array.isRequired,
+        events: PropTypes.array.isRequired,
 
         // ID of an event to highlight. If undefined, no event will be highlighted.
-        highlightedEventId: React.PropTypes.string,
+        highlightedEventId: PropTypes.string,
 
         // Should we show URL Previews
-        showUrlPreview: React.PropTypes.bool,
+        showUrlPreview: PropTypes.bool,
 
         // event after which we should show a read marker
-        readMarkerEventId: React.PropTypes.string,
+        readMarkerEventId: PropTypes.string,
 
         // whether the read marker should be visible
-        readMarkerVisible: React.PropTypes.bool,
+        readMarkerVisible: PropTypes.bool,
 
         // the userid of our user. This is used to suppress the read marker
         // for pending messages.
-        ourUserId: React.PropTypes.string,
+        ourUserId: PropTypes.string,
 
         // true to suppress the date at the start of the timeline
-        suppressFirstDateSeparator: React.PropTypes.bool,
+        suppressFirstDateSeparator: PropTypes.bool,
 
         // whether to show read receipts
-        manageReadReceipts: React.PropTypes.bool,
+        showReadReceipts: PropTypes.bool,
 
         // true if updates to the event list should cause the scroll panel to
         // scroll down when we are at the bottom of the window. See ScrollPanel
         // for more details.
-        stickyBottom: React.PropTypes.bool,
+        stickyBottom: PropTypes.bool,
 
         // callback which is called when the panel is scrolled.
-        onScroll: React.PropTypes.func,
+        onScroll: PropTypes.func,
 
         // callback which is called when more content is needed.
-        onFillRequest: React.PropTypes.func,
-
-        // opacity for dynamic UI fading effects
-        opacity: React.PropTypes.number,
+        onFillRequest: PropTypes.func,
 
         // className for the panel
-        className: React.PropTypes.string.isRequired,
+        className: PropTypes.string.isRequired,
 
         // shape parameter to be passed to EventTiles
-        tileShape: React.PropTypes.string,
+        tileShape: PropTypes.string,
 
         // show twelve hour timestamps
-        isTwelveHour: React.PropTypes.bool,
+        isTwelveHour: PropTypes.bool,
 
         // show timestamps always
-        alwaysShowTimestamps: React.PropTypes.bool,
+        alwaysShowTimestamps: PropTypes.bool,
     },
 
     componentWillMount: function() {
@@ -111,8 +112,6 @@ module.exports = React.createClass({
         // Remember the read marker ghost node so we can do the cleanup that
         // Velocity requires
         this._readMarkerGhostNode = null;
-
-        this._syncedSettings = UserSettingsStore.getSyncedSettings();
 
         this._isMounted = true;
     },
@@ -154,15 +153,15 @@ module.exports = React.createClass({
     //   0: read marker is within the window
     //  +1: read marker is below the window
     getReadMarkerPosition: function() {
-        var readMarker = this.refs.readMarkerNode;
-        var messageWrapper = this.refs.scrollPanel;
+        const readMarker = this.refs.readMarkerNode;
+        const messageWrapper = this.refs.scrollPanel;
 
         if (!readMarker || !messageWrapper) {
             return null;
         }
 
-        var wrapperRect = ReactDOM.findDOMNode(messageWrapper).getBoundingClientRect();
-        var readMarkerRect = readMarker.getBoundingClientRect();
+        const wrapperRect = ReactDOM.findDOMNode(messageWrapper).getBoundingClientRect();
+        const readMarkerRect = readMarker.getBoundingClientRect();
 
         // the read-marker pretends to have zero height when it is actually
         // two pixels high; +2 here to account for that.
@@ -194,7 +193,7 @@ module.exports = React.createClass({
     /**
      * Page up/down.
      *
-     * mult: -1 to page up, +1 to page down
+     * @param {number} mult: -1 to page up, +1 to page down
      */
     scrollRelative: function(mult) {
         if (this.refs.scrollPanel) {
@@ -204,6 +203,8 @@ module.exports = React.createClass({
 
     /**
      * Scroll up/down in response to a scroll key
+     *
+     * @param {KeyboardEvent} ev: the keyboard event to handle
      */
     handleScrollKey: function(ev) {
         if (this.refs.scrollPanel) {
@@ -241,6 +242,10 @@ module.exports = React.createClass({
 
     // TODO: Implement granular (per-room) hide options
     _shouldShowEvent: function(mxEv) {
+        if (mxEv.sender && MatrixClientPeg.get().isUserIgnored(mxEv.sender.userId)) {
+            return false; // ignored = no show (only happens if the ignore happens after an event was received)
+        }
+
         const EventTile = sdk.getComponent('rooms.EventTile');
         if (!EventTile.haveTileForEvent(mxEv)) {
             return false; // no tile = no show
@@ -249,7 +254,7 @@ module.exports = React.createClass({
         // Always show highlighted event
         if (this.props.highlightedEventId === mxEv.getId()) return true;
 
-        return !shouldHideEvent(mxEv, this._syncedSettings);
+        return !shouldHideEvent(mxEv);
     },
 
     _getEventTiles: function() {
@@ -258,7 +263,8 @@ module.exports = React.createClass({
 
         this.eventNodes = {};
 
-        var i;
+        let visible = false;
+        let i;
 
         // first figure out which is the last event in the list which we're
         // actually going to show; this allows us to behave slightly
@@ -268,9 +274,9 @@ module.exports = React.createClass({
         // a local echo, to manage the read-marker.
         let lastShownEvent;
 
-        var lastShownNonLocalEchoIndex = -1;
+        let lastShownNonLocalEchoIndex = -1;
         for (i = this.props.events.length-1; i >= 0; i--) {
-            var mxEv = this.props.events[i];
+            const mxEv = this.props.events[i];
             if (!this._shouldShowEvent(mxEv)) {
                 continue;
             }
@@ -288,33 +294,33 @@ module.exports = React.createClass({
             break;
         }
 
-        var ret = [];
+        const ret = [];
 
-        var prevEvent = null; // the last event we showed
+        let prevEvent = null; // the last event we showed
 
         // assume there is no read marker until proven otherwise
-        var readMarkerVisible = false;
+        let readMarkerVisible = false;
 
         // if the readmarker has moved, cancel any active ghost.
         if (this.currentReadMarkerEventId && this.props.readMarkerEventId &&
                 this.props.readMarkerVisible &&
-                this.currentReadMarkerEventId != this.props.readMarkerEventId) {
+                this.currentReadMarkerEventId !== this.props.readMarkerEventId) {
             this.currentGhostEventId = null;
         }
 
         const isMembershipChange = (e) => e.getType() === 'm.room.member';
 
         for (i = 0; i < this.props.events.length; i++) {
-            let mxEv = this.props.events[i];
-            let eventId = mxEv.getId();
-            let readMarkerInMels = false;
-            let last = (mxEv === lastShownEvent);
+            const mxEv = this.props.events[i];
+            const eventId = mxEv.getId();
+            const last = (mxEv === lastShownEvent);
 
             const wantTile = this._shouldShowEvent(mxEv);
 
             // Wrap consecutive member events in a ListSummary, ignore if redacted
             if (isMembershipChange(mxEv) && wantTile) {
-                let ts1 = mxEv.getTs();
+                let readMarkerInMels = false;
+                const ts1 = mxEv.getTs();
                 // Ensure that the key of the MemberEventListSummary does not change with new
                 // member events. This will prevent it from being re-created unnecessarily, and
                 // instead will allow new props to be provided. In turn, the shouldComponentUpdate
@@ -326,16 +332,30 @@ module.exports = React.createClass({
                 const key = "membereventlistsummary-" + (prevEvent ? mxEv.getId() : "initial");
 
                 if (this._wantsDateSeparator(prevEvent, mxEv.getDate())) {
-                    let dateSeparator = <li key={ts1+'~'}><DateSeparator key={ts1+'~'} ts={ts1} showTwelveHour={this.props.isTwelveHour}/></li>;
+                    const dateSeparator = <li key={ts1+'~'}><DateSeparator key={ts1+'~'} ts={ts1} /></li>;
                     ret.push(dateSeparator);
                 }
 
-                let summarisedEvents = [mxEv];
+                // If RM event is the first in the MELS, append the RM after MELS
+                if (mxEv.getId() === this.props.readMarkerEventId) {
+                    readMarkerInMels = true;
+                }
+
+                const summarisedEvents = [mxEv];
                 for (;i + 1 < this.props.events.length; i++) {
                     const collapsedMxEv = this.props.events[i + 1];
 
+                    // Ignore redacted/hidden member events
+                    if (!this._shouldShowEvent(collapsedMxEv)) {
+                        // If this hidden event is the RM and in or at end of a MELS put RM after MELS.
+                        if (collapsedMxEv.getId() === this.props.readMarkerEventId) {
+                            readMarkerInMels = true;
+                        }
+                        continue;
+                    }
+
                     if (!isMembershipChange(collapsedMxEv) ||
-                        this._wantsDateSeparator(this.props.events[i], collapsedMxEv.getDate())) {
+                        this._wantsDateSeparator(mxEv, collapsedMxEv.getDate())) {
                         break;
                     }
 
@@ -344,43 +364,40 @@ module.exports = React.createClass({
                         readMarkerInMels = true;
                     }
 
-                    // Ignore redacted/hidden member events
-                    if (!this._shouldShowEvent(collapsedMxEv)) {
-                        continue;
-                    }
-
                     summarisedEvents.push(collapsedMxEv);
                 }
 
+                let highlightInMels = false;
+
                 // At this point, i = the index of the last event in the summary sequence
                 let eventTiles = summarisedEvents.map((e) => {
+                    if (e.getId() === this.props.highlightedEventId) {
+                        highlightInMels = true;
+                    }
                     // In order to prevent DateSeparators from appearing in the expanded form
                     // of MemberEventListSummary, render each member event as if the previous
                     // one was itself. This way, the timestamp of the previous event === the
                     // timestamp of the current event, and no DateSeperator is inserted.
-                    const ret = this._getTilesForEvent(e, e, e === lastShownEvent);
-                    prevEvent = e;
-                    return ret;
+                    return this._getTilesForEvent(e, e, e === lastShownEvent);
                 }).reduce((a, b) => a.concat(b));
 
                 if (eventTiles.length === 0) {
                     eventTiles = null;
                 }
 
-                ret.push(
-                    <MemberEventListSummary
-                        key={key}
-                        events={summarisedEvents}
-                        onToggle={this._onWidgetLoad} // Update scroll state
-                    >
-                            {eventTiles}
-                    </MemberEventListSummary>
-                );
+                ret.push(<MemberEventListSummary key={key}
+                    events={summarisedEvents}
+                    onToggle={this._onHeightChanged} // Update scroll state
+                    startExpanded={highlightInMels}
+                >
+                        { eventTiles }
+                </MemberEventListSummary>);
 
                 if (readMarkerInMels) {
                     ret.push(this._getReadMarkerTile(visible));
                 }
 
+                prevEvent = mxEv;
                 continue;
             }
 
@@ -392,10 +409,10 @@ module.exports = React.createClass({
                 prevEvent = mxEv;
             }
 
-            var isVisibleReadMarker = false;
+            let isVisibleReadMarker = false;
 
-            if (eventId == this.props.readMarkerEventId) {
-                var visible = this.props.readMarkerVisible;
+            if (eventId === this.props.readMarkerEventId) {
+                visible = this.props.readMarkerVisible;
 
                 // if the read marker comes at the end of the timeline (except
                 // for local echoes, which are excluded from RMs, because they
@@ -413,11 +430,11 @@ module.exports = React.createClass({
 
             // XXX: there should be no need for a ghost tile - we should just use a
             // a dispatch (user_activity_end) to start the RM animation.
-            if (eventId == this.currentGhostEventId) {
+            if (eventId === this.currentGhostEventId) {
                 // if we're showing an animation, continue to show it.
                 ret.push(this._getReadMarkerGhostTile());
             } else if (!isVisibleReadMarker &&
-                       eventId == this.currentReadMarkerEventId) {
+                       eventId === this.currentReadMarkerEventId) {
                 // there is currently a read-up-to marker at this point, but no
                 // more. Show an animation of it disappearing.
                 ret.push(this._getReadMarkerGhostTile());
@@ -432,15 +449,24 @@ module.exports = React.createClass({
     _getTilesForEvent: function(prevEvent, mxEv, last) {
         const EventTile = sdk.getComponent('rooms.EventTile');
         const DateSeparator = sdk.getComponent('messages.DateSeparator');
-        var ret = [];
+        const ret = [];
 
         // is this a continuation of the previous message?
-        var continuation = false;
+        let continuation = false;
 
-        if (prevEvent !== null
-                && prevEvent.sender && mxEv.sender
-                && mxEv.sender.userId === prevEvent.sender.userId
-                && mxEv.getType() == prevEvent.getType()) {
+        // Some events should appear as continuations from previous events of
+        // different types.
+
+        const eventTypeContinues =
+            prevEvent !== null &&
+            continuedTypes.includes(mxEv.getType()) &&
+            continuedTypes.includes(prevEvent.getType());
+
+        // if there is a previous event and it has the same sender as this event
+        // and the types are the same/is in continuedTypes and the time between them is <= CONTINUATION_MAX_INTERVAL
+        if (prevEvent !== null && prevEvent.sender && mxEv.sender && mxEv.sender.userId === prevEvent.sender.userId &&
+            (mxEv.getType() === prevEvent.getType() || eventTypeContinues) &&
+            (mxEv.getTs() - prevEvent.getTs() <= CONTINUATION_MAX_INTERVAL)) {
             continuation = true;
         }
 
@@ -460,8 +486,8 @@ module.exports = React.createClass({
 
         // local echoes have a fake date, which could even be yesterday. Treat them
         // as 'today' for the date separators.
-        var ts1 = mxEv.getTs();
-        var eventDate = mxEv.getDate();
+        let ts1 = mxEv.getTs();
+        let eventDate = mxEv.getDate();
         if (mxEv.status) {
             eventDate = new Date();
             ts1 = eventDate.getTime();
@@ -469,20 +495,20 @@ module.exports = React.createClass({
 
         // do we need a date separator since the last event?
         if (this._wantsDateSeparator(prevEvent, eventDate)) {
-            var dateSeparator = <li key={ts1}><DateSeparator key={ts1} ts={ts1} showTwelveHour={this.props.isTwelveHour}/></li>;
+            const dateSeparator = <li key={ts1}><DateSeparator key={ts1} ts={ts1} /></li>;
             ret.push(dateSeparator);
             continuation = false;
         }
 
-        var eventId = mxEv.getId();
-        var highlight = (eventId == this.props.highlightedEventId);
+        const eventId = mxEv.getId();
+        const highlight = (eventId === this.props.highlightedEventId);
 
         // we can't use local echoes as scroll tokens, because their event IDs change.
         // Local echos have a send "status".
-        var scrollToken = mxEv.status ? undefined : eventId;
+        const scrollToken = mxEv.status ? undefined : eventId;
 
-        var readReceipts;
-        if (this.props.manageReadReceipts) {
+        let readReceipts;
+        if (this.props.showReadReceipts) {
             readReceipts = this._getReadReceiptsForEvent(mxEv);
         }
         ret.push(
@@ -491,7 +517,7 @@ module.exports = React.createClass({
                         data-scroll-tokens={scrollToken}>
                     <EventTile mxEvent={mxEv} continuation={continuation}
                         isRedacted={mxEv.isRedacted()}
-                        onWidgetLoad={this._onWidgetLoad}
+                        onHeightChanged={this._onHeightChanged}
                         readReceipts={readReceipts}
                         readReceiptMap={this._readReceiptMap}
                         showUrlPreview={this.props.showUrlPreview}
@@ -499,8 +525,9 @@ module.exports = React.createClass({
                         eventSendStatus={mxEv.status}
                         tileShape={this.props.tileShape}
                         isTwelveHour={this.props.isTwelveHour}
-                        last={last} isSelectedEvent={highlight}/>
-                </li>
+                        permalinkCreator={this.props.permalinkCreator}
+                        last={last} isSelectedEvent={highlight} />
+                </li>,
         );
 
         return ret;
@@ -512,21 +539,11 @@ module.exports = React.createClass({
             // here.
             return !this.props.suppressFirstDateSeparator;
         }
-        const prevEventDate = prevEvent.getDate();
-        if (!nextEventDate || !prevEventDate) {
-            return false;
-        }
-        // Return early for events that are > 24h apart
-        if (Math.abs(prevEvent.getTs() - nextEventDate.getTime()) > MILLIS_IN_DAY) {
-            return true;
-        }
-
-        // Compare weekdays
-        return prevEventDate.getDay() !== nextEventDate.getDay();
+        return wantsDateSeparator(prevEvent.getDate(), nextEventDate);
     },
 
     // get a list of read receipts that should be shown next to this event
-    // Receipts are objects which have a 'roomMember' and 'ts'.
+    // Receipts are objects which have a 'userId', 'roomMember' and 'ts'.
     _getReadReceiptsForEvent: function(event) {
         const myUserId = MatrixClientPeg.get().credentials.userId;
 
@@ -535,16 +552,17 @@ module.exports = React.createClass({
         if (!room) {
             return null;
         }
-        let receipts = [];
+        const receipts = [];
         room.getReceiptsForEvent(event).forEach((r) => {
             if (!r.userId || r.type !== "m.read" || r.userId === myUserId) {
                 return; // ignore non-read receipts and receipts from self.
             }
-            let member = room.getMember(r.userId);
-            if (!member) {
-                return; // ignore unknown user IDs
+            if (MatrixClientPeg.get().isUserIgnored(r.userId)) {
+                return; // ignore ignored users
             }
+            const member = room.getMember(r.userId);
             receipts.push({
+                userId: r.userId,
                 roomMember: member,
                 ts: r.data ? r.data.ts : 0,
             });
@@ -556,7 +574,7 @@ module.exports = React.createClass({
     },
 
     _getReadMarkerTile: function(visible) {
-        var hr;
+        let hr;
         if (visible) {
             hr = <hr className="mx_RoomView_myReadMarker"
                     style={{opacity: 1, width: '99%'}}
@@ -566,7 +584,7 @@ module.exports = React.createClass({
         return (
             <li key="_readupto" ref="readMarkerNode"
                   className="mx_RoomView_myReadMarker_container">
-                {hr}
+                { hr }
             </li>
         );
     },
@@ -585,7 +603,7 @@ module.exports = React.createClass({
     },
 
     _getReadMarkerGhostTile: function() {
-        var hr = <hr className="mx_RoomView_myReadMarker"
+        const hr = <hr className="mx_RoomView_myReadMarker"
                   style={{opacity: 1, width: '99%'}}
                   ref={this._startAnimation}
             />;
@@ -596,7 +614,7 @@ module.exports = React.createClass({
         return (
             <li key={"_readuptoghost_"+this.currentGhostEventId}
                   className="mx_RoomView_myReadMarker_container">
-                {hr}
+                { hr }
             </li>
         );
     },
@@ -607,10 +625,43 @@ module.exports = React.createClass({
 
     // once dynamic content in the events load, make the scrollPanel check the
     // scroll offsets.
-    _onWidgetLoad: function() {
-        var scrollPanel = this.refs.scrollPanel;
+    _onHeightChanged: function() {
+        const scrollPanel = this.refs.scrollPanel;
         if (scrollPanel) {
             scrollPanel.forceUpdate();
+        }
+    },
+
+    _onTypingVisible: function() {
+        const scrollPanel = this.refs.scrollPanel;
+        if (scrollPanel && scrollPanel.getScrollState().stuckAtBottom) {
+            // scroll down if at bottom
+            scrollPanel.checkScroll();
+            scrollPanel.blockShrinking();
+        }
+    },
+
+    updateTimelineMinHeight: function() {
+        const scrollPanel = this.refs.scrollPanel;
+
+        if (scrollPanel) {
+            const isAtBottom = scrollPanel.isAtBottom();
+            const whoIsTyping = this.refs.whoIsTyping;
+            const isTypingVisible = whoIsTyping && whoIsTyping.isVisible();
+            // when messages get added to the timeline,
+            // but somebody else is still typing,
+            // update the min-height, so once the last
+            // person stops typing, no jumping occurs
+            if (isAtBottom && isTypingVisible) {
+                scrollPanel.blockShrinking();
+            }
+        }
+    },
+
+    clearTimelineHeight: function() {
+        const scrollPanel = this.refs.scrollPanel;
+        if (scrollPanel) {
+            scrollPanel.clearBlockShrinking();
         }
     },
 
@@ -619,9 +670,11 @@ module.exports = React.createClass({
     },
 
     render: function() {
-        var ScrollPanel = sdk.getComponent("structures.ScrollPanel");
-        var Spinner = sdk.getComponent("elements.Spinner");
-        var topSpinner, bottomSpinner;
+        const ScrollPanel = sdk.getComponent("structures.ScrollPanel");
+        const WhoIsTypingTile = sdk.getComponent("rooms.WhoIsTypingTile");
+        const Spinner = sdk.getComponent("elements.Spinner");
+        let topSpinner;
+        let bottomSpinner;
         if (this.props.backPaginating) {
             topSpinner = <li key="_topSpinner"><Spinner /></li>;
         }
@@ -629,25 +682,32 @@ module.exports = React.createClass({
             bottomSpinner = <li key="_bottomSpinner"><Spinner /></li>;
         }
 
-        var style = this.props.hidden ? { display: 'none' } : {};
-        style.opacity = this.props.opacity;
+        const style = this.props.hidden ? { display: 'none' } : {};
 
-        var className = this.props.className + " mx_fadable";
-        if (this.props.alwaysShowTimestamps) {
-            className += " mx_MessagePanel_alwaysShowTimestamps";
+        const className = classNames(
+            this.props.className,
+            {
+                "mx_MessagePanel_alwaysShowTimestamps": this.props.alwaysShowTimestamps,
+            },
+        );
+
+        let whoIsTyping;
+        if (this.props.room) {
+            whoIsTyping = (<WhoIsTypingTile room={this.props.room} onVisible={this._onTypingVisible} ref="whoIsTyping" />);
         }
 
         return (
-            <ScrollPanel ref="scrollPanel" className={ className }
-                    onScroll={ this.props.onScroll }
-                    onResize={ this.onResize }
-                    onFillRequest={ this.props.onFillRequest }
-                    onUnfillRequest={ this.props.onUnfillRequest }
-                    style={ style }
-                    stickyBottom={ this.props.stickyBottom }>
-                {topSpinner}
-                {this._getEventTiles()}
-                {bottomSpinner}
+            <ScrollPanel ref="scrollPanel" className={className}
+                    onScroll={this.props.onScroll}
+                    onResize={this.onResize}
+                    onFillRequest={this.props.onFillRequest}
+                    onUnfillRequest={this.props.onUnfillRequest}
+                    style={style}
+                    stickyBottom={this.props.stickyBottom}>
+                { topSpinner }
+                { this._getEventTiles() }
+                { whoIsTyping }
+                { bottomSpinner }
             </ScrollPanel>
         );
     },

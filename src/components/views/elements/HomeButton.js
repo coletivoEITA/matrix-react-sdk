@@ -23,8 +23,8 @@ const HomeButton = function(props) {
     const ActionButton = sdk.getComponent('elements.ActionButton');
     return (
         <ActionButton action="view_home_page"
-            label={ _t("Home") }
-            iconPath="img/icons-home.svg"
+            label={_t("Home")}
+            iconPath={require("../../../../res/img/icons-home.svg")}
             size={props.size}
             tooltip={props.tooltip}
         />
