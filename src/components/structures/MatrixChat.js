@@ -1545,7 +1545,7 @@ export default React.createClass({
             credentials.userId
         ) {
             const currentCredentials = (MatrixClientPeg.get())
-                ? MatrixClientPeg.get().credentials
+                ? MatrixClientPeg.getCredentials()
                 : null;
             const sameUser = (
                 currentCredentials &&
