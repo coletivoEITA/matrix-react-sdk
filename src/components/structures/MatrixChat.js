@@ -1790,6 +1790,10 @@ export default React.createClass({
             subtitle += `[${notifCount}]`;
         }
 
+        let sendNotifCount = this.props.config.send_unread_notifications_to_parent;
+        if (sendNotifCount && sendNotifCount.parent_origin) {
+            window.parent.postMessage('{"status":"im.vector.notif_status","msg":'+notifCount+'}', sendNotifCount.parent_origin);
+        }
         this._setPageSubtitle(subtitle);
     },
 
