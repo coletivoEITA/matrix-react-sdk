@@ -44,6 +44,9 @@ import SdkConfig from '../../../SdkConfig';
 import MultiInviter from "../../../utils/MultiInviter";
 import SettingsStore from "../../../settings/SettingsStore";
 import E2EIcon from "./E2EIcon";
+import AutoHideScrollbar from "../../structures/AutoHideScrollbar";
+import MatrixClientPeg from "../../../MatrixClientPeg";
+import {EventTimeline} from "matrix-js-sdk";
 
 module.exports = withMatrixClient(React.createClass({
     displayName: 'MemberInfo',
@@ -60,6 +63,8 @@ module.exports = withMatrixClient(React.createClass({
                 ban: false,
                 mute: false,
                 modifyLevel: false,
+                synapseDeactivate: false,
+                redactMessages: false,
             },
             muted: false,
             isTargetMod: false,
@@ -210,8 +215,8 @@ module.exports = withMatrixClient(React.createClass({
         }
     },
 
-    _updateStateForNewMember: function(member) {
-        const newState = this._calculateOpsPermissions(member);
+    _updateStateForNewMember: async function(member) {
+        const newState = await this._calculateOpsPermissions(member);
         newState.devicesLoading = true;
         newState.devices = null;
         this.setState(newState);
@@ -348,6 +353,74 @@ module.exports = withMatrixClient(React.createClass({
         });
     },
 
+    onRedactAllMessages: async function() {
+        const {roomId, userId} = this.props.member;
+        const room = this.context.matrixClient.getRoom(roomId);
+        if (!room) {
+            return;
+        }
+        let timeline = room.getLiveTimeline();
+        let eventsToRedact = [];
+        while (timeline) {
+            eventsToRedact = timeline.getEvents().reduce((events, event) => {
+                if (event.getSender() === userId && !event.isRedacted()) {
+                    return events.concat(event);
+                } else {
+                    return events;
+                }
+            }, eventsToRedact);
+            timeline = timeline.getNeighbouringTimeline(EventTimeline.BACKWARDS);
+        }
+
+        const count = eventsToRedact.length;
+        const user = this.props.member.name;
+
+        if (count === 0) {
+            const InfoDialog = sdk.getComponent("dialogs.InfoDialog");
+            Modal.createTrackedDialog('No user messages found to remove', '', InfoDialog, {
+                title: _t("No recent messages by %(user)s found", {user}),
+                description:
+                    <div>
+                        <p>{ _t("Try scrolling up in the timeline to see if there are any earlier ones.") }</p>
+                    </div>,
+            });
+        } else {
+            const QuestionDialog = sdk.getComponent("dialogs.QuestionDialog");
+            const confirmed = await new Promise((resolve) => {
+                Modal.createTrackedDialog('Remove recent messages by user', '', QuestionDialog, {
+                    title: _t("Remove recent messages by %(user)s", {user}),
+                    description:
+                        <div>
+                            <p>{ _t("You are about to remove %(count)s messages by %(user)s. This cannot be undone. Do you wish to continue?", {count, user}) }</p>
+                            <p>{ _t("For a large amount of messages, this might take some time. Please don't refresh your client in the meantime.") }</p>
+                        </div>,
+                    button: _t("Remove %(count)s messages", {count}),
+                    onFinished: resolve,
+                });
+            });
+
+            if (!confirmed) {
+                return;
+            }
+
+            // Submitting a large number of redactions freezes the UI,
+            // so first yield to allow to rerender after closing the dialog.
+            await Promise.resolve();
+
+            console.info(`Started redacting recent ${count} messages for ${user} in ${roomId}`);
+            await Promise.all(eventsToRedact.map(async event => {
+                try {
+                    await this.context.matrixClient.redactEvent(roomId, event.getId());
+                } catch (err) {
+                    // log and swallow errors
+                    console.error("Could not redact", event.getId());
+                    console.error(err);
+                }
+            }));
+            console.info(`Finished redacting recent ${count} messages for ${user} in ${roomId}`);
+        }
+    },
+
     _warnSelfDemote: function() {
         const QuestionDialog = sdk.getComponent("dialogs.QuestionDialog");
         return new Promise((resolve) => {
@@ -459,6 +532,25 @@ module.exports = withMatrixClient(React.createClass({
         });
     },
 
+    onSynapseDeactivate: function() {
+        const QuestionDialog = sdk.getComponent('views.dialogs.QuestionDialog');
+        Modal.createTrackedDialog('Synapse User Deactivation', '', QuestionDialog, {
+            title: _t("Deactivate user?"),
+            description:
+                <div>{ _t(
+                    "Deactivating this user will log them out and prevent them from logging back in. Additionally, " +
+                    "they will leave all the rooms they are in. This action cannot be reversed. Are you sure you want to " +
+                    "deactivate this user?"
+                ) }</div>,
+            button: _t("Deactivate user"),
+            danger: true,
+            onFinished: (accepted) => {
+                if (!accepted) return;
+                this.context.matrixClient.deactivateSynapseUser(this.props.member.userId);
+            },
+        });
+    },
+
     _applyPowerChange: function(roomId, target, powerLevel, powerLevelEvent) {
         this.setState({ updating: this.state.updating + 1 });
         this.props.matrixClient.setPowerLevel(roomId, target, parseInt(powerLevel), powerLevelEvent).then(
@@ -543,7 +635,7 @@ module.exports = withMatrixClient(React.createClass({
         });
     },
 
-    _calculateOpsPermissions: function(member) {
+    _calculateOpsPermissions: async function(member) {
         const defaultPerms = {
             can: {},
             muted: false,
@@ -559,7 +651,7 @@ module.exports = withMatrixClient(React.createClass({
 
         const them = member;
         return {
-            can: this._calculateCanPermissions(
+            can: await this._calculateCanPermissions(
                 me, them, powerLevels.getContent(),
             ),
             muted: this._isMuted(them, powerLevels.getContent()),
@@ -567,7 +659,7 @@ module.exports = withMatrixClient(React.createClass({
         };
     },
 
-    _calculateCanPermissions: function(me, them, powerLevels) {
+    _calculateCanPermissions: async function(me, them, powerLevels) {
         const isMe = me.userId === them.userId;
         const can = {
             kick: false,
@@ -575,7 +667,12 @@ module.exports = withMatrixClient(React.createClass({
             mute: false,
             modifyLevel: false,
             modifyLevelMax: 0,
+            redactMessages: false,
         };
+
+        // Calculate permissions for Synapse before doing the PL checks
+        can.synapseDeactivate = await this.context.matrixClient.isSynapseAdministrator();
+
         const canAffectUser = them.powerLevel < me.powerLevel || isMe;
         if (!canAffectUser) {
             //console.log("Cannot affect user: %s >= %s", them.powerLevel, me.powerLevel);
@@ -588,9 +685,11 @@ module.exports = withMatrixClient(React.createClass({
 
         can.kick = me.powerLevel >= powerLevels.kick;
         can.ban = me.powerLevel >= powerLevels.ban;
+        can.invite = me.powerLevel >= powerLevels.invite;
         can.mute = me.powerLevel >= editPowerLevel;
         can.modifyLevel = me.powerLevel >= editPowerLevel && (isMe || me.powerLevel > them.powerLevel);
         can.modifyLevelMax = me.powerLevel;
+        can.redactMessages = me.powerLevel >= powerLevels.redact;
 
         return can;
     },
@@ -726,7 +825,7 @@ module.exports = withMatrixClient(React.createClass({
                 );
             }
 
-            if (!member || !member.membership || member.membership === 'leave') {
+            if (this.state.can.invite && (!member || !member.membership || member.membership === 'leave')) {
                 const roomId = member && member.roomId ? member.roomId : RoomViewStore.getRoomId();
                 const onInviteUserButton = async () => {
                     try {
@@ -734,8 +833,8 @@ module.exports = withMatrixClient(React.createClass({
                         // we're only inviting one user.
                         const inviter = new MultiInviter(roomId);
                         await inviter.invite([member.userId]).then(() => {
-                            if (inviter.getCompletionState(userId) !== "invited")
-                                throw new Error(inviter.getErrorText(userId));
+                            if (inviter.getCompletionState(member.userId) !== "invited")
+                                throw new Error(inviter.getErrorText(member.userId));
                         });
                     } catch (err) {
                         const ErrorDialog = sdk.getComponent('dialogs.ErrorDialog');
@@ -780,6 +879,8 @@ module.exports = withMatrixClient(React.createClass({
         let banButton;
         let muteButton;
         let giveModButton;
+        let redactButton;
+        let synapseDeactivateButton;
         let spinner;
 
         if (this.props.member.userId !== this.props.matrixClient.credentials.userId) {
@@ -856,6 +957,15 @@ module.exports = withMatrixClient(React.createClass({
                 </AccessibleButton>
             );
         }
+
+        if (this.state.can.redactMessages) {
+            redactButton = (
+                <AccessibleButton className="mx_MemberInfo_field" onClick={this.onRedactAllMessages}>
+                    { _t("Remove recent messages") }
+                </AccessibleButton>
+            );
+        }
+
         if (this.state.can.ban) {
             let label = _t("Ban");
             if (this.props.member.membership === 'ban') {
@@ -884,8 +994,19 @@ module.exports = withMatrixClient(React.createClass({
             </AccessibleButton>;
         }
 
+        // We don't need a perfect check here, just something to pass as "probably not our homeserver". If
+        // someone does figure out how to bypass this check the worst that happens is an error.
+        const sameHomeserver = this.props.member.userId.endsWith(`:${MatrixClientPeg.getHomeserverName()}`);
+        if (this.state.can.synapseDeactivate && sameHomeserver) {
+            synapseDeactivateButton = (
+                <AccessibleButton onClick={this.onSynapseDeactivate} className="mx_MemberInfo_field">
+                    {_t("Deactivate user")}
+                </AccessibleButton>
+            );
+        }
+
         let adminTools;
-        if (kickButton || banButton || muteButton || giveModButton) {
+        if (kickButton || banButton || muteButton || giveModButton || synapseDeactivateButton || redactButton) {
             adminTools =
                 <div>
                     <h3>{ _t("Admin Tools") }</h3>
@@ -894,7 +1015,9 @@ module.exports = withMatrixClient(React.createClass({
                         { muteButton }
                         { kickButton }
                         { banButton }
+                        { redactButton }
                         { giveModButton }
+                        { synapseDeactivateButton }
                     </div>
                 </div>;
         }
@@ -976,7 +1099,6 @@ module.exports = withMatrixClient(React.createClass({
         }
 
         const GeminiScrollbarWrapper = sdk.getComponent("elements.GeminiScrollbarWrapper");
-        const EmojiText = sdk.getComponent('elements.EmojiText');
 
         let backButton;
         if (this.props.member.roomId) {
@@ -991,7 +1113,7 @@ module.exports = withMatrixClient(React.createClass({
                     <div className="mx_MemberInfo_name">
                         { backButton }
                         { e2eIconElement }
-                        <EmojiText element="h2">{ memberName }</EmojiText>
+                        <h2>{ memberName }</h2>
                     </div>
                     { avatarElement }
                     <div className="mx_MemberInfo_container">
@@ -1003,7 +1125,7 @@ module.exports = withMatrixClient(React.createClass({
                             { roomMemberDetails }
                         </div>
                     </div>
-                    <GeminiScrollbarWrapper autoshow={true} className="mx_MemberInfo_scrollContainer">
+                    <AutoHideScrollbar className="mx_MemberInfo_scrollContainer">
                         <div className="mx_MemberInfo_container">
                             { this._renderUserOptions() }
 
@@ -1015,7 +1137,7 @@ module.exports = withMatrixClient(React.createClass({
 
                             { spinner }
                         </div>
-                    </GeminiScrollbarWrapper>
+                    </AutoHideScrollbar>
             </div>
         );
     },

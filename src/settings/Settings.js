@@ -23,9 +23,11 @@ import {
 } from "./controllers/NotificationControllers";
 import CustomStatusController from "./controllers/CustomStatusController";
 import ThemeController from './controllers/ThemeController';
+import LowBandwidthController from "./controllers/LowBandwidthController";
 
 // These are just a bunch of helper arrays to avoid copy/pasting a bunch of times
 const LEVELS_ROOM_SETTINGS = ['device', 'room-device', 'room-account', 'account', 'config'];
+const LEVELS_ROOM_OR_ACCOUNT = ['room-account', 'account'];
 const LEVELS_ROOM_SETTINGS_WITH_ROOM = ['device', 'room-device', 'room-account', 'account', 'config', 'room'];
 const LEVELS_ACCOUNT_SETTINGS = ['device', 'account', 'config'];
 const LEVELS_FEATURE = ['device', 'config'];
@@ -99,12 +101,6 @@ export const SETTINGS = {
         supportedLevels: LEVELS_FEATURE,
         default: false,
         controller: new CustomStatusController(),
-    },
-    "feature_room_breadcrumbs": {
-        isFeature: true,
-        displayName: _td("Show recent room avatars above the room list (refresh to apply changes)"),
-        supportedLevels: LEVELS_FEATURE,
-        default: false,
     },
     "feature_custom_tags": {
         isFeature: true,
@@ -258,6 +254,10 @@ export const SETTINGS = {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS_WITH_CONFIG,
         default: "en",
     },
+    "breadcrumb_rooms": {
+        supportedLevels: ['account'],
+        default: [],
+    },
     "analyticsOptIn": {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS_WITH_CONFIG,
         displayName: _td('Send analytics data'),
@@ -311,6 +311,10 @@ export const SETTINGS = {
         default: false,
         controller: new NotificationsEnabledController(),
     },
+    "notificationSound": {
+        supportedLevels: LEVELS_ROOM_OR_ACCOUNT,
+        default: false,
+    },
     "notificationBodyEnabled": {
         supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS,
         default: true,
@@ -340,9 +344,32 @@ export const SETTINGS = {
         displayName: _td('Show developer tools'),
         default: false,
     },
+    "widgetOpenIDPermissions": {
+        supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS,
+        default: {
+            allow: [],
+            deny: [],
+        },
+    },
     "RoomList.orderByImportance": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
         displayName: _td('Order rooms in the room list by most important first instead of most recent'),
         default: true,
+    },
+    "breadcrumbs": {
+        supportedLevels: LEVELS_ACCOUNT_SETTINGS,
+        displayName: _td("Show recently visited rooms above the room list"),
+        default: true,
+    },
+    "showHiddenEventsInTimeline": {
+        displayName: _td("Show hidden events in timeline"),
+        supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS,
+        default: false,
+    },
+    "lowBandwidth": {
+        supportedLevels: LEVELS_DEVICE_ONLY_SETTINGS_WITH_CONFIG,
+        displayName: _td('Low bandwidth mode'),
+        default: false,
+        controller: new LowBandwidthController(),
     },
 };

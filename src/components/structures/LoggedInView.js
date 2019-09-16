@@ -22,9 +22,9 @@ import PropTypes from 'prop-types';
 import { DragDropContext } from 'react-beautiful-dnd';
 
 import { KeyCode, isOnlyCtrlOrCmdKeyEvent } from '../../Keyboard';
-import Notifier from '../../Notifier';
 import PageTypes from '../../PageTypes';
 import CallMediaHandler from '../../CallMediaHandler';
+import { fixupColorFonts } from '../../utils/FontManager';
 import sdk from '../../index';
 import dis from '../../dispatcher';
 import sessionStore from '../../stores/SessionStore';
@@ -41,6 +41,13 @@ import {Resizer, CollapseDistributor} from '../../resizer';
 // so each pinned message may trigger a request. Limit the number per room for sanity.
 // NB. this is just for server notices rather than pinned messages in general.
 const MAX_PINNED_NOTICES_PER_ROOM = 2;
+
+function canElementReceiveInput(el) {
+    return el.tagName === "INPUT" ||
+        el.tagName === "TEXTAREA" ||
+        el.tagName === "SELECT" ||
+        !!el.getAttribute("contenteditable");
+}
 
 /**
  * This is what our MatrixChat shows when we are logged in. The precise view is
@@ -106,7 +113,7 @@ const LoggedInView = React.createClass({
 
         CallMediaHandler.loadDevices();
 
-        document.addEventListener('keydown', this._onKeyDown);
+        document.addEventListener('keydown', this._onNativeKeyDown, false);
 
         this._sessionStore = sessionStore;
         this._sessionStoreToken = this._sessionStore.addListener(
@@ -119,10 +126,24 @@ const LoggedInView = React.createClass({
         this._matrixClient.on("accountData", this.onAccountData);
         this._matrixClient.on("sync", this.onSync);
         this._matrixClient.on("RoomState.events", this.onRoomStateEvents);
+
+        fixupColorFonts();
+    },
+
+    componentDidUpdate(prevProps) {
+        // attempt to guess when a banner was opened or closed
+        if (
+            (prevProps.showCookieBar !== this.props.showCookieBar) ||
+            (prevProps.hasNewVersion !== this.props.hasNewVersion) ||
+            (prevProps.userHasGeneratedPassword !== this.props.userHasGeneratedPassword) ||
+            (prevProps.showNotifierToolbar !== this.props.showNotifierToolbar)
+        ) {
+            this.props.resizeNotifier.notifyBannersChanged();
+        }
     },
 
     componentWillUnmount: function() {
-        document.removeEventListener('keydown', this._onKeyDown);
+        document.removeEventListener('keydown', this._onNativeKeyDown, false);
         this._matrixClient.removeListener("accountData", this.onAccountData);
         this._matrixClient.removeListener("sync", this.onSync);
         this._matrixClient.removeListener("RoomState.events", this.onRoomStateEvents);
@@ -173,6 +194,7 @@ const LoggedInView = React.createClass({
             },
             onResized: (size) => {
                 window.localStorage.setItem("mx_lhs_size", '' + size);
+                this.props.resizeNotifier.notifyLeftHandleResized();
             },
         };
         const resizer = new Resizer(
@@ -257,6 +279,58 @@ const LoggedInView = React.createClass({
         });
     },
 
+    _onPaste: function(ev) {
+        let canReceiveInput = false;
+        let element = ev.target;
+        // test for all parents because the target can be a child of a contenteditable element
+        while (!canReceiveInput && element) {
+            canReceiveInput = canElementReceiveInput(element);
+            element = element.parentElement;
+        }
+        if (!canReceiveInput) {
+            // refocusing during a paste event will make the
+            // paste end up in the newly focused element,
+            // so dispatch synchronously before paste happens
+            dis.dispatch({action: 'focus_composer'}, true);
+        }
+    },
+
+    /*
+    SOME HACKERY BELOW:
+    React optimizes event handlers, by always attaching only 1 handler to the document for a given type.
+    It then internally determines the order in which React event handlers should be called,
+    emulating the capture and bubbling phases the DOM also has.
+
+    But, as the native handler for React is always attached on the document,
+    it will always run last for bubbling (first for capturing) handlers,
+    and thus React basically has its own event phases, and will always run
+    after (before for capturing) any native other event handlers (as they tend to be attached last).
+
+    So ideally one wouldn't mix React and native event handlers to have bubbling working as expected,
+    but we do need a native event handler here on the document,
+    to get keydown events when there is no focused element (target=body).
+
+    We also do need bubbling here to give child components a chance to call `stopPropagation()`,
+    for keydown events it can handle itself, and shouldn't be redirected to the composer.
+
+    So we listen with React on this component to get any events on focused elements, and get bubbling working as expected.
+    We also listen with a native listener on the document to get keydown events when no element is focused.
+    Bubbling is irrelevant here as the target is the body element.
+    */
+    _onReactKeyDown: function(ev) {
+        // events caught while bubbling up on the root element
+        // of this component, so something must be focused.
+        this._onKeyDown(ev);
+    },
+
+    _onNativeKeyDown: function(ev) {
+        // only pass this if there is no focused element.
+        // if there is, _onKeyDown will be called by the
+        // react keydown handler that respects the react bubbling order.
+        if (ev.target === document.body) {
+            this._onKeyDown(ev);
+        }
+    },
 
     _onKeyDown: function(ev) {
             /*
@@ -275,21 +349,12 @@ const LoggedInView = React.createClass({
 
         let handled = false;
         const ctrlCmdOnly = isOnlyCtrlOrCmdKeyEvent(ev);
+        const hasModifier = ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey;
 
         switch (ev.keyCode) {
-            case KeyCode.UP:
-            case KeyCode.DOWN:
-                if (ev.altKey && !ev.shiftKey && !ev.ctrlKey && !ev.metaKey) {
-                    const action = ev.keyCode == KeyCode.UP ?
-                        'view_prev_room' : 'view_next_room';
-                    dis.dispatch({action: action});
-                    handled = true;
-                }
-                break;
-
             case KeyCode.PAGE_UP:
             case KeyCode.PAGE_DOWN:
-                if (!ev.ctrlKey && !ev.shiftKey && !ev.altKey && !ev.metaKey) {
+                if (!hasModifier) {
                     this._onScrollKeyPressed(ev);
                     handled = true;
                 }
@@ -310,11 +375,35 @@ const LoggedInView = React.createClass({
                     handled = true;
                 }
                 break;
+            case KeyCode.KEY_BACKTICK:
+                // Ideally this would be CTRL+P for "Profile", but that's
+                // taken by the print dialog. CTRL+I for "Information"
+                // was previously chosen but conflicted with italics in
+                // composer, so CTRL+` it is
+
+                if (ctrlCmdOnly) {
+                    dis.dispatch({
+                        action: 'toggle_top_left_menu',
+                    });
+                    handled = true;
+                }
+                break;
         }
 
         if (handled) {
             ev.stopPropagation();
             ev.preventDefault();
+        } else if (!hasModifier) {
+            const isClickShortcut = ev.target !== document.body &&
+                (ev.key === "Space" || ev.key === "Enter");
+
+            if (!isClickShortcut && !canElementReceiveInput(ev.target)) {
+                // synchronous dispatch so we focus before key generates input
+                dis.dispatch({action: 'focus_composer'}, true);
+                ev.stopPropagation();
+                // we should *not* preventDefault() here as
+                // that would prevent typing in the now-focussed composer
+            }
         }
     },
 
@@ -448,6 +537,7 @@ const LoggedInView = React.createClass({
                         disabled={this.props.middleDisabled}
                         collapsedRhs={this.props.collapsedRhs}
                         ConferenceHandler={this.props.ConferenceHandler}
+                        resizeNotifier={this.props.resizeNotifier}
                     />;
                 break;
 
@@ -489,7 +579,6 @@ const LoggedInView = React.createClass({
         });
 
         let topBar;
-        const isGuest = this.props.matrixClient.isGuest();
         if (this.state.syncErrorData && this.state.syncErrorData.error.errcode === 'M_RESOURCE_LIMIT_EXCEEDED') {
             topBar = <ServerLimitBar kind='hard'
                 adminContact={this.state.syncErrorData.error.data.admin_contact}
@@ -513,10 +602,7 @@ const LoggedInView = React.createClass({
             topBar = <UpdateCheckBar {...this.props.checkingForUpdate} />;
         } else if (this.state.userHasGeneratedPassword) {
             topBar = <PasswordNagBar />;
-        } else if (
-            !isGuest && Notifier.supportsDesktopNotifications() &&
-            !Notifier.isEnabled() && !Notifier.isToolbarHidden()
-        ) {
+        } else if (this.props.showNotifierToolbar) {
             topBar = <MatrixToolbar />;
         }
 
@@ -529,12 +615,12 @@ const LoggedInView = React.createClass({
         }
 
         return (
-            <div className='mx_MatrixChat_wrapper' aria-hidden={this.props.hideToSRUsers} onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp}>
+            <div onPaste={this._onPaste} onKeyDown={this._onReactKeyDown} className='mx_MatrixChat_wrapper' aria-hidden={this.props.hideToSRUsers} onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp}>
                 { topBar }
                 <DragDropContext onDragEnd={this._onDragEnd}>
                     <div ref={this._setResizeContainerRef} className={bodyClasses}>
                         <LeftPanel
-                            toolbarShown={!!topBar}
+                            resizeNotifier={this.props.resizeNotifier}
                             collapsed={this.props.collapseLhs || false}
                             disabled={this.props.leftDisabled}
                         />

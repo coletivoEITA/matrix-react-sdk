@@ -212,7 +212,9 @@ module.exports = React.createClass({
         this._checkSubListsOverflow();
 
         this.resizer.attach();
-        window.addEventListener("resize", this.onWindowResize);
+        if (this.props.resizeNotifier) {
+            this.props.resizeNotifier.on("leftPanelResized", this.onResize);
+        }
         this.mounted = true;
     },
 
@@ -260,7 +262,6 @@ module.exports = React.createClass({
     componentWillUnmount: function() {
         this.mounted = false;
 
-        window.removeEventListener("resize", this.onWindowResize);
         dis.unregister(this.dispatcherRef);
         if (MatrixClientPeg.get()) {
             MatrixClientPeg.get().removeListener("Room", this.onRoom);
@@ -272,6 +273,11 @@ module.exports = React.createClass({
             MatrixClientPeg.get().removeListener("Group.myMembership", this._onGroupMyMembership);
             MatrixClientPeg.get().removeListener("RoomState.events", this.onRoomStateEvents);
         }
+
+        if (this.props.resizeNotifier) {
+            this.props.resizeNotifier.removeListener("leftPanelResized", this.onResize);
+        }
+
 
         if (this._tagStoreToken) {
             this._tagStoreToken.remove();
@@ -293,13 +299,14 @@ module.exports = React.createClass({
         this._delayedRefreshRoomList.cancelPendingCall();
     },
 
-    onWindowResize: function() {
+
+    onResize: function() {
         if (this.mounted && this._layout && this.resizeContainer &&
             Array.isArray(this._layoutSections)
         ) {
             this._layout.update(
                 this._layoutSections,
-                this.resizeContainer.offsetHeight
+                this.resizeContainer.offsetHeight,
             );
         }
     },
@@ -743,6 +750,7 @@ module.exports = React.createClass({
                 order: "recent",
                 incomingCall: incomingCallIfTaggedAs('im.vector.fake.direct'),
                 onAddRoom: () => {dis.dispatch({action: 'view_create_chat'})},
+                addRoomLabel: _t("Start chat"),
             },
             {
                 list: this.state.lists['im.vector.fake.recent'],
@@ -750,7 +758,7 @@ module.exports = React.createClass({
                 headerItems: this._getHeaderItems('im.vector.fake.recent'),
                 order: "recent",
                 incomingCall: incomingCallIfTaggedAs('im.vector.fake.recent'),
-                onAddRoom: () => {dis.dispatch({action: 'view_room_directory'})},
+                onAddRoom: () => {dis.dispatch({action: 'view_create_room'});},
             },
         ];
         const tagSubLists = Object.keys(this.state.lists)
