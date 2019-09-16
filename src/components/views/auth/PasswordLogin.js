@@ -1,6 +1,7 @@
 /*
 Copyright 2015, 2016 OpenMarket Ltd
 Copyright 2017 Vector Creations Ltd
+Copyright 2019 New Vector Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,11 +22,30 @@ import classNames from 'classnames';
 import sdk from '../../../index';
 import { _t } from '../../../languageHandler';
 import SdkConfig from '../../../SdkConfig';
+import {ValidatedServerConfig} from "../../../utils/AutoDiscoveryUtils";
 
 /**
  * A pure UI component which displays a username/password form.
  */
-class PasswordLogin extends React.Component {
+export default class PasswordLogin extends React.Component {
+    static propTypes = {
+        onSubmit: PropTypes.func.isRequired, // fn(username, password)
+        onError: PropTypes.func,
+        onEditServerDetailsClick: PropTypes.func,
+        onForgotPasswordClick: PropTypes.func, // fn()
+        initialUsername: PropTypes.string,
+        initialPhoneCountry: PropTypes.string,
+        initialPhoneNumber: PropTypes.string,
+        initialPassword: PropTypes.string,
+        onUsernameChanged: PropTypes.func,
+        onPhoneCountryChanged: PropTypes.func,
+        onPhoneNumberChanged: PropTypes.func,
+        onPasswordChanged: PropTypes.func,
+        loginIncorrect: PropTypes.bool,
+        disableSubmit: PropTypes.bool,
+        serverConfig: PropTypes.instanceOf(ValidatedServerConfig).isRequired,
+    };
+
     static defaultProps = {
         onError: function() {},
         onEditServerDetailsClick: null,
@@ -40,13 +60,12 @@ class PasswordLogin extends React.Component {
         initialPhoneNumber: "",
         initialPassword: "",
         loginIncorrect: false,
-        // This is optional and only set if we used a server name to determine
-        // the HS URL via `.well-known` discovery. The server name is used
-        // instead of the HS URL when talking about where to "sign in to".
-        hsName: null,
-        hsUrl: "",
         disableSubmit: false,
-    }
+    };
+
+    static LOGIN_FIELD_EMAIL = "login_field_email";
+    static LOGIN_FIELD_MXID = "login_field_mxid";
+    static LOGIN_FIELD_PHONE = "login_field_phone";
 
     constructor(props) {
         super(props);
@@ -68,11 +87,6 @@ class PasswordLogin extends React.Component {
         this.onPhoneNumberBlur = this.onPhoneNumberBlur.bind(this);
         this.onPasswordChanged = this.onPasswordChanged.bind(this);
         this.isLoginEmpty = this.isLoginEmpty.bind(this);
-    }
-
-    componentWillMount() {
-        this._passwordField = null;
-        this._loginField = null;
     }
 
     onForgotPasswordClick(ev) {
@@ -180,7 +194,6 @@ class PasswordLogin extends React.Component {
                 return <Field
                     className={classNames(classes)}
                     id="mx_PasswordLogin_email"
-                    ref={(e) => { this._loginField = e; }}
                     name="username" // make it a little easier for browser's remember-password
                     key="email_input"
                     type="text"
@@ -196,14 +209,10 @@ class PasswordLogin extends React.Component {
                 return <Field
                     className={classNames(classes)}
                     id="mx_PasswordLogin_username"
-                    ref={(e) => { this._loginField = e; }}
                     name="username" // make it a little easier for browser's remember-password
                     key="username_input"
                     type="text"
-                    label={SdkConfig.get().disable_custom_urls ?
-                        _t("Username on %(hs)s", {
-                            hs: this.props.hsUrl.replace(/^https?:\/\//, ''),
-                        }) : _t("Username")}
+                    label={_t("Username")}
                     value={this.state.username}
                     onChange={this.onUsernameChanged}
                     onBlur={this.onUsernameBlur}
@@ -223,7 +232,6 @@ class PasswordLogin extends React.Component {
                 return <Field
                     className={classNames(classes)}
                     id="mx_PasswordLogin_phoneNumber"
-                    ref={(e) => { this._loginField = e; }}
                     name="phoneNumber"
                     key="phone_input"
                     type="text"
@@ -250,6 +258,7 @@ class PasswordLogin extends React.Component {
 
     render() {
         const Field = sdk.getComponent('elements.Field');
+        const SignInToText = sdk.getComponent('views.auth.SignInToText');
 
         let forgotPasswordJsx;
 
@@ -266,31 +275,6 @@ class PasswordLogin extends React.Component {
             </span>;
         }
 
-        let signInToText = _t('Sign in to your Matrix account');
-        if (this.props.hsName) {
-            signInToText = _t('Sign in to your Matrix account on %(serverName)s', {
-                serverName: this.props.hsName,
-            });
-        } else {
-            try {
-                const parsedHsUrl = new URL(this.props.hsUrl);
-                signInToText = _t('Sign in to your Matrix account on %(serverName)s', {
-                    serverName: parsedHsUrl.hostname,
-                });
-            } catch (e) {
-                // ignore
-            }
-        }
-
-        let editLink = null;
-        if (this.props.onEditServerDetailsClick) {
-            editLink = <a className="mx_AuthBody_editServerDetails"
-                href="#" onClick={this.props.onEditServerDetailsClick}
-            >
-                {_t('Change')}
-            </a>;
-        }
-
         const pwFieldClass = classNames({
             error: this.props.loginIncorrect && !this.isLoginEmpty(), // only error password if error isn't top field
         });
@@ -303,7 +287,6 @@ class PasswordLogin extends React.Component {
                 <div className="mx_Login_type_container">
                     <label className="mx_Login_type_label">{ _t('Sign in with') }</label>
                     <Field
-                        className="mx_Login_type_dropdown"
                         id="mx_PasswordLogin_type"
                         element="select"
                         value={this.state.loginType}
@@ -334,17 +317,14 @@ class PasswordLogin extends React.Component {
 
         return (
             <div>
-                <h3>
-                    {signInToText}
-                    {editLink}
-                </h3>
+                <SignInToText serverConfig={this.props.serverConfig}
+                    onEditServerDetailsClick={this.props.onEditServerDetailsClick} />
                 <form onSubmit={this.onSubmitForm}>
                     {loginType}
                     {loginField}
                     <Field
                         className={pwFieldClass}
                         id="mx_PasswordLogin_password"
-                        ref={(e) => { this._passwordField = e; }}
                         type="password"
                         name="password"
                         label={_t('Password')}
@@ -362,27 +342,3 @@ class PasswordLogin extends React.Component {
         );
     }
 }
-
-PasswordLogin.LOGIN_FIELD_EMAIL = "login_field_email";
-PasswordLogin.LOGIN_FIELD_MXID = "login_field_mxid";
-PasswordLogin.LOGIN_FIELD_PHONE = "login_field_phone";
-
-PasswordLogin.propTypes = {
-    onSubmit: PropTypes.func.isRequired, // fn(username, password)
-    onError: PropTypes.func,
-    onForgotPasswordClick: PropTypes.func, // fn()
-    initialUsername: PropTypes.string,
-    initialPhoneCountry: PropTypes.string,
-    initialPhoneNumber: PropTypes.string,
-    initialPassword: PropTypes.string,
-    onUsernameChanged: PropTypes.func,
-    onPhoneCountryChanged: PropTypes.func,
-    onPhoneNumberChanged: PropTypes.func,
-    onPasswordChanged: PropTypes.func,
-    loginIncorrect: PropTypes.bool,
-    hsName: PropTypes.string,
-    hsUrl: PropTypes.string,
-    disableSubmit: PropTypes.bool,
-};
-
-module.exports = PasswordLogin;

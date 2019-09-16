@@ -73,8 +73,12 @@ module.exports = React.createClass({
     _initStateFromProps: function(newProps) {
         // This needs to be done now because levelRoleMap has translated strings
         const levelRoleMap = Roles.levelRoleMap(newProps.usersDefault);
-        const options = Object.keys(levelRoleMap).filter((l) => {
-            return l === undefined || l <= newProps.maxValue;
+        const options = Object.keys(levelRoleMap).filter(level => {
+            return (
+                level === undefined ||
+                level <= newProps.maxValue ||
+                level == newProps.value
+            );
         });
 
         const isCustom = levelRoleMap[newProps.value] === undefined;
@@ -109,7 +113,7 @@ module.exports = React.createClass({
         this.props.onChange(parseInt(this.state.customValue), this.props.powerLevelKey);
     },
 
-    onCustomKeyPress: function(event) {
+    onCustomKeyDown: function(event) {
         if (event.key === "Enter") {
             event.preventDefault();
             event.stopPropagation();
@@ -129,8 +133,8 @@ module.exports = React.createClass({
             picker = (
                 <Field id={`powerSelector_custom_${this.props.powerLevelKey}`} type="number"
                        label={this.props.label || _t("Power level")} max={this.props.maxValue}
-                       onBlur={this.onCustomBlur} onKeyPress={this.onCustomKeyPress} onChange={this.onCustomChange}
-                       value={this.state.customValue} disabled={this.props.disabled} />
+                       onBlur={this.onCustomBlur} onKeyDown={this.onCustomKeyDown} onChange={this.onCustomChange}
+                       value={String(this.state.customValue)} disabled={this.props.disabled} />
             );
         } else {
             // Each level must have a definition in this.state.levelRoleMap
@@ -148,7 +152,7 @@ module.exports = React.createClass({
             picker = (
                 <Field id={`powerSelector_notCustom_${this.props.powerLevelKey}`} element="select"
                        label={this.props.label || _t("Power level")} onChange={this.onSelectChange}
-                       value={this.state.selectValue} disabled={this.props.disabled}>
+                       value={String(this.state.selectValue)} disabled={this.props.disabled}>
                     {options}
                 </Field>
             );
