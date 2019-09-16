@@ -3,6 +3,7 @@ Copyright 2015, 2016 OpenMarket Ltd
 Copyright 2017 Vector Creations Ltd
 Copyright 2017 New Vector Ltd
 Copyright 2018 New Vector Ltd
+Copyright 2019 Michael Telatynski <7t3chguy@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,9 +31,9 @@ import GroupStore from '../../stores/GroupStore';
 export default class RightPanel extends React.Component {
     static get propTypes() {
         return {
-            roomId: React.PropTypes.string, // if showing panels for a given room, this is set
-            groupId: React.PropTypes.string, // if showing panels for a given group, this is set
-            user: React.PropTypes.object,
+            roomId: PropTypes.string, // if showing panels for a given room, this is set
+            groupId: PropTypes.string, // if showing panels for a given group, this is set
+            user: PropTypes.object,
         };
     }
 
@@ -50,6 +51,7 @@ export default class RightPanel extends React.Component {
         FilePanel: 'FilePanel',
         NotificationPanel: 'NotificationPanel',
         RoomMemberInfo: 'RoomMemberInfo',
+        Room3pidMemberInfo: 'Room3pidMemberInfo',
         GroupMemberInfo: 'GroupMemberInfo',
     });
 
@@ -155,6 +157,7 @@ export default class RightPanel extends React.Component {
                 groupRoomId: payload.groupRoomId,
                 groupId: payload.groupId,
                 member: payload.member,
+                event: payload.event,
             });
         }
     }
@@ -162,6 +165,7 @@ export default class RightPanel extends React.Component {
     render() {
         const MemberList = sdk.getComponent('rooms.MemberList');
         const MemberInfo = sdk.getComponent('rooms.MemberInfo');
+        const ThirdPartyMemberInfo = sdk.getComponent('rooms.ThirdPartyMemberInfo');
         const NotificationPanel = sdk.getComponent('structures.NotificationPanel');
         const FilePanel = sdk.getComponent('structures.FilePanel');
 
@@ -180,6 +184,8 @@ export default class RightPanel extends React.Component {
             panel = <GroupRoomList groupId={this.props.groupId} key={this.props.groupId} />;
         } else if (this.state.phase === RightPanel.Phase.RoomMemberInfo) {
             panel = <MemberInfo member={this.state.member} key={this.props.roomId || this.state.member.userId} />;
+        } else if (this.state.phase === RightPanel.Phase.Room3pidMemberInfo) {
+            panel = <ThirdPartyMemberInfo event={this.state.event} key={this.props.roomId} />;
         } else if (this.state.phase === RightPanel.Phase.GroupMemberInfo) {
             panel = <GroupMemberInfo
                 groupMember={this.state.member}
@@ -193,7 +199,7 @@ export default class RightPanel extends React.Component {
         } else if (this.state.phase === RightPanel.Phase.NotificationPanel) {
             panel = <NotificationPanel />;
         } else if (this.state.phase === RightPanel.Phase.FilePanel) {
-            panel = <FilePanel roomId={this.props.roomId} />;
+            panel = <FilePanel roomId={this.props.roomId} resizeNotifier={this.props.resizeNotifier} />;
         }
 
         const classes = classNames("mx_RightPanel", "mx_fadable", {
