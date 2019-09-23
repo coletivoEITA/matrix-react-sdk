@@ -1133,15 +1133,25 @@ export default React.createClass({
         if (!theme) {
             theme = SettingsStore.getValue("theme");
         }
-        if (!isValidTheme) {
-            console.log( ( theme ? "Unknown theme '" + theme + "'." : "No theme set." )
-                + " Falling back to default theme '" + SdkConfig.get().themes[0].value + "'");
-            theme = SdkConfig.get().themes[0].value;
+
+        // look for the stylesheet elements.
+        // styleElements is a map from style name to HTMLLinkElement.
+        const styleElements = Object.create(null);
+        let a;
+        for (let i = 0; (a = document.getElementsByTagName("link")[i]); i++) {
+            const href = a.getAttribute("href");
+            // shouldn't we be using the 'title' tag rather than the href?
+            const match = href.match(/^bundles\/.*\/theme-(.*)\.css$/);
+            if (match) {
+                styleElements[match[1]] = a;
+            }
         }
 
-        const styleElements = this.props.themeStyleElements;
+        if (!(theme in styleElements)) {
+            throw new Error("Unknown theme " + theme);
+        }
 
-        // disable all style elements first, then enable the one we want. Chrome only
+        // disable all of them first, then enable the one we want. Chrome only
         // bothers to do an update on a true->false transition, so this ensures
         // that we get exactly one update, at the right time.
         //
