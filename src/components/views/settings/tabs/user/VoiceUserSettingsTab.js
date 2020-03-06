@@ -20,9 +20,9 @@ import CallMediaHandler from "../../../../../CallMediaHandler";
 import Field from "../../../elements/Field";
 import AccessibleButton from "../../../elements/AccessibleButton";
 import {SettingLevel} from "../../../../../settings/SettingsStore";
-const Modal = require("../../../../../Modal");
-const sdk = require("../../../../..");
-const MatrixClientPeg = require("../../../../../MatrixClientPeg");
+import {MatrixClientPeg} from "../../../../../MatrixClientPeg";
+import * as sdk from "../../../../../index";
+import Modal from "../../../../../Modal";
 
 export default class VoiceUserSettingsTab extends React.Component {
     constructor() {
@@ -115,6 +115,10 @@ export default class VoiceUserSettingsTab extends React.Component {
         MatrixClientPeg.get().setForceTURN(!p2p);
     };
 
+    _changeFallbackICEServerAllowed = (allow) => {
+        MatrixClientPeg.get().setFallbackICEServerAllowed(allow);
+    };
+
     _renderDeviceOptions(devices, category) {
         return devices.map((d) => {
             return (<option key={`${category}-${d.deviceId}`} value={d.deviceId}>{d.label}</option>);
@@ -201,7 +205,16 @@ export default class VoiceUserSettingsTab extends React.Component {
                     {microphoneDropdown}
                     {webcamDropdown}
                     <SettingsFlag name='VideoView.flipVideoHorizontally' level={SettingLevel.ACCOUNT} />
-                    <SettingsFlag name='webRtcAllowPeerToPeer' level={SettingLevel.DEVICE} onChange={this._changeWebRtcMethod} />
+                    <SettingsFlag
+                        name='webRtcAllowPeerToPeer'
+                        level={SettingLevel.DEVICE}
+                        onChange={this._changeWebRtcMethod}
+                    />
+                    <SettingsFlag
+                        name='fallbackICEServerAllowed'
+                        level={SettingLevel.DEVICE}
+                        onChange={this._changeFallbackICEServerAllowed}
+                    />
                 </div>
             </div>
         );

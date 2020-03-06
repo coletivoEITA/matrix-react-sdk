@@ -16,6 +16,7 @@ $room-highlight-color: #343a46;
 // typical text (dark-on-white in light skin)
 $primary-fg-color: $text-primary-color;
 $primary-bg-color: $bg-color;
+$muted-fg-color: $header-panel-text-primary-color;
 
 // used for dialog box text
 $light-fg-color: $header-panel-text-secondary-color;
@@ -146,6 +147,8 @@ $button-danger-disabled-bg-color: #f5b6bb; // TODO: Verify color
 $button-link-fg-color: $accent-color;
 $button-link-bg-color: transparent;
 
+$visual-bell-bg-color: #800;
+
 $room-warning-bg-color: $header-panel-bg-color;
 
 $dark-panel-bg-color: $header-panel-bg-color;
@@ -167,6 +170,10 @@ $tooltip-timeline-fg-color: #ffffff;
 
 $interactive-tooltip-bg-color: $base-color;
 $interactive-tooltip-fg-color: #ffffff;
+
+$breadcrumb-placeholder-bg-color: #272c35;
+
+$user-tile-hover-bg-color: $header-panel-bg-color;
 
 // ***** Mixins! *****
 
@@ -198,6 +205,11 @@ $interactive-tooltip-fg-color: #ffffff;
     border: 1px solid $accent-color ! important;
     color: $accent-color;
     background-color: $button-secondary-bg-color;
+}
+
+@define-mixin mx_Dialog_link {
+    color: $accent-color;
+    text-decoration: none;
 }
 
 // Nasty hacks to apply a filter to arbitrary monochrome artwork to make it
@@ -233,4 +245,14 @@ $interactive-tooltip-fg-color: #ffffff;
             background-color: #080808;
         }
     }
+}
+
+// diff highlight colors
+// intentionally swapped to avoid inversion
+.hljs-addition {
+    background: #fdd;
+}
+
+.hljs-deletion {
+    background: #dfd;
 }

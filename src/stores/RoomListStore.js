@@ -16,7 +16,7 @@ limitations under the License.
 import {Store} from 'flux/utils';
 import dis from '../dispatcher';
 import DMRoomMap from '../utils/DMRoomMap';
-import Unread from '../Unread';
+import * as Unread from '../Unread';
 import SettingsStore from "../settings/SettingsStore";
 
 /*
@@ -37,11 +37,14 @@ const CATEGORY_BOLD = "bold";   // Unread messages (not notified, 'Mentions Only
 const CATEGORY_IDLE = "idle";   // Nothing of interest
 
 const CATEGORY_ORDER = [CATEGORY_RED, CATEGORY_GREY, CATEGORY_BOLD, CATEGORY_IDLE];
+
+export const TAG_DM = "im.vector.fake.direct";
+
 const LIST_ORDERS = {
     "m.favourite": "manual",
     "im.vector.fake.invite": "recent",
     "im.vector.fake.recent": "recent",
-    "im.vector.fake.direct": "recent",
+    [TAG_DM]: "recent",
     "m.lowpriority": "recent",
     "im.vector.fake.archived": "recent",
 };
@@ -95,7 +98,7 @@ class RoomListStore extends Store {
             "im.vector.fake.invite": [],
             "m.favourite": [],
             "im.vector.fake.recent": [],
-            "im.vector.fake.direct": [],
+            [TAG_DM]: [],
             "m.lowpriority": [],
             "im.vector.fake.archived": [],
         };
@@ -323,11 +326,11 @@ class RoomListStore extends Store {
             } else if (dmRoomMap.getUserIdForRoomId(room.roomId) && tags.length === 0) {
                 // We intentionally don't duplicate rooms in other tags into the people list
                 // as a feature.
-                tags.push("im.vector.fake.direct");
+                tags.push(TAG_DM);
             } else if (tags.length === 0) {
                 tags.push("im.vector.fake.recent");
             }
-        } else {
+        } else if (myMembership) { // null-guard as null means it was peeked
             tags.push("im.vector.fake.archived");
         }
 
@@ -515,7 +518,21 @@ class RoomListStore extends Store {
             }
 
             if (count !== 1) {
-                console.warn(`!! Room ${room.roomId} inserted ${count} times`);
+                console.warn(`!! Room ${room.roomId} inserted ${count} times to ${targetTag}`);
+            }
+
+            // This is a workaround for https://github.com/vector-im/riot-web/issues/11303
+            // The logging is to try and identify what happened exactly.
+            if (count === 0) {
+                // Something went very badly wrong - try to recover the room.
+                // We don't bother checking how the target list is ordered - we're expecting
+                // to just insert it.
+                console.warn(`!! Recovering ${room.roomId} for tag ${targetTag} at position 0`);
+                if (!listsClone[targetTag]) {
+                    console.warn(`!! List for tag ${targetTag} does not exist - creating`);
+                    listsClone[targetTag] = [];
+                }
+                listsClone[targetTag].splice(0, 0, {room, category});
             }
         }
 
@@ -539,7 +556,7 @@ class RoomListStore extends Store {
             "im.vector.fake.invite": [],
             "m.favourite": [],
             "im.vector.fake.recent": [],
-            "im.vector.fake.direct": [],
+            [TAG_DM]: [],
             "m.lowpriority": [],
             "im.vector.fake.archived": [],
         };
@@ -576,7 +593,7 @@ class RoomListStore extends Store {
                     }
                 } else if (dmRoomMap.getUserIdForRoomId(room.roomId)) {
                     // "Direct Message" rooms (that we're still in and that aren't otherwise tagged)
-                    lists["im.vector.fake.direct"].push({room, category: this._calculateCategory(room)});
+                    lists[TAG_DM].push({room, category: this._calculateCategory(room)});
                 } else {
                     lists["im.vector.fake.recent"].push({room, category: this._calculateCategory(room)});
                 }

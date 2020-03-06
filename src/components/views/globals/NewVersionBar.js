@@ -17,7 +17,8 @@ limitations under the License.
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import sdk from '../../../index';
+import createReactClass from 'create-react-class';
+import * as sdk from '../../../index';
 import Modal from '../../../Modal';
 import PlatformPeg from '../../../PlatformPeg';
 import { _t } from '../../../languageHandler';
@@ -31,7 +32,7 @@ function checkVersion(ver) {
     return parts.length == 5 && parts[1] == 'react' && parts[3] == 'js';
 }
 
-export default React.createClass({
+export default createReactClass({
     propTypes: {
         version: PropTypes.string.isRequired,
         newVersion: PropTypes.string.isRequired,
@@ -96,7 +97,7 @@ export default React.createClass({
         }
         return (
             <div className="mx_MatrixToolbar">
-                <img className="mx_MatrixToolbar_warning" src={require("../../../../res/img/warning.svg")} width="24" height="23" />
+                <img className="mx_MatrixToolbar_warning" src={require("../../../../res/img/warning.svg")} width="24" height="23" alt="" />
                 <div className="mx_MatrixToolbar_content">
                     {_t("A new version of Riot is available.")}
                 </div>
