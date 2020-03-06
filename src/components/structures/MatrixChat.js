@@ -1617,6 +1617,8 @@ export default createReactClass({
                     console.log(MatrixClientPeg.getCredentials());
                     console.log(credentials);
                     console.log(currentCredentials);
+                    console.log(this.state.view);
+                    console.log('postMessage: ------------');
                     credentials.guest = false;
                     if (sameUser) {
                         console.log('postMessage: user is already logged in');
