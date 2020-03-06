@@ -1641,6 +1641,10 @@ export default React.createClass({
             switch (credentials.action) {
                 case 'im.vector.login':
                     console.log('postMessage: logging in from credentials sent by origin requestor');
+                    console.log(MatrixClientPeg.get());
+                    console.log(MatrixClientPeg.getCredentials());
+                    console.log(credentials);
+                    console.log(currentCredentials);
                     credentials.guest = false;
                     if (sameUser) {
                         console.log('postMessage: user is already logged in');
