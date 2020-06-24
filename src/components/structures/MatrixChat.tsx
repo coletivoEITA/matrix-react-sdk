@@ -253,6 +253,8 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         this.windowWidth = 10000;
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
+        // Listen to login credentials sent through postMessage from another site
+        window.addEventListener('message', this.onMessage);
 
         this.pageChanging = false;
 
@@ -284,8 +286,6 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
 
         this.focusComposer = false;
 
-        // Listen to login credentials sent through postMessage from another site
-        window.addEventListener('message', this.onMessage);
         // object field used for tracking the status info appended to the title tag.
         // we don't do it as react state as i'm scared about triggering needless react refreshes.
         this.subTitleStatus = '';
@@ -1579,12 +1579,21 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             return;
         }
 
-        if (this.state.view == VIEWS.LOADING) {
+        if (this.state && this.state.view == Views.LOADING) {
             ev.source.postMessage('{"status":"im.vector.loading"}', ev.origin);
             return;
         }
 
-        let credentials = {};
+        let credentials = {
+            action: null,
+            accessToken: null,
+            homeserverUrl: null,
+            identityServerUrl: null,
+            userId: null,
+            deviceId: null,
+            guest: null,
+            forceLogout: null // I'm not using it anymore
+        };
         try {
             credentials = JSON.parse(ev.data);
         } catch (e) {
@@ -1593,7 +1602,6 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         }
 
         if (
-            credentials &&
             credentials.action &&
             credentials.accessToken &&
             credentials.homeserverUrl &&
@@ -1614,13 +1622,13 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             switch (credentials.action) {
                 case 'im.vector.login':
                     console.log('postMessage: logging in from credentials sent by origin requestor');
-                    console.log(MatrixClientPeg.get());
-                    if (MatrixClientPeg.get()) {
-                        console.log(MatrixClientPeg.getCredentials());
-                    }
-                    console.log(credentials);
-                    console.log(currentCredentials);
-                    console.log(this.state.view);
+                    // console.log(MatrixClientPeg.get());
+                    // if (MatrixClientPeg.get()) {
+                    //     console.log(MatrixClientPeg.getCredentials());
+                    // }
+                    // console.log(credentials);
+                    // console.log(currentCredentials);
+                    // console.log(this.state?.view);
                     console.log('postMessage: ------------');
                     credentials.guest = false;
                     if (sameUser) {
@@ -1639,7 +1647,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                     if (sameUser) {
                         dis.dispatch({
                             action: 'logout',
-                            forceLogout: credentials.forceLogout,
+                            forceLogout: credentials.forceLogout, //I'm not using it anymore
                         });
                     } else {
                         ev.source.postMessage('{"status":"im.vector.error",'+
