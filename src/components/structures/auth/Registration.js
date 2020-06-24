@@ -32,7 +32,7 @@ import * as Lifecycle from '../../../Lifecycle';
 import {MatrixClientPeg} from "../../../MatrixClientPeg";
 import AuthPage from "../../views/auth/AuthPage";
 import Login from "../../../Login";
-import dis from "../../../dispatcher";
+import dis from "../../../dispatcher/dispatcher";
 
 // Phases
 // Show controls to configure server details
@@ -120,12 +120,13 @@ export default createReactClass({
         };
     },
 
-    componentWillMount: function() {
+    componentDidMount: function() {
         this._unmounted = false;
         this._replaceClient();
     },
 
-    componentWillReceiveProps(newProps) {
+    // TODO: [REACT-WARNING] Replace with appropriate lifecycle event
+    UNSAFE_componentWillReceiveProps(newProps) {
         if (newProps.serverConfig.hsUrl === this.props.serverConfig.hsUrl &&
             newProps.serverConfig.isUrl === this.props.serverConfig.isUrl) return;
 
@@ -242,10 +243,14 @@ export default createReactClass({
             });
         };
         try {
-            await this._makeRegisterRequest({});
-            // This should never succeed since we specified an empty
-            // auth object.
-            console.log("Expecting 401 from register request but got success!");
+            // We do the first registration request ourselves to discover whether we need to
+            // do SSO instead. If we've already started the UI Auth process though, we don't
+            // need to.
+            if (!this.state.doingUIAuth) {
+                await this._makeRegisterRequest(null);
+                // This should never succeed since we specified no auth object.
+                console.log("Expecting 401 from register request but got success!");
+            }
         } catch (e) {
             if (e.httpStatus === 401) {
                 this.setState({
@@ -266,6 +271,7 @@ export default createReactClass({
                         dis.dispatch({action: 'start_login'});
                     } else {
                         this.setState({
+                            serverErrorIsFatal: true, // fatal because user cannot continue on this server
                             errorText: _t("Registration has been disabled on this homeserver."),
                             // add empty flows array to get rid of spinner
                             flows: [],
@@ -462,7 +468,7 @@ export default createReactClass({
             initial_device_display_name: this.props.defaultDeviceDisplayName,
         };
         if (auth) registerParams.auth = auth;
-        if (inhibitLogin !== undefined && inhibitLogin !== null) registerParams.inhibitLogin = inhibitLogin;
+        if (inhibitLogin !== undefined && inhibitLogin !== null) registerParams.inhibit_login = inhibitLogin;
         return this.state.matrixClient.registerRequest(registerParams);
     },
 

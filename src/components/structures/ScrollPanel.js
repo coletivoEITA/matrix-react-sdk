@@ -144,6 +144,11 @@ export default createReactClass({
         /* resizeNotifier: ResizeNotifier to know when middle column has changed size
          */
         resizeNotifier: PropTypes.object,
+
+        /* fixedChildren: allows for children to be passed which are rendered outside
+         * of the wrapper
+         */
+        fixedChildren: PropTypes.node,
     },
 
     getDefaultProps: function() {
@@ -156,9 +161,8 @@ export default createReactClass({
         };
     },
 
-    componentWillMount: function() {
-        this._fillRequestWhileRunning = false;
-        this._isFilling = false;
+    // TODO: [REACT-WARNING] Replace component with real class, use constructor for refs
+    UNSAFE_componentWillMount: function() {
         this._pendingFillRequests = {b: null, f: null};
 
         if (this.props.resizeNotifier) {
@@ -782,7 +786,7 @@ export default createReactClass({
         if (!this._divScroll) {
             // Likewise, we should have the ref by this point, but if not
             // turn the NPE into something meaningful.
-            throw new Error("ScrollPanel._getScrollNode called before gemini ref collected");
+            throw new Error("ScrollPanel._getScrollNode called before AutoHideScrollbar ref collected");
         }
 
         return this._divScroll;
@@ -882,6 +886,7 @@ export default createReactClass({
         return (<AutoHideScrollbar wrappedRef={this._collectScroll}
                 onScroll={this.onScroll}
                 className={`mx_ScrollPanel ${this.props.className}`} style={this.props.style}>
+                    { this.props.fixedChildren }
                     <div className="mx_RoomView_messageListWrapper">
                         <ol ref={this._itemlist} className="mx_RoomView_MessageList" aria-live="polite" role="list">
                             { this.props.children }

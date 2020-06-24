@@ -87,6 +87,13 @@ async function localSearch(searchTerm, roomId = undefined) {
         searchArgs.room_id = roomId;
     }
 
+    const emptyResult = {
+        results: [],
+        highlights: [],
+    };
+
+    if (searchTerm === "") return emptyResult;
+
     const eventIndex = EventIndexPeg.get();
 
     const localResult = await eventIndex.search(searchArgs);
@@ -97,13 +104,31 @@ async function localSearch(searchTerm, roomId = undefined) {
         },
     };
 
-    const emptyResult = {
-        results: [],
-        highlights: [],
-    };
-
     const result = MatrixClientPeg.get()._processRoomEventsSearch(
         emptyResult, response);
+
+    // Restore our encryption info so we can properly re-verify the events.
+    for (let i = 0; i < result.results.length; i++) {
+        const timeline = result.results[i].context.getTimeline();
+
+        for (let j = 0; j < timeline.length; j++) {
+            const ev = timeline[j];
+            if (ev.event.curve25519Key) {
+                ev.makeEncrypted(
+                    "m.room.encrypted",
+                    { algorithm: ev.event.algorithm },
+                    ev.event.curve25519Key,
+                    ev.event.ed25519Key,
+                );
+                ev._forwardingCurve25519KeyChain = ev.event.forwardingCurve25519KeyChain;
+
+                delete ev.event.curve25519Key;
+                delete ev.event.ed25519Key;
+                delete ev.event.algorithm;
+                delete ev.event.forwardingCurve25519KeyChain;
+            }
+        }
+    }
 
     return result;
 }
