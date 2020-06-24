@@ -1945,6 +1945,29 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         dis.dispatch({ action: 'close_settings' });
     }
 
+<<<<<<< Updated upstream
+=======
+    exportE2eKeysDialog = () => {
+        Modal.createTrackedDialogAsync('Export E2E Keys', '', (cb) => {
+            require.ensure(['../../async-components/views/dialogs/ExportE2eKeysDialog'], () => {
+                cb(require('../../async-components/views/dialogs/ExportE2eKeysDialog'));
+            }, "e2e-export");
+        }, {
+            matrixClient: MatrixClientPeg.get(),
+        });
+    };
+
+    importE2eKeysDialog = () => {
+        Modal.createTrackedDialogAsync('Import E2E Keys', '', (cb) => {
+            require.ensure(['../../async-components/views/dialogs/ImportE2eKeysDialog'], () => {
+                cb(require('../../async-components/views/dialogs/ImportE2eKeysDialog'));
+            }, "e2e-export");
+        }, {
+            matrixClient: MatrixClientPeg.get(),
+        });
+    };
+
+>>>>>>> Stashed changes
     onServerConfigChange = (serverConfig: ValidatedServerConfig) => {
         this.setState({serverConfig});
     };
