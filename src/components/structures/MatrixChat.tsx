@@ -508,33 +508,6 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             case 'logout':
                 if (payload.forceLogout) {
                     Lifecycle.logout();
-                } else {
-                    const QuestionDialog = sdk.getComponent("dialogs.QuestionDialog");
-                    Modal.createTrackedDialog('Logout E2E Export', '', QuestionDialog, {
-                        title: _t("Sign out"),
-                        description:
-                            <div>
-                         { _t("For security, logging out will delete any end-to-end " +
-                              "encryption keys from this browser. If you want to be able " +
-                              "to decrypt your conversation history from future Riot sessions, " +
-                              "please export your room keys for safe-keeping.") }.
-                            </div>,
-                        button: _t("Sign out"),
-                        extraButtons: [
-                            <button key="export" className="mx_Dialog_primary"
-                                    onClick={this.exportE2eKeysDialog}>
-                               { _t("Export E2E room keys") }
-                            </button>,
-                        ],
-                        onFinished: (confirmed) => {
-                            if (confirmed) {
-                                Lifecycle.logout();
-                                if (this.props.onFinished) {
-                                    this.props.onFinished();
-                                }
-                            }
-                        },
-                    });
                 }
                 break;
             case 'require_registration':
@@ -1971,26 +1944,6 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
     onCloseAllSettings() {
         dis.dispatch({ action: 'close_settings' });
     }
-
-    exportE2eKeysDialog = function() => {
-        Modal.createTrackedDialogAsync('Export E2E Keys', '', (cb) => {
-            require.ensure(['../../async-components/views/dialogs/ExportE2eKeysDialog'], () => {
-                cb(require('../../async-components/views/dialogs/ExportE2eKeysDialog'));
-            }, "e2e-export");
-        }, {
-            matrixClient: MatrixClientPeg.get(),
-        });
-    };
-
-    importE2eKeysDialog = () => {
-        Modal.createTrackedDialogAsync('Import E2E Keys', '', (cb) => {
-            require.ensure(['../../async-components/views/dialogs/ImportE2eKeysDialog'], () => {
-                cb(require('../../async-components/views/dialogs/ImportE2eKeysDialog'));
-            }, "e2e-export");
-        }, {
-            matrixClient: MatrixClientPeg.get(),
-        });
-    };
 
     onServerConfigChange = (serverConfig: ValidatedServerConfig) => {
         this.setState({serverConfig});
