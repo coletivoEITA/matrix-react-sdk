@@ -1614,7 +1614,9 @@ export default createReactClass({
                 case 'im.vector.login':
                     console.log('postMessage: logging in from credentials sent by origin requestor');
                     console.log(MatrixClientPeg.get());
-                    console.log(MatrixClientPeg.getCredentials());
+                    if (MatrixClientPeg.get()) {
+                        console.log(MatrixClientPeg.getCredentials());
+                    }
                     console.log(credentials);
                     console.log(currentCredentials);
                     console.log(this.state.view);
