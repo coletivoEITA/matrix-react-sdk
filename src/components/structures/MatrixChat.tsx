@@ -254,7 +254,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
         // Listen to login credentials sent through postMessage from another site
-        window.addEventListener('message', this.onMessage);
+        window.addEventListener('message', (ev) => {this.onMessage(ev, this);});
 
         this.pageChanging = false;
 
@@ -1568,97 +1568,6 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         }
     }
 
-    onMessage(ev) {
-        if (
-            window.location.origin != ev.origin &&
-            (!SdkConfig.get().allowedPostMessageOrigins ||
-            SdkConfig.get().allowedPostMessageOrigins.indexOf(ev.origin) == -1)
-        ) {
-            console.log('postMessage: unallowed postMessageOrigin. Ignoring request...');
-            ev.source.postMessage('{"status":"im.vector.error","msg":"invalid origin"}', ev.origin);
-            return;
-        }
-
-        if (this.state && this.state.view == Views.LOADING) {
-            ev.source.postMessage('{"status":"im.vector.loading"}', ev.origin);
-            return;
-        }
-
-        let credentials = {
-            action: null,
-            accessToken: null,
-            homeserverUrl: null,
-            identityServerUrl: null,
-            userId: null,
-            deviceId: null,
-            guest: null,
-            forceLogout: null // I'm not using it anymore
-        };
-        try {
-            credentials = JSON.parse(ev.data);
-        } catch (e) {
-            ev.source.postMessage('{"status":"im.vector.error","msg":"invalid credentials format"}', ev.origin);
-            return;
-        }
-
-        if (
-            credentials.action &&
-            credentials.accessToken &&
-            credentials.homeserverUrl &&
-            credentials.identityServerUrl &&
-            credentials.userId
-        ) {
-            const currentCredentials = (MatrixClientPeg.get())
-                ? MatrixClientPeg.getCredentials()
-                : null;
-            const sameUser = (
-                currentCredentials &&
-                credentials.accessToken == currentCredentials.accessToken &&
-                credentials.homeserverUrl == currentCredentials.homeserverUrl &&
-                credentials.identityServerUrl == currentCredentials.identityServerUrl &&
-                credentials.userId == currentCredentials.userId &&
-                (!credentials.deviceId || credentials.deviceId == currentCredentials.deviceId)
-            );
-            switch (credentials.action) {
-                case 'im.vector.login':
-                    console.log('postMessage: logging in from credentials sent by origin requestor');
-                    // console.log(MatrixClientPeg.get());
-                    // if (MatrixClientPeg.get()) {
-                    //     console.log(MatrixClientPeg.getCredentials());
-                    // }
-                    // console.log(credentials);
-                    // console.log(currentCredentials);
-                    // console.log(this.state?.view);
-                    console.log('postMessage: ------------');
-                    credentials.guest = false;
-                    if (sameUser) {
-                        console.log('postMessage: user is already logged in');
-                        ev.source.postMessage('{"status":"im.vector.login",'+
-                            '"msg":"user is already logged in"}', ev.origin);
-                        return;
-                    }
-                    ev.source.postMessage('{"status":"im.vector.login"}', ev.origin);
-                    delete credentials.action;
-                    Lifecycle.setLoggedIn(credentials);
-                    break;
-                case 'im.vector.logout':
-                    console.log('postMessage: logging out');
-                    ev.source.postMessage('{"status":"im.vector.logout"}', ev.origin);
-                    if (sameUser) {
-                        dis.dispatch({
-                            action: 'logout',
-                            forceLogout: credentials.forceLogout, //I'm not using it anymore
-                        });
-                    } else {
-                        ev.source.postMessage('{"status":"im.vector.error",'+
-                            '"msg":"postMessage logout: user is not logged in or credentials are invalid"}',
-                            ev.origin);
-                    }
-                    break;
-            }
-        }
-    }
-
     showScreen(screen: string, params?: {[key: string]: any}) {
         if (screen === 'register') {
             dis.dispatch({
@@ -1895,6 +1804,99 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         this.showScreen("settings");
     };
 
+    onMessage(ev, dis) {
+        if (
+            window.location.origin != ev.origin &&
+            (!SdkConfig.get().allowedPostMessageOrigins ||
+            SdkConfig.get().allowedPostMessageOrigins.indexOf(ev.origin) == -1)
+        ) {
+            console.log('postMessage: unallowed postMessageOrigin. Ignoring request...');
+            ev.source.postMessage('{"status":"im.vector.error","msg":"invalid origin"}', ev.origin);
+            return;
+        }
+
+        if (this.state && this.state.view == Views.LOADING) {
+            console.log('postMessage: still loading. Ignoring request...');
+            ev.source.postMessage('{"status":"im.vector.loading"}', ev.origin);
+            return;
+        }
+
+        let credentials = {
+            action: null,
+            accessToken: null,
+            homeserverUrl: null,
+            identityServerUrl: null,
+            userId: null,
+            deviceId: null,
+            guest: null,
+            forceLogout: null, // I'm not using it anymore
+            password: null
+        };
+        try {
+            credentials = JSON.parse(ev.data);
+        } catch (e) {
+            console.log('postMessage: error parsing credentials...');
+            ev.source.postMessage('{"status":"im.vector.error","msg":"invalid credentials format"}', ev.origin);
+            return;
+        }
+
+        if (
+            credentials.action &&
+            credentials.accessToken &&
+            credentials.homeserverUrl &&
+            credentials.identityServerUrl &&
+            credentials.userId &&
+            credentials.password &&
+            credentials.deviceId
+        ) {
+            const currentCredentials = (MatrixClientPeg.get())
+                ? MatrixClientPeg.getCredentials()
+                : null;
+            const sameUser = (
+                currentCredentials &&
+                credentials.accessToken == currentCredentials.accessToken &&
+                credentials.homeserverUrl == currentCredentials.homeserverUrl &&
+                credentials.identityServerUrl == currentCredentials.identityServerUrl &&
+                credentials.userId == currentCredentials.userId &&
+                credentials.deviceId == currentCredentials.deviceId
+            );
+            switch (credentials.action) {
+                case 'im.vector.login':
+                    console.log('postMessage: logging in from credentials sent by origin requestor');
+                    // console.log('postMessage: ------------', {credentials, currentCredentials});
+                    credentials.guest = false;
+                    if (sameUser && currentCredentials.deviceId) {
+                        console.log('postMessage: user is already logged in');
+                        ev.source.postMessage('{"status":"im.vector.login",'+
+                            '"msg":"user is already logged in"}', ev.origin);
+                        return;
+                    }
+                    ev.source.postMessage('{"status":"im.vector.login"}', ev.origin);
+                    const password = credentials.password;
+                    delete credentials.action;
+                    delete credentials.password;
+                    dis.onRegisterFlowComplete(credentials, password);
+                    //dis.onUserCompletedLoginFlow(credentials, password);
+                    // Lifecycle.setLoggedIn(credentials);
+                    break;
+                case 'im.vector.logout':
+                    console.log('postMessage: logging out');
+                    ev.source.postMessage('{"status":"im.vector.logout"}', ev.origin);
+                    if (sameUser) {
+                        dis.dispatch({
+                            action: 'logout',
+                            forceLogout: credentials.forceLogout, //I'm not using it anymore
+                        });
+                    } else {
+                        ev.source.postMessage('{"status":"im.vector.error",'+
+                            '"msg":"postMessage logout: user is not logged in or credentials are invalid"}',
+                            ev.origin);
+                    }
+                    break;
+            }
+        }
+    }
+
     onSendEvent(roomId: string, event: MatrixEvent) {
         const cli = MatrixClientPeg.get();
         if (!cli) {
@@ -1942,7 +1944,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         if (sendNotifCount && sendNotifCount.parent_origin) {
             window.parent.postMessage('{"status":"im.vector.notif_count","msg":'+notifCount+'}', sendNotifCount.parent_origin);
         } else {
-            console.log("postMessage: " + JSON.stringify(sendNotifCount));
+            // console.log("postMessage: " + JSON.stringify(sendNotifCount));
         }
         this.setPageSubtitle();
     }
