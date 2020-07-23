@@ -76,6 +76,7 @@ export default class RebrandListener {
     }
 
     start() {
+        localStorage.setItem('mx_rename_dialog_dismissed', 'true');
         this.recheck();
     }
 

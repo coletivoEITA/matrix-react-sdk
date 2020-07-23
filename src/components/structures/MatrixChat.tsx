@@ -256,7 +256,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
         // Listen to login credentials sent through postMessage from another site
-        window.addEventListener('message', (ev) => {this.onMessage(ev, this);});
+        window.addEventListener('message', this.onMessage);
 
         this.pageChanging = false;
 
@@ -1820,7 +1820,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         this.showScreen("settings");
     };
 
-    onMessage(ev, dis) {
+    onMessage = (ev) => {
         if (
             window.location.origin != ev.origin &&
             (!SdkConfig.get().allowedPostMessageOrigins ||
@@ -1851,8 +1851,8 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         try {
             credentials = JSON.parse(ev.data);
         } catch (e) {
-            console.log('postMessage: error parsing credentials...');
-            ev.source.postMessage('{"status":"im.vector.error","msg":"invalid credentials format"}', ev.origin);
+            // console.log('postMessage: error parsing credentials...', {data: ev.data, error: e});
+            // ev.source.postMessage('{"status":"im.vector.error","msg":"invalid credentials format"}', ev.origin);
             return;
         }
 
@@ -1891,9 +1891,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                     const password = credentials.password;
                     delete credentials.action;
                     delete credentials.password;
-                    dis.onRegisterFlowComplete(credentials, password);
-                    //dis.onUserCompletedLoginFlow(credentials, password);
-                    // Lifecycle.setLoggedIn(credentials);
+                    this.onRegisterFlowComplete(credentials, null);
                     break;
                 case 'im.vector.logout':
                     console.log('postMessage: logging out');
@@ -1911,7 +1909,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                     break;
             }
         }
-    }
+    };
 
     onSendEvent(roomId: string, event: MatrixEvent) {
         const cli = MatrixClientPeg.get();
