@@ -30,7 +30,7 @@
 @import "./structures/_ToastContainer.scss";
 @import "./structures/_TopLeftMenuButton.scss";
 @import "./structures/_UploadBar.scss";
-@import "./structures/_UserMenuButton.scss";
+@import "./structures/_UserMenu.scss";
 @import "./structures/_ViewSource.scss";
 @import "./structures/auth/_CompleteSecurity.scss";
 @import "./structures/auth/_Login.scss";
@@ -49,7 +49,9 @@
 @import "./views/auth/_ServerTypeSelector.scss";
 @import "./views/auth/_Welcome.scss";
 @import "./views/avatars/_BaseAvatar.scss";
+@import "./views/avatars/_DecoratedRoomAvatar.scss";
 @import "./views/avatars/_MemberStatusMessageAvatar.scss";
+@import "./views/avatars/_PulsedAvatar.scss";
 @import "./views/context_menus/_MessageContextMenu.scss";
 @import "./views/context_menus/_RoomTileContextMenu.scss";
 @import "./views/context_menus/_StatusMessageContextMenu.scss";
@@ -71,6 +73,7 @@
 @import "./views/dialogs/_KeyboardShortcutsDialog.scss";
 @import "./views/dialogs/_MessageEditHistoryDialog.scss";
 @import "./views/dialogs/_NewSessionReviewDialog.scss";
+@import "./views/dialogs/_RebrandDialog.scss";
 @import "./views/dialogs/_RoomSettingsDialog.scss";
 @import "./views/dialogs/_RoomSettingsDialogBridges.scss";
 @import "./views/dialogs/_RoomUpgradeDialog.scss";
@@ -143,7 +146,6 @@
 @import "./views/messages/_MjolnirBody.scss";
 @import "./views/messages/_ReactionsRow.scss";
 @import "./views/messages/_ReactionsRowButton.scss";
-@import "./views/messages/_ReactionsRowButtonTooltip.scss";
 @import "./views/messages/_RedactedBody.scss";
 @import "./views/messages/_RoomAvatarEvent.scss";
 @import "./views/messages/_SenderProfile.scss";
@@ -224,6 +226,8 @@
 @import "./views/settings/tabs/user/_VoiceUserSettingsTab.scss";
 @import "./views/terms/_InlineTermsAgreement.scss";
 @import "./views/verification/_VerificationShowSas.scss";
+@import "./views/voip/_CallContainer.scss";
 @import "./views/voip/_CallView.scss";
+@import "./views/voip/_CallView2.scss";
 @import "./views/voip/_IncomingCallbox.scss";
 @import "./views/voip/_VideoView.scss";

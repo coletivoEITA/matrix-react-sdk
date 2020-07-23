@@ -19,7 +19,6 @@ limitations under the License.
 import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import { MatrixClient } from 'matrix-js-sdk/src/client';
-import { MatrixEvent } from 'matrix-js-sdk/src/models/event';
 import { DragDropContext } from 'react-beautiful-dnd';
 
 import {Key, isOnlyCtrlOrCmdKeyEvent, isOnlyCtrlOrCmdIgnoreShiftKeyEvent} from '../../Keyboard';
@@ -53,6 +52,8 @@ import {
 } from "../../toasts/ServerLimitToast";
 import { Action } from "../../dispatcher/actions";
 import LeftPanel2 from "./LeftPanel2";
+import CallContainer from '../views/voip/CallContainer';
+import { ViewRoomDeltaPayload } from "../../dispatcher/payloads/ViewRoomDeltaPayload";
 
 // We need to fetch each pinned message individually (if we don't already have it)
 // so each pinned message may trigger a request. Limit the number per room for sanity.
@@ -123,7 +124,7 @@ interface IState {
  *
  * Components mounted below us can access the matrix client via the react context.
  */
-class LoggedInView extends React.PureComponent<IProps, IState> {
+class LoggedInView extends React.Component<IProps, IState> {
     static displayName = 'LoggedInView';
 
     static propTypes = {
@@ -146,6 +147,7 @@ class LoggedInView extends React.PureComponent<IProps, IState> {
     protected readonly _resizeContainer: React.RefObject<ResizeHandle>;
     protected readonly _sessionStore: sessionStore;
     protected readonly _sessionStoreToken: { remove: () => void };
+    protected readonly _compactLayoutWatcherRef: string;
     protected resizer: Resizer;
 
     constructor(props, context) {
@@ -177,6 +179,10 @@ class LoggedInView extends React.PureComponent<IProps, IState> {
         this._matrixClient.on("sync", this.onSync);
         this._matrixClient.on("RoomState.events", this.onRoomStateEvents);
 
+        this._compactLayoutWatcherRef = SettingsStore.watchSetting(
+            "useCompactLayout", null, this.onCompactLayoutChanged,
+        );
+
         fixupColorFonts();
 
         this._roomView = React.createRef();
@@ -194,6 +200,7 @@ class LoggedInView extends React.PureComponent<IProps, IState> {
         this._matrixClient.removeListener("accountData", this.onAccountData);
         this._matrixClient.removeListener("sync", this.onSync);
         this._matrixClient.removeListener("RoomState.events", this.onRoomStateEvents);
+        SettingsStore.unwatchSetting(this._compactLayoutWatcherRef);
         if (this._sessionStoreToken) {
             this._sessionStoreToken.remove();
         }
@@ -263,14 +270,15 @@ class LoggedInView extends React.PureComponent<IProps, IState> {
     }
 
     onAccountData = (event) => {
-        if (event.getType() === "im.vector.web.settings") {
-            this.setState({
-                useCompactLayout: event.getContent().useCompactLayout,
-            });
-        }
         if (event.getType() === "m.ignored_user_list") {
             dis.dispatch({action: "ignore_state_changed"});
         }
+    };
+
+    onCompactLayoutChanged = (setting, roomId, level, valueAtLevel, newValue) => {
+        this.setState({
+            useCompactLayout: valueAtLevel,
+        });
     };
 
     onSync = (syncState, oldSyncState, data) => {
@@ -402,20 +410,6 @@ class LoggedInView extends React.PureComponent<IProps, IState> {
     };
 
     _onKeyDown = (ev) => {
-            /*
-            // Remove this for now as ctrl+alt = alt-gr so this breaks keyboards which rely on alt-gr for numbers
-            // Will need to find a better meta key if anyone actually cares about using this.
-            if (ev.altKey && ev.ctrlKey && ev.keyCode > 48 && ev.keyCode < 58) {
-                dis.dispatch({
-                    action: 'view_indexed_room',
-                    roomIndex: ev.keyCode - 49,
-                });
-                ev.stopPropagation();
-                ev.preventDefault();
-                return;
-            }
-            */
-
         let handled = false;
         const ctrlCmdOnly = isOnlyCtrlOrCmdKeyEvent(ev);
         const hasModifier = ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey;
@@ -467,8 +461,8 @@ class LoggedInView extends React.PureComponent<IProps, IState> {
             case Key.ARROW_UP:
             case Key.ARROW_DOWN:
                 if (ev.altKey && !ev.ctrlKey && !ev.metaKey) {
-                    dis.dispatch({
-                        action: 'view_room_delta',
+                    dis.dispatch<ViewRoomDeltaPayload>({
+                        action: Action.ViewRoomDelta,
                         delta: ev.key === Key.ARROW_UP ? -1 : 1,
                         unread: ev.shiftKey,
                     });
@@ -674,10 +668,12 @@ class LoggedInView extends React.PureComponent<IProps, IState> {
                 disabled={this.props.leftDisabled}
             />
         );
-        if (SettingsStore.isFeatureEnabled("feature_new_room_list")) {
-            // TODO: Supply props like collapsed and disabled to LeftPanel2
+        if (SettingsStore.getValue("feature_new_room_list")) {
             leftPanel = (
-                <LeftPanel2 isMinimized={this.props.collapseLhs || false} />
+                <LeftPanel2
+                    isMinimized={this.props.collapseLhs || false}
+                    resizeNotifier={this.props.resizeNotifier}
+                />
             );
         }
 
@@ -700,6 +696,7 @@ class LoggedInView extends React.PureComponent<IProps, IState> {
                         </div>
                     </DragDropContext>
                 </div>
+                <CallContainer />
             </MatrixClientContext.Provider>
         );
     }

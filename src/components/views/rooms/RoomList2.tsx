@@ -17,31 +17,37 @@ limitations under the License.
 */
 
 import * as React from "react";
+import { Dispatcher } from "flux";
+import { Room } from "matrix-js-sdk/src/models/room";
+
 import { _t, _td } from "../../../languageHandler";
 import { RovingTabIndexProvider } from "../../../accessibility/RovingTabIndex";
 import { ResizeNotifier } from "../../../utils/ResizeNotifier";
-import RoomListStore, { LISTS_UPDATE_EVENT, RoomListStore2 } from "../../../stores/room-list/RoomListStore2";
+import RoomListStore, { LISTS_UPDATE_EVENT } from "../../../stores/room-list/RoomListStore2";
+import RoomViewStore from "../../../stores/RoomViewStore";
 import { ITagMap } from "../../../stores/room-list/algorithms/models";
 import { DefaultTagID, TagID } from "../../../stores/room-list/models";
-import { Dispatcher } from "flux";
 import dis from "../../../dispatcher/dispatcher";
+import defaultDispatcher from "../../../dispatcher/dispatcher";
 import RoomSublist2 from "./RoomSublist2";
 import { ActionPayload } from "../../../dispatcher/payloads";
 import { NameFilterCondition } from "../../../stores/room-list/filters/NameFilterCondition";
-import { ListLayout } from "../../../stores/room-list/ListLayout";
+import { MatrixClientPeg } from "../../../MatrixClientPeg";
+import GroupAvatar from "../avatars/GroupAvatar";
+import TemporaryTile from "./TemporaryTile";
+import { StaticNotificationState } from "../../../stores/notifications/StaticNotificationState";
+import { NotificationColor } from "../../../stores/notifications/NotificationColor";
+import { Action } from "../../../dispatcher/actions";
+import { ViewRoomDeltaPayload } from "../../../dispatcher/payloads/ViewRoomDeltaPayload";
+import { RoomNotificationStateStore } from "../../../stores/notifications/RoomNotificationStateStore";
 
-/*******************************************************************
- *   CAUTION                                                       *
- *******************************************************************
- * This is a work in progress implementation and isn't complete or *
- * even useful as a component. Please avoid using it until this    *
- * warning disappears.                                             *
- *******************************************************************/
+// TODO: Rename on launch: https://github.com/vector-im/riot-web/issues/14367
 
 interface IProps {
     onKeyDown: (ev: React.KeyboardEvent) => void;
     onFocus: (ev: React.FocusEvent) => void;
     onBlur: (ev: React.FocusEvent) => void;
+    onResize: () => void;
     resizeNotifier: ResizeNotifier;
     collapsed: boolean;
     searchFilter: string;
@@ -50,12 +56,9 @@ interface IProps {
 
 interface IState {
     sublists: ITagMap;
-    layouts: Map<TagID, ListLayout>;
 }
 
 const TAG_ORDER: TagID[] = [
-    // -- Community Invites Placeholder --
-
     DefaultTagID.Invite,
     DefaultTagID.Favourite,
     DefaultTagID.DM,
@@ -67,7 +70,6 @@ const TAG_ORDER: TagID[] = [
     DefaultTagID.ServerNotice,
     DefaultTagID.Archived,
 ];
-const COMMUNITY_TAGS_BEFORE_TAG = DefaultTagID.Invite;
 const CUSTOM_TAGS_BEFORE_TAG = DefaultTagID.LowPriority;
 const ALWAYS_VISIBLE_TAGS: TagID[] = [
     DefaultTagID.DM,
@@ -120,6 +122,8 @@ const TAG_AESTHETICS: {
         isInvite: false,
         defaultHidden: false,
     },
+
+    // TODO: Replace with archived view: https://github.com/vector-im/riot-web/issues/14038
     [DefaultTagID.Archived]: {
         sectionLabel: _td("Historical"),
         isInvite: false,
@@ -129,14 +133,16 @@ const TAG_AESTHETICS: {
 
 export default class RoomList2 extends React.Component<IProps, IState> {
     private searchFilter: NameFilterCondition = new NameFilterCondition();
+    private dispatcherRef;
 
     constructor(props: IProps) {
         super(props);
 
         this.state = {
             sublists: {},
-            layouts: new Map<TagID, ListLayout>(),
         };
+
+        this.dispatcherRef = defaultDispatcher.register(this.onAction);
     }
 
     public componentDidUpdate(prevProps: Readonly<IProps>): void {
@@ -155,16 +161,97 @@ export default class RoomList2 extends React.Component<IProps, IState> {
     }
 
     public componentDidMount(): void {
-        RoomListStore.instance.on(LISTS_UPDATE_EVENT, (store: RoomListStore2) => {
-            const newLists = store.orderedLists;
-            console.log("new lists", newLists);
+        RoomListStore.instance.on(LISTS_UPDATE_EVENT, this.updateLists);
+        this.updateLists(); // trigger the first update
+    }
 
-            const layoutMap = new Map<TagID, ListLayout>();
-            for (const tagId of Object.keys(newLists)) {
-                layoutMap.set(tagId, new ListLayout(tagId));
+    public componentWillUnmount() {
+        RoomListStore.instance.off(LISTS_UPDATE_EVENT, this.updateLists);
+        defaultDispatcher.unregister(this.dispatcherRef);
+    }
+
+    private onAction = (payload: ActionPayload) => {
+        if (payload.action === Action.ViewRoomDelta) {
+            const viewRoomDeltaPayload = payload as ViewRoomDeltaPayload;
+            const currentRoomId = RoomViewStore.getRoomId();
+            const room = this.getRoomDelta(currentRoomId, viewRoomDeltaPayload.delta, viewRoomDeltaPayload.unread);
+            if (room) {
+                dis.dispatch({
+                    action: 'view_room',
+                    room_id: room.roomId,
+                    show_room_tile: true, // to make sure the room gets scrolled into view
+                });
+            }
+        }
+    };
+
+    private getRoomDelta = (roomId: string, delta: number, unread = false) => {
+        const lists = RoomListStore.instance.orderedLists;
+        let rooms: Room = [];
+        TAG_ORDER.forEach(t => {
+            let listRooms = lists[t];
+
+            if (unread) {
+                // filter to only notification rooms (and our current active room so we can index properly)
+                listRooms = listRooms.filter(r => {
+                    const state = RoomNotificationStateStore.instance.getRoomState(r, t);
+                    return state.room.roomId === roomId || state.isUnread;
+                });
             }
 
-            this.setState({sublists: newLists, layouts: layoutMap});
+            rooms.push(...listRooms);
+        });
+
+        const currentIndex = rooms.findIndex(r => r.roomId === roomId);
+        // use slice to account for looping around the start
+        const [room] = rooms.slice((currentIndex + delta) % rooms.length);
+        return room;
+    };
+
+    private updateLists = () => {
+        const newLists = RoomListStore.instance.orderedLists;
+        if (window.mx_LoudRoomListLogging) {
+            // TODO: Remove debug: https://github.com/vector-im/riot-web/issues/14035
+            console.log("new lists", newLists);
+        }
+
+        this.setState({sublists: newLists}, () => {
+            this.props.onResize();
+        });
+    };
+
+    private renderCommunityInvites(): React.ReactElement[] {
+        // TODO: Put community invites in a more sensible place (not in the room list)
+        // See https://github.com/vector-im/riot-web/issues/14456
+        return MatrixClientPeg.get().getGroups().filter(g => {
+           if (g.myMembership !== 'invite') return false;
+           return !this.searchFilter || this.searchFilter.matches(g.name || "");
+        }).map(g => {
+            const avatar = (
+                <GroupAvatar
+                    groupId={g.groupId}
+                    groupName={g.name}
+                    groupAvatarUrl={g.avatarUrl}
+                    width={32} height={32} resizeMethod='crop'
+                />
+            );
+            const openGroup = () => {
+                defaultDispatcher.dispatch({
+                    action: 'view_group',
+                    group_id: g.groupId,
+                });
+            };
+            return (
+                <TemporaryTile
+                    isMinimized={this.props.isMinimized}
+                    isSelected={false}
+                    displayName={g.name}
+                    avatar={avatar}
+                    notificationState={StaticNotificationState.forSymbol("!", NotificationColor.Red)}
+                    onClick={openGroup}
+                    key={`temporaryGroupTile_${g.groupId}`}
+                />
+            );
         });
     }
 
@@ -172,17 +259,15 @@ export default class RoomList2 extends React.Component<IProps, IState> {
         const components: React.ReactElement[] = [];
 
         for (const orderedTagId of TAG_ORDER) {
-            if (COMMUNITY_TAGS_BEFORE_TAG === orderedTagId) {
-                // Populate community invites if we have the chance
-                // TODO
-            }
             if (CUSTOM_TAGS_BEFORE_TAG === orderedTagId) {
                 // Populate custom tags if needed
-                // TODO
+                // TODO: Custom tags: https://github.com/vector-im/riot-web/issues/14091
             }
 
             const orderedRooms = this.state.sublists[orderedTagId] || [];
-            if (orderedRooms.length === 0 && !ALWAYS_VISIBLE_TAGS.includes(orderedTagId)) {
+            const extraTiles = orderedTagId === DefaultTagID.Invite ? this.renderCommunityInvites() : null;
+            const totalTiles = orderedRooms.length + (extraTiles ? extraTiles.length : 0);
+            if (totalTiles === 0 && !ALWAYS_VISIBLE_TAGS.includes(orderedTagId)) {
                 continue; // skip tag - not needed
             }
 
@@ -193,15 +278,17 @@ export default class RoomList2 extends React.Component<IProps, IState> {
             components.push(
                 <RoomSublist2
                     key={`sublist-${orderedTagId}`}
+                    tagId={orderedTagId}
                     forRooms={true}
                     rooms={orderedRooms}
                     startAsHidden={aesthetics.defaultHidden}
                     label={_t(aesthetics.sectionLabel)}
                     onAddRoom={onAddRoomFn}
                     addRoomLabel={aesthetics.addRoomLabel}
-                    isInvite={aesthetics.isInvite}
-                    layout={this.state.layouts.get(orderedTagId)}
                     isMinimized={this.props.isMinimized}
+                    onResize={this.props.onResize}
+                    extraBadTilesThatShouldntExist={extraTiles}
+                    isFiltered={!!this.searchFilter.search}
                 />
             );
         }
@@ -221,9 +308,6 @@ export default class RoomList2 extends React.Component<IProps, IState> {
                         className="mx_RoomList2"
                         role="tree"
                         aria-label={_t("Rooms")}
-                        // Firefox sometimes makes this element focusable due to
-                        // overflow:scroll;, so force it out of tab order.
-                        tabIndex={-1}
                     >{sublists}</div>
                 )}
             </RovingTabIndexProvider>

@@ -39,7 +39,7 @@ import Tinter from '../../Tinter';
 import rate_limited_func from '../../ratelimitedfunc';
 import * as ObjectUtils from '../../ObjectUtils';
 import * as Rooms from '../../Rooms';
-import eventSearch from '../../Searching';
+import eventSearch, {searchPagination} from '../../Searching';
 
 import {isOnlyCtrlOrCmdIgnoreShiftKeyEvent, isOnlyCtrlOrCmdKeyEvent, Key} from '../../Keyboard';
 
@@ -166,7 +166,7 @@ export default createReactClass({
             canReact: false,
             canReply: false,
 
-            useIRCLayout: SettingsStore.getValue("feature_irc_ui"),
+            useIRCLayout: SettingsStore.getValue("useIRCLayout"),
 
             matrixClientIsReady: this.context && this.context.isInitialSyncComplete(),
         };
@@ -199,7 +199,7 @@ export default createReactClass({
         this._roomView = createRef();
         this._searchResultsPanel = createRef();
 
-        this._layoutWatcherRef = SettingsStore.watchSetting("feature_irc_ui", null, this.onLayoutChange);
+        this._layoutWatcherRef = SettingsStore.watchSetting("useIRCLayout", null, this.onLayoutChange);
     },
 
     _onReadReceiptsChange: function() {
@@ -546,7 +546,7 @@ export default createReactClass({
 
     onLayoutChange: function() {
         this.setState({
-            useIRCLayout: SettingsStore.getValue("feature_irc_ui"),
+            useIRCLayout: SettingsStore.getValue("useIRCLayout"),
         });
     },
 
@@ -1036,8 +1036,7 @@ export default createReactClass({
 
         if (this.state.searchResults.next_batch) {
             debuglog("requesting more search results");
-            const searchPromise = this.context.backPaginateRoomEventsSearch(
-                this.state.searchResults);
+            const searchPromise = searchPagination(this.state.searchResults);
             return this._handleSearchResult(searchPromise);
         } else {
             debuglog("no more search results");
@@ -1313,6 +1312,14 @@ export default createReactClass({
             const mxEv = result.context.getEvent();
             const roomId = mxEv.getRoomId();
             const room = this.context.getRoom(roomId);
+            if (!room) {
+                // if we do not have the room in js-sdk stores then hide it as we cannot easily show it
+                // As per the spec, an all rooms search can create this condition,
+                // it happens with Seshat but not Synapse.
+                // It will make the result count not match the displayed count.
+                console.log("Hiding search result from an unknown room", roomId);
+                continue;
+            }
 
             if (!haveTileForEvent(mxEv)) {
                 // XXX: can this ever happen? It will make the result count
@@ -1321,16 +1328,9 @@ export default createReactClass({
             }
 
             if (this.state.searchScope === 'All') {
-                if (roomId != lastRoomId) {
-
-                    // XXX: if we've left the room, we might not know about
-                    // it. We should tell the js sdk to go and find out about
-                    // it. But that's not an issue currently, as synapse only
-                    // returns results for rooms we're joined to.
-                    const roomName = room ? room.name : _t("Unknown room %(roomId)s", { roomId: roomId });
-
+                if (roomId !== lastRoomId) {
                     ret.push(<li key={mxEv.getId() + "-room"}>
-                                 <h2>{ _t("Room") }: { roomName }</h2>
+                                 <h2>{ _t("Room") }: { room.name }</h2>
                              </li>);
                     lastRoomId = roomId;
                 }
@@ -1379,15 +1379,9 @@ export default createReactClass({
     },
 
     onForgetClick: function() {
-        this.context.forget(this.state.room.roomId).then(function() {
-            dis.dispatch({ action: 'view_next_room' });
-        }, function(err) {
-            const errCode = err.errcode || _t("unknown error code");
-            const ErrorDialog = sdk.getComponent("dialogs.ErrorDialog");
-            Modal.createTrackedDialog('Failed to forget room', '', ErrorDialog, {
-                title: _t("Error"),
-                description: _t("Failed to forget room %(errCode)s", { errCode: errCode }),
-            });
+        dis.dispatch({
+            action: 'forget_room',
+            room_id: this.state.room.roomId,
         });
     },
 
@@ -1818,6 +1812,7 @@ export default createReactClass({
         );
 
         const showRoomRecoveryReminder = (
+            this.context.isCryptoEnabled() &&
             SettingsStore.getValue("showRoomRecoveryReminder") &&
             this.context.isRoomEncrypted(this.state.room.roomId) &&
             this.context.getKeyBackupEnabled() === false
@@ -1931,25 +1926,29 @@ export default createReactClass({
         }
 
         if (inCall) {
-            let zoomButton; let voiceMuteButton; let videoMuteButton;
+            let zoomButton; let videoMuteButton;
 
             if (call.type === "video") {
                 zoomButton = (
                     <div className="mx_RoomView_voipButton" onClick={this.onFullscreenClick} title={_t("Fill screen")}>
-                        <TintableSvg src={require("../../../res/img/fullscreen.svg")} width="29" height="22" style={{ marginTop: 1, marginRight: 4 }} />
+                        <TintableSvg src={require("../../../res/img/element-icons/call/fullscreen.svg")} width="29" height="22" style={{ marginTop: 1, marginRight: 4 }} />
                     </div>
                 );
 
                 videoMuteButton =
                     <div className="mx_RoomView_voipButton" onClick={this.onMuteVideoClick}>
-                        <TintableSvg src={call.isLocalVideoMuted() ? require("../../../res/img/video-unmute.svg") : require("../../../res/img/video-mute.svg")}
+                        <TintableSvg src={call.isLocalVideoMuted() ?
+                            require("../../../res/img/element-icons/call/video-muted.svg") :
+                            require("../../../res/img/element-icons/call/video-call.svg")}
                              alt={call.isLocalVideoMuted() ? _t("Click to unmute video") : _t("Click to mute video")}
-                             width="31" height="27" />
+                             width="" height="27" />
                     </div>;
             }
-            voiceMuteButton =
+            const voiceMuteButton =
                 <div className="mx_RoomView_voipButton" onClick={this.onMuteAudioClick}>
-                    <TintableSvg src={call.isMicrophoneMuted() ? require("../../../res/img/voice-unmute.svg") : require("../../../res/img/voice-mute.svg")}
+                    <TintableSvg src={call.isMicrophoneMuted() ?
+                        require("../../../res/img/element-icons/call/voice-muted.svg") :
+                        require("../../../res/img/element-icons/call/voice-unmuted.svg")}
                          alt={call.isMicrophoneMuted() ? _t("Click to unmute audio") : _t("Click to mute audio")}
                          width="21" height="26" />
                 </div>;
@@ -1961,7 +1960,6 @@ export default createReactClass({
                     { videoMuteButton }
                     { zoomButton }
                     { statusBar }
-                    <TintableSvg className="mx_RoomView_voipChevron" src={require("../../../res/img/voip-chevron.svg")} width="22" height="17" />
                 </div>;
         }
 
@@ -2042,6 +2040,7 @@ export default createReactClass({
         if (!this.state.atEndOfLiveTimeline && !this.state.searchResults) {
             const JumpToBottomButton = sdk.getComponent('rooms.JumpToBottomButton');
             jumpToBottom = (<JumpToBottomButton
+                highlight={this.state.room.getUnreadNotificationCount('highlight') > 0}
                 numUnreadMessages={this.state.numUnreadMessages}
                 onScrollToBottomClick={this.jumpToLiveTimeline}
             />);

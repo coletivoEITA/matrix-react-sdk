@@ -16,22 +16,19 @@ limitations under the License.
 
 import React from "react";
 import { BreadcrumbsStore } from "../../../stores/BreadcrumbsStore";
-import AccessibleButton from "../elements/AccessibleButton";
-import RoomAvatar from "../avatars/RoomAvatar";
+import DecoratedRoomAvatar from "../avatars/DecoratedRoomAvatar";
 import { _t } from "../../../languageHandler";
 import { Room } from "matrix-js-sdk/src/models/room";
 import defaultDispatcher from "../../../dispatcher/dispatcher";
 import Analytics from "../../../Analytics";
 import { UPDATE_EVENT } from "../../../stores/AsyncStore";
-import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { CSSTransition } from "react-transition-group";
+import RoomListStore from "../../../stores/room-list/RoomListStore2";
+import { DefaultTagID } from "../../../stores/room-list/models";
+import { RovingAccessibleTooltipButton } from "../../../accessibility/RovingTabIndex";
+import Toolbar from "../../../accessibility/Toolbar";
 
-/*******************************************************************
- *   CAUTION                                                       *
- *******************************************************************
- * This is a work in progress implementation and isn't complete or *
- * even useful as a component. Please avoid using it until this    *
- * warning disappears.                                             *
- *******************************************************************/
+// TODO: Rename on launch: https://github.com/vector-im/riot-web/issues/14367
 
 interface IProps {
 }
@@ -86,18 +83,27 @@ export default class RoomBreadcrumbs2 extends React.PureComponent<IProps, IState
     };
 
     public render(): React.ReactElement {
-        // TODO: Decorate crumbs with icons
         const tiles = BreadcrumbsStore.instance.rooms.map((r, i) => {
+            const roomTags = RoomListStore.instance.getTagsForRoom(r);
+            const roomTag = roomTags.includes(DefaultTagID.DM) ? DefaultTagID.DM : roomTags[0];
             return (
-                <AccessibleButton
+                <RovingAccessibleTooltipButton
                     className="mx_RoomBreadcrumbs2_crumb"
                     key={r.roomId}
                     onClick={() => this.viewRoom(r, i)}
                     aria-label={_t("Room %(name)s", {name: r.name})}
+                    title={r.name}
+                    tooltipClassName={"mx_RoomBreadcrumbs2_Tooltip"}
                 >
-                    <RoomAvatar room={r} width={32} height={32}/>
-                </AccessibleButton>
-            )
+                    <DecoratedRoomAvatar
+                        room={r}
+                        avatarSize={32}
+                        tag={roomTag}
+                        displayBadge={true}
+                        forceCount={true}
+                    />
+                </RovingAccessibleTooltipButton>
+            );
         });
 
         if (tiles.length > 0) {
@@ -107,9 +113,9 @@ export default class RoomBreadcrumbs2 extends React.PureComponent<IProps, IState
                     appear={true} in={this.state.doAnimation} timeout={640}
                     classNames='mx_RoomBreadcrumbs2'
                 >
-                    <div className='mx_RoomBreadcrumbs2'>
+                    <Toolbar className='mx_RoomBreadcrumbs2'>
                         {tiles.slice(this.state.skipFirst ? 1 : 0)}
-                    </div>
+                    </Toolbar>
                 </CSSTransition>
             );
         } else {
