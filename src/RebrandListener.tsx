@@ -76,7 +76,6 @@ export default class RebrandListener {
     }
 
     start() {
-        localStorage.setItem('mx_rename_dialog_dismissed', 'true');
         this.recheck();
     }
 
@@ -110,7 +109,7 @@ export default class RebrandListener {
             kind: RebrandDialogKind.ONE_TIME,
         }).finished;
         if (doneClicked) {
-            localStorage.setItem('mx_rename_dialog_dismissed', 'true');
+            localStorage.setItem('mx_rename_dialog_dismissed_RIOSChat', 'true');
             this.recheck();
         }
     };
@@ -136,7 +135,7 @@ export default class RebrandListener {
             }
         } else {
             // otherwise we show the 'one time' toast / dialog
-            const renameDialogDismissed = localStorage.getItem('mx_rename_dialog_dismissed');
+            const renameDialogDismissed = localStorage.getItem('mx_rename_dialog_dismissed_RIOSChat');
             if (renameDialogDismissed !== 'true') {
                 oneTimeToast = true;
             }

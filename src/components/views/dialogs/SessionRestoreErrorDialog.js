@@ -68,6 +68,15 @@ export default createReactClass({
         );
 
         let dialogButtons;
+
+        // coletivoeita: apenas opção de recarregar
+        dialogButtons = <DialogButtons primaryButton={_t("Refresh")}
+            onPrimaryButtonClick={this._onRefreshClick}
+            focus={true}
+            hasCancel={false}
+        />
+
+        /*
         if (SdkConfig.get().bug_report_endpoint_url) {
             dialogButtons = <DialogButtons primaryButton={_t("Send Logs")}
                 onPrimaryButtonClick={this._sendBugReport}
@@ -85,6 +94,7 @@ export default createReactClass({
                 { clearStorageButton }
             </DialogButtons>;
         }
+        */
 
         return (
             <BaseDialog className="mx_ErrorDialog" onFinished={this.props.onFinished}
@@ -94,18 +104,8 @@ export default createReactClass({
             >
                 <div className="mx_Dialog_content" id='mx_Dialog_content'>
                     <p>{ _t("We encountered an error trying to restore your previous session.") }</p>
+                    <p>Clique no botão "Recarregar página" para resolver o problema. Caso não resolva, mande por favor mensagem para <a href="mailto: contato@eita.org.br">contato@eita.org.br</a></p>
 
-                    <p>{ _t(
-                        "If you have previously used a more recent version of %(brand)s, your session " +
-                        "may be incompatible with this version. Close this window and return " +
-                        "to the more recent version.",
-                        { brand },
-                     ) }</p>
-
-                    <p>{ _t(
-                        "Clearing your browser's storage may fix the problem, but will sign you " +
-                        "out and cause any encrypted chat history to become unreadable.",
-                    ) }</p>
                 </div>
                 { dialogButtons }
             </BaseDialog>

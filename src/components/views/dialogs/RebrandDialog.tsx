@@ -62,10 +62,10 @@ export default class RebrandDialog extends React.PureComponent<IProps> {
         } else {
             return _t(
                 "You’re already signed in and good to go here, but you can also grab the latest " +
-                "versions of the app on all platforms at <a>element.io/get-started</a>.", {},
+                "versions of the app on all platforms at <a>element.io/get-started</a>.", {}/*,
                 {
                     a: sub => <a href="https://element.io/get-started" rel="noopener noreferrer" target="_blank">{sub}</a>,
-                },
+                },*/
             );
         }
     }
@@ -98,11 +98,13 @@ export default class RebrandDialog extends React.PureComponent<IProps> {
             hasCancel={false}
         >
             <div className="mx_RebrandDialog_body">{this.getBodyText()}</div>
+            {/*
             <div className="mx_RebrandDialog_logoContainer">
                 <img className="mx_RebrandDialog_logo" src={require("../../../../res/img/riot-logo.svg")} alt="Riot Logo" />
                 <span className="mx_RebrandDialog_chevron" />
                 <img className="mx_RebrandDialog_logo" src={require("../../../../res/img/element-logo.svg")} alt="Element Logo" />
             </div>
+            */}
             <div>
                 {_t(
                     "Learn more at <a>element.io/previously-riot</a>", {}, {
