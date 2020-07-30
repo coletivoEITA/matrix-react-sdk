@@ -1882,8 +1882,8 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                     credentials.accessToken == currentCredentials.accessToken &&
                     credentials.homeserverUrl == currentCredentials.homeserverUrl &&
                     credentials.identityServerUrl == currentCredentials.identityServerUrl &&
-                    credentials.userId == currentCredentials.userId &&
-                    credentials.deviceId == currentCredentials.deviceId
+                    credentials.userId == currentCredentials.userId /*&&
+                    credentials.deviceId == currentCredentials.deviceId*/
                 );
             }
 
