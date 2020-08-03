@@ -1831,15 +1831,11 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             return;
         }
 
-        /*
-        const cli = MatrixClientPeg.get();
-
-        // if (this.state && this.state.view == Views.LOADING) {
-        if (!cli) {
+        if (!this.state || this.state.view == Views.LOADING) {
             console.log('postMessage: still loading. Ignoring request...');
             ev.source.postMessage('{"status":"im.vector.loading"}', ev.origin);
             return;
-        }*/
+        }
 
         const credentialsInit = {
             action: null,
@@ -1862,6 +1858,8 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             return;
         }
 
+        console.log('postMessage: View status', {view: this.state.view, views: Views});
+
         if (
             credentials.action &&
             credentials.accessToken &&
@@ -1871,19 +1869,21 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             credentials.password //&&
             //credentials.deviceId
         ) {
-            // console.log('postMessage: VIEW', {currentView: this.state.view, LOADING: Views.LOADING});
             const cli = MatrixClientPeg.get();
             let currentCredentials;
             let userIsLoggedIn = false;
             if (cli) {
                 currentCredentials = MatrixClientPeg.getCredentials();
-                // console.log('postMessage: currentCredentials', {credentials: credentials, currentCredentials: currentCredentials});
+                let logger = {...credentials};
+                delete logger.password;
+                console.log('postMessage: currentCredentials', {credentials: logger, currentCredentials: currentCredentials});
                 userIsLoggedIn = (
+                    this.state.view == Views.LOGGED_IN &&
                     credentials.accessToken == currentCredentials.accessToken &&
                     credentials.homeserverUrl == currentCredentials.homeserverUrl &&
                     credentials.identityServerUrl == currentCredentials.identityServerUrl &&
-                    credentials.userId == currentCredentials.userId /*&&
-                    credentials.deviceId == currentCredentials.deviceId*/
+                    credentials.userId == currentCredentials.userId &&
+                    credentials.deviceId == currentCredentials.deviceId
                 );
             }
 
@@ -1906,16 +1906,16 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                 case 'im.vector.logout':
                     console.log('postMessage: logging out');
                     ev.source.postMessage('{"status":"im.vector.logout"}', ev.origin);
-                    /*if (userIsLoggedIn) {
-                        dis.dispatch({
-                            action: 'logout',
-                            forceLogout: credentials.forceLogout, //I'm not using it anymore
-                        });
-                    } else {
-                        ev.source.postMessage('{"status":"im.vector.error",'+
-                            '"msg":"postMessage logout: user is not logged in or credentials are invalid"}',
-                            ev.origin);
-                    }*/
+                    // if (userIsLoggedIn) {
+                    //     dis.dispatch({
+                    //         action: 'logout',
+                    //         forceLogout: credentials.forceLogout, //I'm not using it anymore
+                    //     });
+                    // } else {
+                    //     ev.source.postMessage('{"status":"im.vector.error",'+
+                    //         '"msg":"postMessage logout: user is not logged in or credentials are invalid"}',
+                    //         ev.origin);
+                    // }
                     break;
             }
         }
