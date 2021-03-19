@@ -54,7 +54,7 @@ $irc-line-height: $font-18px;
             flex-shrink: 0;
             width: var(--name-width);
             text-overflow: ellipsis;
-            text-align: right;
+            text-align: left;
             display: flex;
             align-items: center;
             overflow: visible;
@@ -185,6 +185,7 @@ $irc-line-height: $font-18px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 min-width: var(--name-width);
+                text-align: end;
             }
         }
     }
@@ -204,6 +205,16 @@ $irc-line-height: $font-18px;
         .mx_SenderProfile {
             width: unset;
             max-width: var(--name-width);
+        }
+
+        .mx_SenderProfile_hover {
+            background: transparent;
+
+            > span {
+                > .mx_SenderProfile_name {
+                    min-width: inherit;
+                }
+            }
         }
     }
 

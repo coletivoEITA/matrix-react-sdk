@@ -17,7 +17,6 @@ limitations under the License.
 
 import React, {createRef} from 'react';
 import PropTypes from 'prop-types';
-import createReactClass from 'create-react-class';
 import filesize from 'filesize';
 import {MatrixClientPeg} from '../../../MatrixClientPeg';
 import * as sdk from '../../../index';
@@ -117,16 +116,8 @@ function computedStyle(element) {
     return cssText;
 }
 
-export default createReactClass({
-    displayName: 'MFileBody',
-
-    getInitialState: function() {
-        return {
-            decryptedBlob: (this.props.decryptedBlob ? this.props.decryptedBlob : null),
-        };
-    },
-
-    propTypes: {
+export default class MFileBody extends React.Component {
+    static propTypes = {
         /* the MatrixEvent to show */
         mxEvent: PropTypes.object.isRequired,
         /* already decrypted blob */
@@ -135,16 +126,35 @@ export default createReactClass({
         onHeightChanged: PropTypes.func,
         /* the shape of the tile, used */
         tileShape: PropTypes.string,
-    },
+        /* whether or not to show the default placeholder for the file. Defaults to true. */
+        showGenericPlaceholder: PropTypes.bool,
+    };
+
+    static defaultProps = {
+        showGenericPlaceholder: true,
+    };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            decryptedBlob: (this.props.decryptedBlob ? this.props.decryptedBlob : null),
+        };
+
+        this._iframe = createRef();
+        this._dummyLink = createRef();
+        this._downloadImage = createRef();
+    }
 
     /**
      * Extracts a human readable label for the file attachment to use as
      * link text.
      *
-     * @params {Object} content The "content" key of the matrix event.
+     * @param {Object} content The "content" key of the matrix event.
+     * @param {boolean} withSize Whether to include size information. Default true.
      * @return {string} the human readable link text for the attachment.
      */
-    presentableTextForFile: function(content) {
+    presentableTextForFile(content, withSize = true) {
         let linkText = _t("Attachment");
         if (content.body && content.body.length > 0) {
             // The content body should be the name of the file including a
@@ -152,7 +162,7 @@ export default createReactClass({
             linkText = content.body;
         }
 
-        if (content.info && content.info.size) {
+        if (content.info && content.info.size && withSize) {
             // If we know the size of the file then add it as human readable
             // string to the end of the link text so that the user knows how
             // big a file they are downloading.
@@ -163,40 +173,33 @@ export default createReactClass({
             linkText += ' (' + filesize(content.info.size) + ')';
         }
         return linkText;
-    },
+    }
 
-    _getContentUrl: function() {
+    _getContentUrl() {
         const content = this.props.mxEvent.getContent();
         return MatrixClientPeg.get().mxcUrlToHttp(content.url);
-    },
+    }
 
-    // TODO: [REACT-WARNING] Replace component with real class, use constructor for refs
-    UNSAFE_componentWillMount: function() {
-        this._iframe = createRef();
-        this._dummyLink = createRef();
-        this._downloadImage = createRef();
-    },
-
-    componentDidMount: function() {
+    componentDidMount() {
         // Add this to the list of mounted components to receive notifications
         // when the tint changes.
         this.id = nextMountId++;
         mounts[this.id] = this;
         this.tint();
-    },
+    }
 
-    componentDidUpdate: function(prevProps, prevState) {
+    componentDidUpdate(prevProps, prevState) {
         if (this.props.onHeightChanged && !prevState.decryptedBlob && this.state.decryptedBlob) {
             this.props.onHeightChanged();
         }
-    },
+    }
 
-    componentWillUnmount: function() {
+    componentWillUnmount() {
         // Remove this from the list of mounted components
         delete mounts[this.id];
-    },
+    }
 
-    tint: function() {
+    tint = () => {
         // Update our tinted copy of require("../../../../res/img/download.svg")
         if (this._downloadImage.current) {
             this._downloadImage.current.src = tintedDownloadImageURL;
@@ -210,9 +213,9 @@ export default createReactClass({
                 style: computedStyle(this._dummyLink.current),
             }, "*");
         }
-    },
+    };
 
-    render: function() {
+    render() {
         const content = this.props.mxEvent.getContent();
         const text = this.presentableTextForFile(content);
         const isEncrypted = content.file !== undefined;
@@ -221,6 +224,16 @@ export default createReactClass({
         const ErrorDialog = sdk.getComponent("dialogs.ErrorDialog");
         const fileSize = content.info ? content.info.size : null;
         const fileType = content.info ? content.info.mimetype : "application/octet-stream";
+
+        let placeholder = null;
+        if (this.props.showGenericPlaceholder) {
+            placeholder = (
+                <div className="mx_MFileBody_info">
+                    <span className="mx_MFileBody_info_icon" />
+                    <span className="mx_MFileBody_info_filename">{this.presentableTextForFile(content, false)}</span>
+                </div>
+            );
+        }
 
         if (isEncrypted) {
             if (this.state.decryptedBlob === null) {
@@ -252,6 +265,7 @@ export default createReactClass({
                 // but it is not guaranteed between various browsers' settings.
                 return (
                     <span className="mx_MFileBody">
+                        {placeholder}
                         <div className="mx_MFileBody_download">
                             <AccessibleButton onClick={decrypt}>
                                 { _t("Decrypt %(text)s", { text: text }) }
@@ -282,6 +296,7 @@ export default createReactClass({
             // If the attachment is encrypted then put the link inside an iframe.
             return (
                 <span className="mx_MFileBody">
+                    {placeholder}
                     <div className="mx_MFileBody_download">
                         <div style={{display: "none"}}>
                             { /*
@@ -292,7 +307,7 @@ export default createReactClass({
                             <a ref={this._dummyLink} />
                         </div>
                         <iframe
-                            src={`${url}?origin=${encodeURIComponent(window.location.origin)}`}
+                            src={url}
                             onLoad={onIframeLoad}
                             ref={this._iframe}
                             sandbox="allow-scripts allow-downloads allow-downloads-without-user-activation" />
@@ -350,6 +365,7 @@ export default createReactClass({
             if (this.props.tileShape === "file_grid") {
                 return (
                     <span className="mx_MFileBody">
+                        {placeholder}
                         <div className="mx_MFileBody_download">
                             <a className="mx_MFileBody_downloadLink" {...downloadProps}>
                                 { fileName }
@@ -363,6 +379,7 @@ export default createReactClass({
             } else {
                 return (
                     <span className="mx_MFileBody">
+                        {placeholder}
                         <div className="mx_MFileBody_download">
                             <a {...downloadProps}>
                                 <img src={tintedDownloadImageURL} width="12" height="14" ref={this._downloadImage} />
@@ -375,8 +392,9 @@ export default createReactClass({
         } else {
             const extra = text ? (': ' + text) : '';
             return <span className="mx_MFileBody">
+                {placeholder}
                 { _t("Invalid file%(extra)s", { extra: extra }) }
             </span>;
         }
-    },
-});
+    }
+}

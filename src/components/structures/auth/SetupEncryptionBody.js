@@ -120,9 +120,9 @@ export default class SetupEncryptionBody extends React.Component {
             const store = SetupEncryptionStore.sharedInstance();
             let recoveryKeyPrompt;
             if (store.keyInfo && keyHasPassphrase(store.keyInfo)) {
-                recoveryKeyPrompt = _t("Use Recovery Key or Passphrase");
+                recoveryKeyPrompt = _t("Use Security Key or Phrase");
             } else if (store.keyInfo) {
-                recoveryKeyPrompt = _t("Use Recovery Key");
+                recoveryKeyPrompt = _t("Use Security Key");
             }
 
             let useRecoveryKeyButton;
@@ -152,7 +152,7 @@ export default class SetupEncryptionBody extends React.Component {
                         </div>
                         <div className="mx_CompleteSecurity_clients_mobile">
                             <div>{_t("%(brand)s iOS", { brand })}</div>
-                            <div>{_t("%(brand)s X for Android", { brand })}</div>
+                            <div>{_t("%(brand)s Android", { brand })}</div>
                         </div>
                         <p>{_t("or another cross-signing capable Matrix client")}</p>
                     </div>

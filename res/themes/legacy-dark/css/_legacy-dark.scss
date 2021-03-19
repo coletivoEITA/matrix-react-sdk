@@ -15,6 +15,8 @@ $room-highlight-color: #343a46;
 
 // typical text (dark-on-white in light skin)
 $primary-fg-color: $text-primary-color;
+$secondary-fg-color: $primary-fg-color;
+$tertiary-fg-color: $primary-fg-color;
 $primary-bg-color: $bg-color;
 $muted-fg-color: $header-panel-text-primary-color;
 
@@ -35,8 +37,8 @@ $info-plinth-fg-color: #888;
 
 $preview-bar-bg-color: $header-panel-bg-color;
 
-$tagpanel-bg-color: $base-color;
-$inverted-bg-color: $tagpanel-bg-color;
+$groupFilterPanel-bg-color: $base-color;
+$inverted-bg-color: $groupFilterPanel-bg-color;
 
 // used by AddressSelector
 $selected-color: $room-highlight-color;
@@ -84,59 +86,52 @@ $lightbox-background-bg-color: #000;
 
 $settings-grey-fg-color: #a2a2a2;
 $settings-profile-placeholder-bg-color: #e7e7e7;
-$settings-profile-overlay-bg-color: #000;
-$settings-profile-overlay-placeholder-bg-color: transparent;
-$settings-profile-overlay-fg-color: #fff;
 $settings-profile-overlay-placeholder-fg-color: #454545;
+$settings-profile-button-bg-color: #e7e7e7;
+$settings-profile-button-fg-color: $settings-profile-overlay-placeholder-fg-color;
 $settings-subsection-fg-color: $text-secondary-color;
 
 $topleftmenu-color: $text-primary-color;
 $roomheader-color: $text-primary-color;
 $roomheader-addroom-bg-color: #3c4556; // $search-placeholder-color at 0.5 opacity
 $roomheader-addroom-fg-color: $text-primary-color;
-$tagpanel-button-color: $header-panel-text-primary-color;
-$roomheader-button-color: $header-panel-text-primary-color;
+$groupFilterPanel-button-color: $header-panel-text-primary-color;
 $groupheader-button-color: $header-panel-text-primary-color;
 $rightpanel-button-color: $header-panel-text-primary-color;
-$composer-button-color: $header-panel-text-primary-color;
+$icon-button-color: $header-panel-text-primary-color;
 $roomtopic-color: $text-secondary-color;
 $eventtile-meta-color: $roomtopic-color;
 
 $header-divider-color: $header-panel-text-primary-color;
 $composer-e2e-icon-color: $header-panel-text-primary-color;
 
-// ********************
+// this probably shouldn't have it's own colour
+$voipcall-plinth-color: #f2f5f8;
 
-// V2 Room List
-// TODO: Remove the 2 from all of these when the new list takes over
+// ********************
 
 $theme-button-bg-color: #e3e8f0;
 
-$roomlist2-button-bg-color: #1A1D23; // Buttons include the filter box, explore button, and sublist buttons
-$roomlist2-bg-color: $header-panel-bg-color;
+$roomlist-button-bg-color: #1A1D23; // Buttons include the filter box, explore button, and sublist buttons
+$roomlist-filter-active-bg-color: $roomlist-button-bg-color;
+$roomlist-bg-color: $header-panel-bg-color;
 
-$roomsublist2-divider-color: $primary-fg-color;
+$roomsublist-divider-color: $primary-fg-color;
+$roomsublist-skeleton-ui-bg: linear-gradient(180deg, #3e444c 0%, #3e444c00 100%);
 
-$roomtile2-preview-color: #9e9e9e;
-$roomtile2-default-badge-bg-color: #61708b;
-$roomtile2-selected-bg-color: #1A1D23;
+$groupFilterPanel-divider-color: $roomlist-header-color;
+$space-button-outline-color: rgba(141, 151, 165, 0.2);
+
+$roomtile-preview-color: #9e9e9e;
+$roomtile-default-badge-bg-color: #61708b;
+$roomtile-selected-bg-color: #1A1D23;
 
 // ********************
-
-$roomtile-name-color: $header-panel-text-primary-color;
-$roomtile-selected-color: $text-primary-color;
-$roomtile-notified-color: $text-primary-color;
-$roomtile-selected-bg-color: $room-highlight-color;
-$roomtile-focused-bg-color: $room-highlight-color;
-
-$roomtile-transparent-focused-color: rgba(0, 0, 0, 0.1);
 
 $panel-divider-color: $header-panel-border-color;
 
 $widget-menu-bar-bg-color: $header-panel-bg-color;
-
-// event tile lifecycle
-$event-sending-color: $text-secondary-color;
+$widget-body-bg-color: #1A1D23;
 
 // event redaction
 $event-redacted-fg-color: #606060;
@@ -170,6 +165,9 @@ $button-link-bg-color: transparent;
 // Toggle switch
 $togglesw-off-color: $room-highlight-color;
 
+$progressbar-fg-color: $accent-color;
+$progressbar-bg-color: #21262c;
+
 $visual-bell-bg-color: #800;
 
 $room-warning-bg-color: $header-panel-bg-color;
@@ -190,7 +188,7 @@ $reaction-row-button-selected-border-color: $accent-color;
 
 $kbd-border-color: #000000;
 
-$tooltip-timeline-bg-color: $tagpanel-bg-color;
+$tooltip-timeline-bg-color: $groupFilterPanel-bg-color;
 $tooltip-timeline-fg-color: #ffffff;
 
 $interactive-tooltip-bg-color: $base-color;
@@ -199,6 +197,10 @@ $interactive-tooltip-fg-color: #ffffff;
 $breadcrumb-placeholder-bg-color: #272c35;
 
 $user-tile-hover-bg-color: $header-panel-bg-color;
+
+$message-body-panel-bg-color: #21262c82;
+$message-body-panel-icon-bg-color: #8e99a4;
+$message-body-panel-fg-color: $primary-fg-color;
 
 // Appearance tab colors
 $appearance-tab-border-color: $room-highlight-color;
@@ -211,7 +213,7 @@ $composer-shadow-color: tranparent;
     /* align images in buttons (eg spinners) */
     vertical-align: middle;
     border: 0px;
-    border-radius: 4px;
+    border-radius: 8px;
     font-family: $font-family;
     font-size: $font-14px;
     color: $button-fg-color;

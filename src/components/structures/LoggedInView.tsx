@@ -21,13 +21,12 @@ import * as PropTypes from 'prop-types';
 import { MatrixClient } from 'matrix-js-sdk/src/client';
 import { DragDropContext } from 'react-beautiful-dnd';
 
-import {Key, isOnlyCtrlOrCmdKeyEvent, isOnlyCtrlOrCmdIgnoreShiftKeyEvent} from '../../Keyboard';
+import {Key, isOnlyCtrlOrCmdKeyEvent, isOnlyCtrlOrCmdIgnoreShiftKeyEvent, isMac} from '../../Keyboard';
 import PageTypes from '../../PageTypes';
 import CallMediaHandler from '../../CallMediaHandler';
 import { fixupColorFonts } from '../../utils/FontManager';
 import * as sdk from '../../index';
 import dis from '../../dispatcher/dispatcher';
-import sessionStore from '../../stores/SessionStore';
 import {MatrixClientPeg, IMatrixClientCreds} from '../../MatrixClientPeg';
 import SettingsStore from "../../settings/SettingsStore";
 
@@ -40,20 +39,23 @@ import * as KeyboardShortcuts from "../../accessibility/KeyboardShortcuts";
 import HomePage from "./HomePage";
 import ResizeNotifier from "../../utils/ResizeNotifier";
 import PlatformPeg from "../../PlatformPeg";
-import { RoomListStoreTempProxy } from "../../stores/room-list/RoomListStoreTempProxy";
 import { DefaultTagID } from "../../stores/room-list/models";
 import {
-    showToast as showSetPasswordToast,
-    hideToast as hideSetPasswordToast
-} from "../../toasts/SetPasswordToast";
-import {
     showToast as showServerLimitToast,
-    hideToast as hideServerLimitToast
+    hideToast as hideServerLimitToast,
 } from "../../toasts/ServerLimitToast";
 import { Action } from "../../dispatcher/actions";
-import LeftPanel2 from "./LeftPanel2";
+import LeftPanel from "./LeftPanel";
 import CallContainer from '../views/voip/CallContainer';
 import { ViewRoomDeltaPayload } from "../../dispatcher/payloads/ViewRoomDeltaPayload";
+import RoomListStore from "../../stores/room-list/RoomListStore";
+import NonUrgentToastContainer from "./NonUrgentToastContainer";
+import { ToggleRightPanelPayload } from "../../dispatcher/payloads/ToggleRightPanelPayload";
+import { IThreepidInvite } from "../../stores/ThreepidInviteStore";
+import Modal from "../../Modal";
+import { ICollapseConfig } from "../../resizer/distributors/collapse";
+import HostSignupContainer from '../views/host_signup/HostSignupContainer';
+import { IOpts } from "../../createRoom";
 
 // We need to fetch each pinned message individually (if we don't already have it)
 // so each pinned message may trigger a request. Limit the number per room for sanity.
@@ -73,16 +75,12 @@ interface IProps {
     viaServers?: string[];
     hideToSRUsers: boolean;
     resizeNotifier: ResizeNotifier;
-    middleDisabled: boolean;
-    initialEventPixelOffset: number;
-    leftDisabled: boolean;
-    rightDisabled: boolean;
+    // eslint-disable-next-line camelcase
     page_type: string;
     autoJoin: boolean;
-    thirdPartyInvite?: object;
+    threepidInvite?: IThreepidInvite;
     roomOobData?: object;
     currentRoomId: string;
-    ConferenceHandler?: object;
     collapseLhs: boolean;
     config: {
         piwik: {
@@ -93,25 +91,31 @@ interface IProps {
     currentUserId?: string;
     currentGroupId?: string;
     currentGroupIsNew?: boolean;
+    justRegistered?: boolean;
+    roomJustCreatedOpts?: IOpts;
 }
 
 interface IUsageLimit {
-    limit_type: "monthly_active_user" | string;
+    // "hs_disabled" is NOT a specced string, but is used in Synapse
+    // This is tracked over at https://github.com/matrix-org/synapse/issues/9237
+    // eslint-disable-next-line camelcase
+    limit_type: "monthly_active_user" | "hs_disabled" | string;
+    // eslint-disable-next-line camelcase
     admin_contact?: string;
 }
 
 interface IState {
-    mouseDown?: {
-        x: number;
-        y: number;
-    };
     syncErrorData?: {
         error: {
+            // This is not specced, but used in Synapse. See
+            // https://github.com/matrix-org/synapse/issues/9237#issuecomment-768238922
             data: IUsageLimit;
             errcode: string;
         };
     };
+    usageLimitDismissed: boolean;
     usageLimitEventContent?: IUsageLimit;
+    usageLimitEventTs?: number;
     useCompactLayout: boolean;
 }
 
@@ -145,43 +149,23 @@ class LoggedInView extends React.Component<IProps, IState> {
     protected readonly _matrixClient: MatrixClient;
     protected readonly _roomView: React.RefObject<any>;
     protected readonly _resizeContainer: React.RefObject<ResizeHandle>;
-    protected readonly _sessionStore: sessionStore;
-    protected readonly _sessionStoreToken: { remove: () => void };
-    protected readonly _compactLayoutWatcherRef: string;
+    protected compactLayoutWatcherRef: string;
     protected resizer: Resizer;
 
     constructor(props, context) {
         super(props, context);
 
         this.state = {
-            mouseDown: undefined,
             syncErrorData: undefined,
             // use compact timeline view
             useCompactLayout: SettingsStore.getValue('useCompactLayout'),
+            usageLimitDismissed: false,
         };
 
         // stash the MatrixClient in case we log out before we are unmounted
         this._matrixClient = this.props.matrixClient;
 
         CallMediaHandler.loadDevices();
-
-        document.addEventListener('keydown', this._onNativeKeyDown, false);
-
-        this._sessionStore = sessionStore;
-        this._sessionStoreToken = this._sessionStore.addListener(
-            this._setStateFromSessionStore,
-        );
-        this._setStateFromSessionStore();
-
-        this._updateServerNoticeEvents();
-
-        this._matrixClient.on("accountData", this.onAccountData);
-        this._matrixClient.on("sync", this.onSync);
-        this._matrixClient.on("RoomState.events", this.onRoomStateEvents);
-
-        this._compactLayoutWatcherRef = SettingsStore.watchSetting(
-            "useCompactLayout", null, this.onCompactLayoutChanged,
-        );
 
         fixupColorFonts();
 
@@ -190,6 +174,24 @@ class LoggedInView extends React.Component<IProps, IState> {
     }
 
     componentDidMount() {
+        document.addEventListener('keydown', this._onNativeKeyDown, false);
+
+        this._updateServerNoticeEvents();
+
+        this._matrixClient.on("accountData", this.onAccountData);
+        this._matrixClient.on("sync", this.onSync);
+        // Call `onSync` with the current state as well
+        this.onSync(
+            this._matrixClient.getSyncState(),
+            null,
+            this._matrixClient.getSyncStateData(),
+        );
+        this._matrixClient.on("RoomState.events", this.onRoomStateEvents);
+
+        this.compactLayoutWatcherRef = SettingsStore.watchSetting(
+            "useCompactLayout", null, this.onCompactLayoutChanged,
+        );
+
         this.resizer = this._createResizer();
         this.resizer.attach();
         this._loadResizerPreferences();
@@ -200,10 +202,7 @@ class LoggedInView extends React.Component<IProps, IState> {
         this._matrixClient.removeListener("accountData", this.onAccountData);
         this._matrixClient.removeListener("sync", this.onSync);
         this._matrixClient.removeListener("RoomState.events", this.onRoomStateEvents);
-        SettingsStore.unwatchSetting(this._compactLayoutWatcherRef);
-        if (this._sessionStoreToken) {
-            this._sessionStoreToken.remove();
-        }
+        SettingsStore.unwatchSetting(this.compactLayoutWatcherRef);
         this.resizer.detach();
     }
 
@@ -224,40 +223,48 @@ class LoggedInView extends React.Component<IProps, IState> {
         return this._roomView.current.canResetTimeline();
     };
 
-    _setStateFromSessionStore = () => {
-        if (this._sessionStore.getCachedPassword()) {
-            showSetPasswordToast();
-        } else {
-            hideSetPasswordToast();
-        }
-    };
-
     _createResizer() {
-        const classNames = {
-            handle: "mx_ResizeHandle",
-            vertical: "mx_ResizeHandle_vertical",
-            reverse: "mx_ResizeHandle_reverse",
-        };
-        const collapseConfig = {
-            toggleSize: 260 - 50,
-            onCollapsed: (collapsed) => {
-                if (collapsed) {
+        let size;
+        let collapsed;
+        const collapseConfig: ICollapseConfig = {
+            // TODO: the space panel currently does not have a fixed width,
+            // just the headers at each level have a max-width of 150px
+            // Taking 222px for the space panel for now,
+            // so this will look slightly off for now,
+            // depending on the depth of your space tree.
+            // To fix this, we'll need to turn toggleSize
+            // into a callback so it can be measured when starting the resize operation
+            toggleSize: 222 + 68,
+            onCollapsed: (_collapsed) => {
+                collapsed = _collapsed;
+                if (_collapsed) {
                     dis.dispatch({action: "hide_left_panel"}, true);
                     window.localStorage.setItem("mx_lhs_size", '0');
                 } else {
                     dis.dispatch({action: "show_left_panel"}, true);
                 }
             },
-            onResized: (size) => {
-                window.localStorage.setItem("mx_lhs_size", '' + size);
+            onResized: (_size) => {
+                size = _size;
                 this.props.resizeNotifier.notifyLeftHandleResized();
             },
+            onResizeStart: () => {
+                this.props.resizeNotifier.startResizing();
+            },
+            onResizeStop: () => {
+                if (!collapsed) window.localStorage.setItem("mx_lhs_size", '' + size);
+                this.props.resizeNotifier.stopResizing();
+            },
+            isItemCollapsed: domNode => {
+                return domNode.classList.contains("mx_LeftPanel_minimized");
+            },
         };
-        const resizer = new Resizer(
-            this._resizeContainer.current,
-            CollapseDistributor,
-            collapseConfig);
-        resizer.setClassNames(classNames);
+        const resizer = new Resizer(this._resizeContainer.current, CollapseDistributor, collapseConfig);
+        resizer.setClassNames({
+            handle: "mx_ResizeHandle",
+            vertical: "mx_ResizeHandle_vertical",
+            reverse: "mx_ResizeHandle_reverse",
+        });
         return resizer;
     }
 
@@ -308,34 +315,49 @@ class LoggedInView extends React.Component<IProps, IState> {
     };
 
     onRoomStateEvents = (ev, state) => {
-        const roomLists = RoomListStoreTempProxy.getRoomLists();
-        if (roomLists[DefaultTagID.ServerNotice] && roomLists[DefaultTagID.ServerNotice].some(r => r.roomId === ev.getRoomId())) {
+        const serverNoticeList = RoomListStore.instance.orderedLists[DefaultTagID.ServerNotice];
+        if (serverNoticeList && serverNoticeList.some(r => r.roomId === ev.getRoomId())) {
             this._updateServerNoticeEvents();
         }
     };
 
-    _calculateServerLimitToast(syncErrorData: IState["syncErrorData"], usageLimitEventContent?: IUsageLimit) {
-        const error = syncErrorData && syncErrorData.error && syncErrorData.error.errcode === "M_RESOURCE_LIMIT_EXCEEDED";
+    private onUsageLimitDismissed = () => {
+        this.setState({
+            usageLimitDismissed: true,
+        });
+    }
+
+    _calculateServerLimitToast(syncError: IState["syncErrorData"], usageLimitEventContent?: IUsageLimit) {
+        const error = syncError && syncError.error && syncError.error.errcode === "M_RESOURCE_LIMIT_EXCEEDED";
         if (error) {
-            usageLimitEventContent = syncErrorData.error.data;
+            usageLimitEventContent = syncError.error.data;
         }
 
-        if (usageLimitEventContent) {
-            showServerLimitToast(usageLimitEventContent.limit_type, usageLimitEventContent.admin_contact, error);
+        // usageLimitDismissed is true when the user has explicitly hidden the toast
+        // and it will be reset to false if a *new* usage alert comes in.
+        if (usageLimitEventContent && this.state.usageLimitDismissed) {
+            showServerLimitToast(
+                usageLimitEventContent.limit_type,
+                this.onUsageLimitDismissed,
+                usageLimitEventContent.admin_contact,
+                error,
+            );
         } else {
             hideServerLimitToast();
         }
     }
 
     _updateServerNoticeEvents = async () => {
-        const roomLists = RoomListStoreTempProxy.getRoomLists();
-        if (!roomLists[DefaultTagID.ServerNotice]) return [];
+        const serverNoticeList = RoomListStore.instance.orderedLists[DefaultTagID.ServerNotice];
+        if (!serverNoticeList) return [];
 
         const events = [];
-        for (const room of roomLists[DefaultTagID.ServerNotice]) {
+        let pinnedEventTs = 0;
+        for (const room of serverNoticeList) {
             const pinStateEvent = room.currentState.getStateEvents("m.room.pinned_events", "");
 
             if (!pinStateEvent || !pinStateEvent.getContent().pinned) continue;
+            pinnedEventTs = pinStateEvent.getTs();
 
             const pinnedEventIds = pinStateEvent.getContent().pinned.slice(0, MAX_PINNED_NOTICES_PER_ROOM);
             for (const eventId of pinnedEventIds) {
@@ -343,6 +365,11 @@ class LoggedInView extends React.Component<IProps, IState> {
                 const event = timeline.getEvents().find(ev => ev.getId() === eventId);
                 if (event) events.push(event);
             }
+        }
+
+        if (pinnedEventTs && this.state.usageLimitEventTs > pinnedEventTs) {
+            // We've processed a newer event than this one, so ignore it.
+            return;
         }
 
         const usageLimitEvent = events.find((e) => {
@@ -353,7 +380,12 @@ class LoggedInView extends React.Component<IProps, IState> {
         });
         const usageLimitEventContent = usageLimitEvent && usageLimitEvent.getContent();
         this._calculateServerLimitToast(this.state.syncErrorData, usageLimitEventContent);
-        this.setState({ usageLimitEventContent });
+        this.setState({
+            usageLimitEventContent,
+            usageLimitEventTs: pinnedEventTs,
+            // This is a fresh toast, we can show toasts again
+            usageLimitDismissed: false,
+        });
     };
 
     _onPaste = (ev) => {
@@ -414,6 +446,7 @@ class LoggedInView extends React.Component<IProps, IState> {
         const ctrlCmdOnly = isOnlyCtrlOrCmdKeyEvent(ev);
         const hasModifier = ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey;
         const isModifier = ev.key === Key.ALT || ev.key === Key.CONTROL || ev.key === Key.META || ev.key === Key.SHIFT;
+        const modKey = isMac ? ev.metaKey : ev.ctrlKey;
 
         switch (ev.key) {
             case Key.PAGE_UP:
@@ -439,6 +472,14 @@ class LoggedInView extends React.Component<IProps, IState> {
                     handled = true;
                 }
                 break;
+            case Key.F:
+                if (ctrlCmdOnly && SettingsStore.getValue("ctrlFForSearch")) {
+                    dis.dispatch({
+                        action: 'focus_search',
+                    });
+                    handled = true;
+                }
+                break;
             case Key.BACKTICK:
                 // Ideally this would be CTRL+P for "Profile", but that's
                 // taken by the print dialog. CTRL+I for "Information"
@@ -458,6 +499,16 @@ class LoggedInView extends React.Component<IProps, IState> {
                 }
                 break;
 
+            case Key.H:
+                if (ev.altKey && modKey) {
+                    dis.dispatch({
+                        action: 'view_home_page',
+                    });
+                    Modal.closeCurrentModal("homeKeyboardShortcut");
+                    handled = true;
+                }
+                break;
+
             case Key.ARROW_UP:
             case Key.ARROW_DOWN:
                 if (ev.altKey && !ev.ctrlKey && !ev.metaKey) {
@@ -472,8 +523,8 @@ class LoggedInView extends React.Component<IProps, IState> {
 
             case Key.PERIOD:
                 if (ctrlCmdOnly && (this.props.page_type === "room_view" || this.props.page_type === "group_view")) {
-                    dis.dispatch({
-                        action: 'toggle_right_panel',
+                    dis.dispatch<ToggleRightPanelPayload>({
+                        action: Action.ToggleRightPanel,
                         type: this.props.page_type === "room_view" ? "room" : "group",
                     });
                     handled = true;
@@ -532,8 +583,8 @@ class LoggedInView extends React.Component<IProps, IState> {
             // Could be "GroupTile +groupId:domain"
             const draggableId = result.draggableId.split(' ').pop();
 
-            // Dispatch synchronously so that the TagPanel receives an
-            // optimistic update from TagOrderStore before the previous
+            // Dispatch synchronously so that the GroupFilterPanel receives an
+            // optimistic update from GroupFilterOrderStore before the previous
             // state is shown.
             dis.dispatch(TagOrderActions.moveTag(
                 this._matrixClient,
@@ -564,50 +615,7 @@ class LoggedInView extends React.Component<IProps, IState> {
         ), true);
     };
 
-    _onMouseDown = (ev) => {
-        // When the panels are disabled, clicking on them results in a mouse event
-        // which bubbles to certain elements in the tree. When this happens, close
-        // any settings page that is currently open (user/room/group).
-        if (this.props.leftDisabled && this.props.rightDisabled) {
-            const targetClasses = new Set(ev.target.className.split(' '));
-            if (
-                targetClasses.has('mx_MatrixChat') ||
-                targetClasses.has('mx_MatrixChat_middlePanel') ||
-                targetClasses.has('mx_RoomView')
-            ) {
-                this.setState({
-                    mouseDown: {
-                        x: ev.pageX,
-                        y: ev.pageY,
-                    },
-                });
-            }
-        }
-    };
-
-    _onMouseUp = (ev) => {
-        if (!this.state.mouseDown) return;
-
-        const deltaX = ev.pageX - this.state.mouseDown.x;
-        const deltaY = ev.pageY - this.state.mouseDown.y;
-        const distance = Math.sqrt((deltaX * deltaX) + (deltaY + deltaY));
-        const maxRadius = 5; // People shouldn't be straying too far, hopefully
-
-        // Note: we track how far the user moved their mouse to help
-        // combat against https://github.com/vector-im/riot-web/issues/7158
-
-        if (distance < maxRadius) {
-            // This is probably a real click, and not a drag
-            dis.dispatch({ action: 'close_settings' });
-        }
-
-        // Always clear the mouseDown state to ensure we don't accidentally
-        // use stale values due to the mouseDown checks.
-        this.setState({mouseDown: null});
-    };
-
     render() {
-        const LeftPanel = sdk.getComponent('structures.LeftPanel');
         const RoomView = sdk.getComponent('structures.RoomView');
         const UserView = sdk.getComponent('structures.UserView');
         const GroupView = sdk.getComponent('structures.GroupView');
@@ -619,18 +627,16 @@ class LoggedInView extends React.Component<IProps, IState> {
         switch (this.props.page_type) {
             case PageTypes.RoomView:
                 pageElement = <RoomView
-                        ref={this._roomView}
-                        autoJoin={this.props.autoJoin}
-                        onRegistered={this.props.onRegistered}
-                        thirdPartyInvite={this.props.thirdPartyInvite}
-                        oobData={this.props.roomOobData}
-                        viaServers={this.props.viaServers}
-                        eventPixelOffset={this.props.initialEventPixelOffset}
-                        key={this.props.currentRoomId || 'roomview'}
-                        disabled={this.props.middleDisabled}
-                        ConferenceHandler={this.props.ConferenceHandler}
-                        resizeNotifier={this.props.resizeNotifier}
-                    />;
+                    ref={this._roomView}
+                    autoJoin={this.props.autoJoin}
+                    onRegistered={this.props.onRegistered}
+                    threepidInvite={this.props.threepidInvite}
+                    oobData={this.props.roomOobData}
+                    viaServers={this.props.viaServers}
+                    key={this.props.currentRoomId || 'roomview'}
+                    resizeNotifier={this.props.resizeNotifier}
+                    justCreatedOpts={this.props.roomJustCreatedOpts}
+                />;
                 break;
 
             case PageTypes.MyGroups:
@@ -642,16 +648,17 @@ class LoggedInView extends React.Component<IProps, IState> {
                 break;
 
             case PageTypes.HomePage:
-                pageElement = <HomePage />;
+                pageElement = <HomePage justRegistered={this.props.justRegistered} />;
                 break;
 
             case PageTypes.UserView:
-                pageElement = <UserView userId={this.props.currentUserId} />;
+                pageElement = <UserView userId={this.props.currentUserId} resizeNotifier={this.props.resizeNotifier} />;
                 break;
             case PageTypes.GroupView:
                 pageElement = <GroupView
                     groupId={this.props.currentGroupId}
                     isNew={this.props.currentGroupIsNew}
+                    resizeNotifier={this.props.resizeNotifier}
                 />;
                 break;
         }
@@ -661,21 +668,12 @@ class LoggedInView extends React.Component<IProps, IState> {
             bodyClasses += ' mx_MatrixChat_useCompactLayout';
         }
 
-        let leftPanel = (
+        const leftPanel = (
             <LeftPanel
+                isMinimized={this.props.collapseLhs || false}
                 resizeNotifier={this.props.resizeNotifier}
-                collapsed={this.props.collapseLhs || false}
-                disabled={this.props.leftDisabled}
             />
         );
-        if (SettingsStore.getValue("feature_new_room_list")) {
-            leftPanel = (
-                <LeftPanel2
-                    isMinimized={this.props.collapseLhs || false}
-                    resizeNotifier={this.props.resizeNotifier}
-                />
-            );
-        }
 
         return (
             <MatrixClientContext.Provider value={this._matrixClient}>
@@ -684,8 +682,6 @@ class LoggedInView extends React.Component<IProps, IState> {
                     onKeyDown={this._onReactKeyDown}
                     className='mx_MatrixChat_wrapper'
                     aria-hidden={this.props.hideToSRUsers}
-                    onMouseDown={this._onMouseDown}
-                    onMouseUp={this._onMouseUp}
                 >
                     <ToastContainer />
                     <DragDropContext onDragEnd={this._onDragEnd}>
@@ -697,6 +693,8 @@ class LoggedInView extends React.Component<IProps, IState> {
                     </DragDropContext>
                 </div>
                 <CallContainer />
+                <NonUrgentToastContainer />
+                <HostSignupContainer />
             </MatrixClientContext.Provider>
         );
     }

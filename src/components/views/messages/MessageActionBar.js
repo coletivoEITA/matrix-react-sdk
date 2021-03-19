@@ -18,15 +18,16 @@ limitations under the License.
 
 import React, {useEffect} from 'react';
 import PropTypes from 'prop-types';
+import { EventStatus } from 'matrix-js-sdk';
 
 import { _t } from '../../../languageHandler';
 import * as sdk from '../../../index';
 import dis from '../../../dispatcher/dispatcher';
-import {aboveLeftOf, ContextMenu, ContextMenuButton, useContextMenu} from '../../structures/ContextMenu';
+import {aboveLeftOf, ContextMenu, ContextMenuTooltipButton, useContextMenu} from '../../structures/ContextMenu';
 import { isContentActionable, canEditContent } from '../../../utils/EventUtils';
 import RoomContext from "../../../contexts/RoomContext";
 import Toolbar from "../../../accessibility/Toolbar";
-import {RovingAccessibleButton, useRovingTabIndex} from "../../../accessibility/RovingTabIndex";
+import {RovingAccessibleTooltipButton, useRovingTabIndex} from "../../../accessibility/RovingTabIndex";
 
 const OptionsButton = ({mxEvent, getTile, getReplyThread, permalinkCreator, onFocusChange}) => {
     const [menuDisplayed, button, openMenu, closeMenu] = useContextMenu();
@@ -55,9 +56,9 @@ const OptionsButton = ({mxEvent, getTile, getReplyThread, permalinkCreator, onFo
     }
 
     return <React.Fragment>
-        <ContextMenuButton
+        <ContextMenuTooltipButton
             className="mx_MessageActionBar_maskButton mx_MessageActionBar_optionsButton"
-            label={_t("Options")}
+            title={_t("Options")}
             onClick={openMenu}
             isExpanded={menuDisplayed}
             inputRef={ref}
@@ -86,9 +87,9 @@ const ReactButton = ({mxEvent, reactions, onFocusChange}) => {
     }
 
     return <React.Fragment>
-        <ContextMenuButton
+        <ContextMenuTooltipButton
             className="mx_MessageActionBar_maskButton mx_MessageActionBar_reactButton"
-            label={_t("React")}
+            title={_t("React")}
             onClick={openMenu}
             isExpanded={menuDisplayed}
             inputRef={ref}
@@ -114,13 +115,19 @@ export default class MessageActionBar extends React.PureComponent {
     static contextType = RoomContext;
 
     componentDidMount() {
-        this.props.mxEvent.on("Event.decrypted", this.onDecrypted);
+        if (this.props.mxEvent.status && this.props.mxEvent.status !== EventStatus.SENT) {
+            this.props.mxEvent.on("Event.status", this.onSent);
+        }
+        if (this.props.mxEvent.isBeingDecrypted()) {
+            this.props.mxEvent.once("Event.decrypted", this.onDecrypted);
+        }
         this.props.mxEvent.on("Event.beforeRedaction", this.onBeforeRedaction);
     }
 
     componentWillUnmount() {
-        this.props.mxEvent.removeListener("Event.decrypted", this.onDecrypted);
-        this.props.mxEvent.removeListener("Event.beforeRedaction", this.onBeforeRedaction);
+        this.props.mxEvent.off("Event.status", this.onSent);
+        this.props.mxEvent.off("Event.decrypted", this.onDecrypted);
+        this.props.mxEvent.off("Event.beforeRedaction", this.onBeforeRedaction);
     }
 
     onDecrypted = () => {
@@ -131,6 +138,11 @@ export default class MessageActionBar extends React.PureComponent {
 
     onBeforeRedaction = () => {
         // When an event is redacted, we can't edit it so update the available actions.
+        this.forceUpdate();
+    };
+
+    onSent = () => {
+        // When an event is sent and echoed the possible actions change.
         this.forceUpdate();
     };
 
@@ -167,7 +179,7 @@ export default class MessageActionBar extends React.PureComponent {
                 );
             }
             if (this.context.canReply) {
-                replyButton = <RovingAccessibleButton
+                replyButton = <RovingAccessibleTooltipButton
                     className="mx_MessageActionBar_maskButton mx_MessageActionBar_replyButton"
                     title={_t("Reply")}
                     onClick={this.onReplyClick}
@@ -175,7 +187,7 @@ export default class MessageActionBar extends React.PureComponent {
             }
         }
         if (canEditContent(this.props.mxEvent)) {
-            editButton = <RovingAccessibleButton
+            editButton = <RovingAccessibleTooltipButton
                 className="mx_MessageActionBar_maskButton mx_MessageActionBar_editButton"
                 title={_t("Edit")}
                 onClick={this.onEditClick}

@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// The following interfaces take their names and member names from seshat and the spec
+/* eslint-disable camelcase */
+
 export interface MatrixEvent {
     type: string;
     sender: string;
@@ -21,7 +24,7 @@ export interface MatrixEvent {
     event_id: string;
     origin_server_ts: number;
     unsigned?: {};
-    room_id: string;
+    roomId: string;
 }
 
 export interface MatrixProfile {
@@ -102,10 +105,13 @@ export default abstract class BaseEventIndexManager {
     /**
      * Initialize the event index for the given user.
      *
+     * @param {string} userId The event that should be added to the index.
+     * @param {string} deviceId The profile of the event sender at the
+     *
      * @return {Promise} A promise that will resolve when the event index is
      * initialized.
      */
-    async initEventIndex(): Promise<void> {
+    async initEventIndex(userId: string, deviceId: string): Promise<void> {
         throw new Error("Unimplemented");
     }
 

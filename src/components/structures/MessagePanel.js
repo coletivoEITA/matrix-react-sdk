@@ -23,13 +23,17 @@ import classNames from 'classnames';
 import shouldHideEvent from '../../shouldHideEvent';
 import {wantsDateSeparator} from '../../DateUtils';
 import * as sdk from '../../index';
+import dis from "../../dispatcher/dispatcher";
 
 import {MatrixClientPeg} from '../../MatrixClientPeg';
 import SettingsStore from '../../settings/SettingsStore';
+import {Layout, LayoutPropType} from "../../settings/Layout";
 import {_t} from "../../languageHandler";
 import {haveTileForEvent} from "../views/rooms/EventTile";
 import {textForEvent} from "../../TextForEvent";
 import IRCTimelineProfileResizer from "../views/elements/IRCTimelineProfileResizer";
+import DMRoomMap from "../../utils/DMRoomMap";
+import NewRoomIntro from "../views/rooms/NewRoomIntro";
 
 const CONTINUATION_MAX_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const continuedTypes = ['m.sticker', 'm.room.message'];
@@ -133,11 +137,13 @@ export default class MessagePanel extends React.Component {
         // whether to show reactions for an event
         showReactions: PropTypes.bool,
 
-        // whether to use the irc layout
-        useIRCLayout: PropTypes.bool,
+        // which layout to use
+        layout: LayoutPropType,
+
+        // whether or not to show flair at all
+        enableFlair: PropTypes.bool,
     };
 
-    // Force props to be loaded for useIRCLayout
     constructor(props) {
         super(props);
 
@@ -202,11 +208,13 @@ export default class MessagePanel extends React.Component {
 
     componentDidMount() {
         this._isMounted = true;
+        this.dispatcherRef = dis.register(this.onAction);
     }
 
     componentWillUnmount() {
         this._isMounted = false;
         SettingsStore.unwatchSetting(this._showTypingNotificationsWatcherRef);
+        dis.unregister(this.dispatcherRef);
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -216,6 +224,14 @@ export default class MessagePanel extends React.Component {
             this.setState({
                 ghostReadMarkers,
             });
+        }
+    }
+
+    onAction = (payload) => {
+        switch (payload.action) {
+            case "scroll_to_bottom":
+                this.scrollToBottom();
+                break;
         }
     }
 
@@ -346,9 +362,9 @@ export default class MessagePanel extends React.Component {
         }
     }
 
-    _isUnmounting() {
+    _isUnmounting = () => {
         return !this._isMounted;
-    }
+    };
 
     // TODO: Implement granular (per-room) hide options
     _shouldShowEvent(mxEv) {
@@ -482,6 +498,9 @@ export default class MessagePanel extends React.Component {
 
         let prevEvent = null; // the last event we showed
 
+        // Note: the EventTile might still render a "sent/sending receipt" independent of
+        // this information. When not providing read receipt information, the tile is likely
+        // to assume that sent receipts are to be shown more often.
         this._readReceiptsByEvent = {};
         if (this.props.showReadReceipts) {
             this._readReceiptsByEvent = this._getReadReceiptsByShownEvent();
@@ -515,10 +534,20 @@ export default class MessagePanel extends React.Component {
             if (!grouper) {
                 const wantTile = this._shouldShowEvent(mxEv);
                 if (wantTile) {
+                    const nextEvent = i < this.props.events.length - 1
+                        ? this.props.events[i + 1]
+                        : null;
+
+                    // The next event with tile is used to to determine the 'last successful' flag
+                    // when rendering the tile. The shouldShowEvent function is pretty quick at what
+                    // it does, so this should have no significant cost even when a room is used for
+                    // not-chat purposes.
+                    const nextTile = this.props.events.slice(i + 1).find(e => this._shouldShowEvent(e));
+
                     // make sure we unpack the array returned by _getTilesForEvent,
                     // otherwise react will auto-generate keys and we will end up
                     // replacing all of the DOM elements every time we paginate.
-                    ret.push(...this._getTilesForEvent(prevEvent, mxEv, last));
+                    ret.push(...this._getTilesForEvent(prevEvent, mxEv, last, nextEvent, nextTile));
                     prevEvent = mxEv;
                 }
 
@@ -534,7 +563,7 @@ export default class MessagePanel extends React.Component {
         return ret;
     }
 
-    _getTilesForEvent(prevEvent, mxEv, last) {
+    _getTilesForEvent(prevEvent, mxEv, last, nextEvent, nextEventWithTile) {
         const TileErrorBoundary = sdk.getComponent('messages.TileErrorBoundary');
         const EventTile = sdk.getComponent('rooms.EventTile');
         const DateSeparator = sdk.getComponent('messages.DateSeparator');
@@ -559,6 +588,11 @@ export default class MessagePanel extends React.Component {
             ret.push(dateSeparator);
         }
 
+        let willWantDateSeparator = false;
+        if (nextEvent) {
+            willWantDateSeparator = this._wantsDateSeparator(mxEv, nextEvent.getDate() || new Date());
+        }
+
         // is this a continuation of the previous message?
         const continuation = !wantsDateSeparator && shouldFormContinuation(prevEvent, mxEv);
 
@@ -571,17 +605,40 @@ export default class MessagePanel extends React.Component {
 
         const readReceipts = this._readReceiptsByEvent[eventId];
 
-        // Dev note: `this._isUnmounting.bind(this)` is important - it ensures that
-        // the function is run in the context of this class and not EventTile, therefore
-        // ensuring the right `this._mounted` variable is used by read receipts (which
-        // don't update their position if we, the MessagePanel, is unmounting).
+        let isLastSuccessful = false;
+        const isSentState = s => !s || s === 'sent';
+        const isSent = isSentState(mxEv.getAssociatedStatus());
+        const hasNextEvent = nextEvent && this._shouldShowEvent(nextEvent);
+        if (!hasNextEvent && isSent) {
+            isLastSuccessful = true;
+        } else if (hasNextEvent && isSent && !isSentState(nextEvent.getAssociatedStatus())) {
+            isLastSuccessful = true;
+        }
+
+        // This is a bit nuanced, but if our next event is hidden but a future event is not
+        // hidden then we're not the last successful.
+        if (
+            nextEventWithTile &&
+            nextEventWithTile !== nextEvent &&
+            isSentState(nextEventWithTile.getAssociatedStatus())
+        ) {
+            isLastSuccessful = false;
+        }
+
+        // We only want to consider "last successful" if the event is sent by us, otherwise of course
+        // it's successful: we received it.
+        isLastSuccessful = isLastSuccessful && mxEv.getSender() === MatrixClientPeg.get().getUserId();
+
+        // use txnId as key if available so that we don't remount during sending
         ret.push(
-            <li key={eventId}
+            <li
+                key={mxEv.getTxnId() || eventId}
                 ref={this._collectEventNode.bind(this, eventId)}
                 data-scroll-tokens={scrollToken}
             >
                 <TileErrorBoundary mxEvent={mxEv}>
-                    <EventTile mxEvent={mxEv}
+                    <EventTile
+                        mxEvent={mxEv}
                         continuation={continuation}
                         isRedacted={mxEv.isRedacted()}
                         replacingEventId={mxEv.replacingEventId()}
@@ -590,16 +647,19 @@ export default class MessagePanel extends React.Component {
                         readReceipts={readReceipts}
                         readReceiptMap={this._readReceiptMap}
                         showUrlPreview={this.props.showUrlPreview}
-                        checkUnmounting={this._isUnmounting.bind(this)}
+                        checkUnmounting={this._isUnmounting}
                         eventSendStatus={mxEv.getAssociatedStatus()}
                         tileShape={this.props.tileShape}
                         isTwelveHour={this.props.isTwelveHour}
                         permalinkCreator={this.props.permalinkCreator}
                         last={last}
+                        lastInSection={willWantDateSeparator}
+                        lastSuccessful={isLastSuccessful}
                         isSelectedEvent={highlight}
                         getRelationsForEvent={this.props.getRelationsForEvent}
                         showReactions={this.props.showReactions}
-                        useIRCLayout={this.props.useIRCLayout}
+                        layout={this.props.layout}
+                        enableFlair={this.props.enableFlair}
                     />
                 </TileErrorBoundary>
             </li>,
@@ -796,7 +856,7 @@ export default class MessagePanel extends React.Component {
         }
 
         let ircResizer = null;
-        if (this.props.useIRCLayout) {
+        if (this.props.layout == Layout.IRC) {
             ircResizer = <IRCTimelineProfileResizer
                 minWidth={20}
                 maxWidth={600}
@@ -940,15 +1000,25 @@ class CreationGrouper {
         }).reduce((a, b) => a.concat(b), []);
         // Get sender profile from the latest event in the summary as the m.room.create doesn't contain one
         const ev = this.events[this.events.length - 1];
+
+        let summaryText;
+        const roomId = ev.getRoomId();
+        const creator = ev.sender ? ev.sender.name : ev.getSender();
+        if (DMRoomMap.shared().getUserIdForRoomId(roomId)) {
+            summaryText = _t("%(creator)s created this DM.", { creator });
+        } else {
+            summaryText = _t("%(creator)s created and configured the room.", { creator });
+        }
+
+        ret.push(<NewRoomIntro key="newroomintro" />);
+
         ret.push(
             <EventListSummary
                  key="roomcreationsummary"
                  events={this.events}
                  onToggle={panel._onHeightChanged} // Update scroll state
                  summaryMembers={[ev.sender]}
-                 summaryText={_t("%(creator)s created and configured the room.", {
-                     creator: ev.sender ? ev.sender.name : ev.getSender(),
-                 })}
+                 summaryText={summaryText}
             >
                  { eventTiles }
             </EventListSummary>,
