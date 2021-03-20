@@ -1884,7 +1884,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             credentials.homeserverUrl &&
             credentials.identityServerUrl &&
             credentials.userId &&
-            credentials.password //&&
+            //credentials.password //&&
             //credentials.deviceId
         ) {
             const cli = MatrixClientPeg.get();
@@ -1914,11 +1914,19 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                         console.log('postMessage: user is already logged in');
                         ev.source.postMessage('{"status":"im.vector.login","msg":"user is already logged in"}', ev.origin);
                         return;
+                    } else {
+                        console.log('postMessage: Asked parent to force new login');
+                        ev.source.postMessage('{"action":"im.vector.newLogin"}', ev.origin);
                     }
-                    ev.source.postMessage('{"status":"im.vector.login"}', ev.origin);
-                    const password = credentials.password;
+                    // ev.source.postMessage('{"status":"im.vector.login"}', ev.origin);
+                    // const password = credentials.password;
+                    // delete credentials.action;
+                    // delete credentials.password;
+                    // this.onRegisterFlowComplete(credentials, null);
+                    break;
+                case 'im.vector.newLogin':
+                    console.log('postMessage: request to force new login received');
                     delete credentials.action;
-                    delete credentials.password;
                     this.onRegisterFlowComplete(credentials, null);
                     break;
                 case 'im.vector.logout':
@@ -1990,7 +1998,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
 
         let sendNotifCount = this.props.config.send_unread_notifications_to_parent;
         if (sendNotifCount && sendNotifCount.parent_origin) {
-            window.parent.postMessage('{"status":"im.vector.notif_count","msg":'+notifCount+'}', sendNotifCount.parent_origin);
+            window.parent.postMessage('{"status":"im.vector.notif_count","msg":'+sendNotifCount+'}', sendNotifCount.parent_origin);
         } else {
             // console.log("postMessage: " + JSON.stringify(sendNotifCount));
         }
